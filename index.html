@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="src/css/style.css">
+    <title>Lista de Tarefas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lista de Tarefas</h1>
+            <div class="date-display" id="currentDate"></div>
+            <p>Simplifique sua rotina com praticidade 😎</p>
+        </header>
+
+        <div class="input-section">
+            <input type="text" id="taskInput" placeholder="Digite sua nova tarefa...">
+            <div class="input-controls">
+                <label class="priority-checkbox">
+                    <input type="checkbox" id="priorityCheckbox">
+                    <span>Prioridade</span>
+                </label>
+                <button id="addBtn">+ Adicionar</button>
+            </div>
+        </div>
+
+        <div class="tasks-container">
+            <div class="tasks-section pending">
+                <h2><span class="icon">≡</span> Tarefas Pendentes</h2>
+                <div class="tasks-list" id="pendingTasks">
+                    <div class="empty-state">Nenhuma tarefa pendente</div>
+                </div>
+            </div>
+
+            <div class="tasks-section completed">
+                <h2><span class="icon">✓</span> Tarefas Concluídas</h2>
+                <div class="tasks-list" id="completedTasks">
+                    <div class="empty-state">Nenhuma tarefa concluída</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="src/js/index.js"></script>
+</body>
+</html>
