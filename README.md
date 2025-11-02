@@ -29,7 +29,6 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 - **Concluir**: Marcar como finalizada com animação de confete
 - **Excluir**: Remover tarefas com confirmação visual
 - **Desfazer**: Reverter conclusão de tarefas
-- **Arrastar**: Reordenar tarefas por drag & drop
 
 ### 🎯 Técnica Pomodoro
 - **Timer Inteligente**: 25 minutos de foco / 5 minutos de pausa
@@ -119,7 +118,6 @@ LIsta-do-que-fazer/
 4. **Concluir**: Clique no ✓ (verde) para marcar como feita
 5. **Excluir**: Clique no 🗑️ (vermelho) para remover
 6. **Desfazer**: Clique no ↶ (laranja) em tarefas concluídas
-7. **Reordenar**: Arraste e solte tarefas para reorganizar
 
 ### Pomodoro
 1. Clique em **"Iniciar"** para começar uma sessão de foco (25 min)
@@ -194,22 +192,9 @@ Otimizado para todas as telas:
 - 🌓 Suporte completo para tema claro em todos os componentes
 - 💫 Animações de partículas específicas para cada tipo de ação
 
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para:
-1. Fazer um fork do projeto
-2. Criar uma branch para sua feature (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abrir um Pull Request
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
-
 ## 👨‍💻 Desenvolvedor
 
-Desenvolvido com ❤️ por [José Alberto](https://github.com/josealbertodeev)
+Desenvolvido por [José Alberto](https://github.com/josealbertodeev)
 
 🔗Acesse site aqui - [link](https://l-ista-do-que-fazer.vercel.app)
 
