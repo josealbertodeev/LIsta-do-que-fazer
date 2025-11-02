@@ -2,7 +2,7 @@
 
 Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas diárias com estilo, produtividade e recursos avançados.
 
-![To-Do List Preview](https://img.shields.io/badge/Status-Completo-brightgreen) ![License](https://img.shields.io/badge/License-MIT-blue) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
+![To-Do List Preview](https://img.shields.io/badge/Status-Completo-brightgreen) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 
 <img width="1332" height="821" alt="Screenshot_2" src="https://github.com/user-attachments/assets/aefd91d7-3980-4b50-80c0-57e04b62bc56" />
 
@@ -210,6 +210,8 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes
 ## 👨‍💻 Desenvolvedor
 
 Desenvolvido com ❤️ por [José Alberto](https://github.com/josealbertodeev)
+
+🔗Acesse site aqui - [link](https://l-ista-do-que-fazer.vercel.app)
 
 ---
 
