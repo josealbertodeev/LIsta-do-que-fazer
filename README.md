@@ -4,11 +4,9 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 
 ![To-Do List Preview](https://img.shields.io/badge/Status-Completo-brightgreen) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
 
-## 💻 Desktop
-<img width="792" height="899" alt="desktop" src="https://github.com/user-attachments/assets/1f70292e-c463-42c6-8d03-276bb529d475" />
 
 ## 📱 Mobile
-<img width="985" height="753" alt="mobile" src="https://github.com/user-attachments/assets/2d58b0d0-7395-48f1-8e69-d4ad9e5cac3e" />
+![mobile](https://github.com/user-attachments/assets/6cee2cde-fd6a-485d-bbdb-ef276222e216)
 
 
 ## ✨ Características
