@@ -1,20 +1,95 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
     <link rel="stylesheet" href="src/css/style.css">
-    <link rel="shortcut icon" href="src/img/icons8-tarefas-32.png" type="image/x-icon">
-    <title>Lista de Tarefas</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Minhas Tarefas</title>
 </head>
+
 <body>
+    <!-- Botão de alternar tema -->
+    <button class="theme-toggle" id="themeToggle" title="Alternar tema">🌙</button>
+
     <div class="container">
         <header>
-            <h1>Lista de Tarefas</h1>
-            <div class="date-display" id="currentDate"></div>
-            <p>Simplifique sua rotina com praticidade 😎</p>
+            <h1><span class="title-icon">✅</span> Minhas Tarefas</h1>
+
+            <!-- Saudação ao usuário -->
+            <div class="greeting" id="greeting">
+                <span class="greeting-emoji">👋</span>
+                <span class="greeting-text">Olá! Bem-vindo(a)!</span>
+            </div>
+
+            <div class="header-info">
+                <div class="date-display" id="currentDate"></div>
+                <!-- Previsão do Tempo -->
+                <div class="weather-display" id="weatherDisplay">
+                    <span class="weather-icon">🌤️</span>
+                    <span class="weather-temp">--°C</span>
+                    <span class="weather-location">Carregando...</span>
+                </div>
+            </div>
+
+            <!-- Frase Motivacional -->
+            <div class="motivational-quote" id="motivationalQuote">
+                <div class="quote-header">
+                    <span class="quote-icon">✨</span>
+                    <span class="quote-title">Frase do Dia</span>
+                </div>
+                <p class="quote-text">Carregando frase motivacional...</p>
+            </div>
+
+            <!-- Versículo Bíblico -->
+            <div class="bible-verse" id="bibleVerse">
+                <div class="verse-header">
+                    <span class="verse-icon">📖</span>
+                    <span class="verse-title">Versículo do Dia</span>
+                </div>
+                <p class="verse-text">Carregando versículo...</p>
+                <p class="verse-reference"></p>
+            </div>
+
+            <!-- Barra de Progresso -->
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-text" id="progressText">0% Concluído</div>
+            </div>
         </header>
+
+        <!-- NOVIDADE: Modal de Edição -->
+        <div class="modal-overlay" id="editModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><span class="edit-icon">✎</span>Editar Tarefa</h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <input type="text" class="modal-input" id="modalInput" placeholder="Digite o novo texto...">
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="modalCancel">Cancelar</button>
+                    <button class="modal-btn save" id="modalSave">Salvar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOVIDADE: Cronômetro Pomodoro -->
+        <div class="timers-container">
+            <div class="timer-card">
+                <h3><span class="timer-icon">⏱️</span> Técnica Pomodoro</h3>
+                <div class="timer-display" id="pomodoroTimer">25:00</div>
+                <div class="pomodoro-status" id="pomodoroStatus">Foco (25 min)</div>
+                <div class="timer-controls">
+                    <button class="timer-btn start" id="pomodoroStart">▶ Iniciar</button>
+                    <button class="timer-btn pause" id="pomodoroPause">⏸ Pausar</button>
+                    <button class="timer-btn reset" id="pomodoroReset">⟲ Zerar</button>
+                </div>
+            </div>
+        </div>
 
         <div class="input-section">
             <input type="text" id="taskInput" placeholder="Digite sua nova tarefa...">
@@ -46,4 +121,5 @@
 
     <script src="src/js/index.js"></script>
 </body>
+
 </html>
