@@ -1,0 +1,2624 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Notificação Interativa Melhorada */
+        .notification-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            color: #1a1a1a;
+            padding: 30px 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 10000;
+            min-width: 320px;
+            opacity: 0;
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        .notification-toast.success {
+            border: 3px solid #10b981;
+        }
+
+        .notification-toast.success .notification-icon-bg {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .notification-toast.delete {
+            border: 3px solid #ef4444;
+        }
+
+        .notification-toast.delete .notification-icon-bg {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .notification-toast.pomodoro-focus {
+            border: 3px solid #667eea;
+        }
+
+        .notification-toast.pomodoro-focus .notification-icon-bg {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .notification-toast.pomodoro-break {
+            border: 3px solid #f59e0b;
+        }
+
+        .notification-toast.pomodoro-break .notification-icon-bg {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .notification-toast.undo {
+            border: 3px solid #f59e0b;
+        }
+
+        .notification-toast.undo .notification-icon-bg {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .notification-toast.edit {
+            border: 3px solid #3b82f6;
+        }
+
+        .notification-toast.edit .notification-icon-bg {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        /* Modal de notas */
+        .notification-toast.notes-modal {
+            max-width: 500px;
+            border: 3px solid #8b5cf6;
+        }
+
+        .notification-toast.notes-modal .notification-icon-bg {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        }
+
+        .notes-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .notes-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .notes-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .notes-content::-webkit-scrollbar-thumb {
+            background: rgba(139, 92, 246, 0.5);
+            border-radius: 3px;
+        }
+
+        .notes-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(139, 92, 246, 0.7);
+        }
+
+        /* Modal de subtarefas */
+        .notification-toast.subtasks-modal {
+            max-width: 500px;
+            border: 3px solid #10b981;
+        }
+
+        .notification-toast.subtasks-modal .notification-icon-bg {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .subtask-progress {
+            margin: 15px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .subtasks-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .subtask-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .subtask-item.completed span {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .subtask-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #10b981;
+        }
+
+        .subtask-item span {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        .delete-subtask-btn {
+            width: 24px;
+            height: 24px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            border-radius: 50%;
+            color: #ef4444;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .delete-subtask-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .add-subtask-form {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .subtask-input {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            color: #1a1a1a !important;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .subtask-input:focus {
+            border-color: #10b981;
+            background: rgba(0, 0, 0, 0.05);
+            color: #1a1a1a !important;
+        }
+
+        .subtask-input::placeholder {
+            color: #666;
+        }
+
+        .add-subtask-btn {
+            width: 40px;
+            height: 40px;
+            background: #10b981;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .add-subtask-btn:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        /* Botão de fechar modal */
+        .modal-close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 32px;
+            height: 32px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 50%;
+            color: #ef4444;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .modal-close-btn:hover {
+            background: #ef4444;
+            color: white;
+            transform: rotate(90deg) scale(1.1);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+
+        .modal-close-btn:active {
+            transform: rotate(90deg) scale(0.95);
+        }
+
+        /* Timer End Modal Styles */
+        .timer-end-modal {
+            min-width: 380px;
+            max-width: 450px;
+        }
+
+        .timer-end-modal .notification-title {
+            color: #1a1a1a;
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+
+        .timer-end-modal .notification-message {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .timer-end-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .timer-action-btn {
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 110px;
+            justify-content: center;
+        }
+
+        .timer-action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .timer-action-btn:active {
+            transform: translateY(0);
+        }
+
+        .timer-action-btn.complete {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: #10b981;
+        }
+
+        .timer-action-btn.complete:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .timer-action-btn.extend {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .timer-action-btn.extend:hover {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .timer-action-btn.cancel {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .timer-action-btn.cancel:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .notification-icon-wrapper {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+
+        .notification-icon-bg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+
+        .notification-emoji {
+            font-size: 3rem;
+            animation: bounceEmoji 0.6s ease-out 0.2s;
+            display: inline-block;
+        }
+
+        .notification-content {
+            text-align: center;
+        }
+
+        .notification-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+            animation: slideInText 0.4s ease-out 0.3s backwards;
+        }
+
+        .notification-message {
+            font-size: 0.95rem;
+            color: #666;
+            animation: slideInText 0.4s ease-out 0.4s backwards;
+        }
+
+        /* Partículas de celebração */
+        .celebration-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            font-size: 1.5rem;
+            animation: floatParticle 1.5s ease-out forwards;
+        }
+
+        @keyframes popIn {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+            }
+
+            60% {
+                transform: translate(-50%, -50%) scale(1.1) rotate(10deg);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes popOut {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
+        @keyframes pulseGlow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+                transform: scale(1);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(16, 185, 129, 0.6);
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes bounceEmoji {
+
+            0%,
+            100% {
+                transform: translateY(0) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-15px) rotate(-10deg);
+            }
+
+            50% {
+                transform: translateY(0) rotate(10deg);
+            }
+
+            75% {
+                transform: translateY(-8px) rotate(-5deg);
+            }
+        }
+
+        @keyframes slideInText {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatParticle {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1) rotate(0deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-150px) scale(0.5) rotate(360deg);
+            }
+        }
+
+        /* Overlay escuro suave */
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
+            z-index: 9999;
+            opacity: 0;
+            animation: fadeInOverlay 0.3s forwards;
+        }
+
+        @keyframes fadeInOverlay {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOutOverlay {
+            to {
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            background: none;
+            -webkit-text-fill-color: initial;
+            font-style: normal;
+        }
+
+        /* Saudação ao usuário */
+        .greeting {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #a78bfa, #ec4899);
+            border-radius: 30px;
+            box-shadow: 0 4px 20px rgba(240, 147, 251, 0.4);
+            animation: slideDown 0.6s ease-out;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .greeting-emoji {
+            font-size: 1.8rem;
+            animation: wave 2s ease-in-out infinite;
+        }
+
+        .greeting-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes wave {
+
+            0%,
+            100% {
+                transform: rotate(0deg);
+            }
+
+            10%,
+            30% {
+                transform: rotate(14deg);
+            }
+
+            20%,
+            40% {
+                transform: rotate(-8deg);
+            }
+
+            50% {
+                transform: rotate(14deg);
+            }
+
+            60% {
+                transform: rotate(0deg);
+            }
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        .date-display {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            text-transform: capitalize;
+        }
+
+        .weather-display {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .weather-icon {
+            font-size: 1.3rem;
+        }
+
+        .weather-temp {
+            font-weight: 700;
+        }
+
+        .weather-location {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        /* Frase Motivacional */
+        .motivational-quote {
+            margin: 20px auto;
+            max-width: 700px;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-left: 4px solid #667eea;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+            animation: fadeInQuote 1s ease-out;
+        }
+
+        @keyframes fadeInQuote {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .quote-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quote-icon {
+            font-size: 1.5rem;
+        }
+
+        .quote-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #60a5fa;
+        }
+
+        .quote-text {
+            color: #cbd5e1;
+            font-size: 1.05rem;
+            font-style: italic;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Versículo Bíblico */
+        .bible-verse {
+            margin: 20px auto 30px;
+            max-width: 700px;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(74, 222, 128, 0.15));
+            border-left: 4px solid #22c55e;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+            animation: fadeInQuote 1s ease-out 0.2s backwards;
+        }
+
+        .verse-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .verse-icon {
+            font-size: 1.5rem;
+        }
+
+        .verse-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #10b981;
+        }
+
+        .verse-text {
+            color: #ccc;
+            font-size: 1.05rem;
+            font-style: italic;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .verse-reference {
+            color: #10b981;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px 0 0 0;
+        }
+
+        header p {
+            color: #999;
+            font-size: 1.1rem;
+        }
+
+        /* NOVIDADE: Estilos do Cronômetro Pomodoro */
+        .timers-container {
+            margin-bottom: 30px;
+        }
+
+        .timer-card {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .timer-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #a78bfa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .timer-icon {
+            font-size: 2rem;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            color: #a78bfa;
+            text-shadow: 0 2px 10px rgba(167, 139, 250, 0.4);
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .timer-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .timer-btn.start {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .timer-btn.start:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            transform: translateY(-2px);
+        }
+
+        .timer-btn.pause {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        .timer-btn.pause:hover {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            transform: translateY(-2px);
+        }
+
+        .timer-btn.reset {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+        }
+
+        .timer-btn.reset:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+        }
+
+        .pomodoro-status {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ccc;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            width: 100%;
+        }
+
+        /* Estilos existentes da lista de tarefas */
+        .input-section {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        #taskInput {
+            width: 100%;
+            padding: 15px;
+            background: #404040;
+            border: none;
+            border-radius: 10px;
+            color: #ffffff !important;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #taskInput:focus {
+            background: #4a4a4a;
+            box-shadow: 0 0 0 2px #a78bfa;
+            color: #ffffff !important;
+        }
+
+        #taskInput::placeholder {
+            color: #999;
+        }
+
+        /* Novos inputs avançados */
+        .advanced-inputs {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .input-group label {
+            color: #aaa;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .category-select,
+        .date-input,
+        .time-input {
+            padding: 10px;
+            background: #404040;
+            border: 2px solid #4a4a4a;
+            border-radius: 8px;
+            color: #ffffff !important;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .category-select option {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .category-select:focus,
+        .date-input:focus,
+        .time-input:focus {
+            border-color: #667eea;
+            background: #4a4a4a;
+            color: #ffffff !important;
+        }
+
+        .time-input::placeholder {
+            color: #999;
+        }
+
+        .notes-input {
+            padding: 10px;
+            background: #404040;
+            border: 2px solid #4a4a4a;
+            border-radius: 8px;
+            color: #ffffff !important;
+            font-size: 0.95rem;
+            outline: none;
+            resize: vertical;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .notes-input:focus {
+            border-color: #667eea;
+            background: #4a4a4a;
+            color: #ffffff !important;
+        }
+
+        .notes-input::placeholder {
+            color: #999;
+        }
+
+        .notes-input::placeholder {
+            color: #888;
+        }
+
+        .input-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .priority-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #ccc;
+        }
+
+        .priority-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #f59e0b;
+        }
+
+        #addBtn {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        #addBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+        }
+
+        .tasks-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .tasks-section {
+            border-radius: 20px;
+            padding: 25px;
+            min-height: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tasks-section.pending {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .tasks-section.completed {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        }
+
+        .tasks-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .tasks-section .icon {
+            font-size: 1.2rem;
+        }
+
+        .tasks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .task-item {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .task-item:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .task-number {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        /* Número roxo para tarefas pendentes */
+        .tasks-section.pending .task-number {
+            background: rgba(255, 255, 255, 0.95);
+            color: #a78bfa;
+            border: 2px solid #a78bfa;
+        }
+
+        /* Número verde para tarefas concluídas */
+        .tasks-section.completed .task-number {
+            background: rgba(255, 255, 255, 0.95);
+            color: #22c55e;
+            border: 2px solid #22c55e;
+        }
+
+        .task-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .task-text {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+
+        /* Estilos dos meta badges - padronizados */
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .task-category,
+        .task-date,
+        .task-time,
+        .task-priority {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1.5px solid;
+            transition: all 0.3s ease;
+            color: #ffffff !important;
+        }
+
+        .task-category {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .task-date {
+            background: rgba(96, 165, 250, 0.2);
+            border-color: rgba(96, 165, 250, 0.6);
+            color: #60a5fa;
+        }
+
+        .task-time {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: rgba(34, 197, 94, 0.6);
+            color: #22c55e;
+        }
+
+        .task-priority {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: rgba(251, 191, 36, 0.6);
+            color: #fbbf24;
+        }
+
+        .overdue-badge {
+            background: rgba(220, 38, 38, 0.2) !important;
+            color: #ef4444 !important;
+            border-color: #ef4444 !important;
+            font-weight: 700 !important;
+            animation: pulseOverdue 1.5s ease-in-out infinite;
+        }
+
+        .today-badge {
+            background: rgba(239, 68, 68, 0.15) !important;
+            color: #f87171 !important;
+            border-color: #f87171 !important;
+            font-weight: 600 !important;
+            animation: pulseToday 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseOverdue {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6);
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                box-shadow: 0 0 12px 3px rgba(220, 38, 38, 0.8);
+                transform: scale(1.05);
+            }
+        }
+
+        @keyframes pulseToday {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+            }
+
+            50% {
+                opacity: 0.85;
+                box-shadow: 0 0 8px 2px rgba(255, 107, 107, 0.7);
+            }
+        }
+
+        .task-time {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .task-time-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timer-control-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b, #0ea5e9);
+            border: 1.5px solid #0ea5e9;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.65rem;
+            padding: 0;
+        }
+
+        .timer-control-btn:hover {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-color: #0ea5e9;
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
+        }
+
+        .timer-control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .task-extra-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .view-notes-btn,
+        .view-subtasks-btn {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1.5px solid;
+            color: #ffffff !important;
+        }
+
+        .view-notes-btn {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .view-notes-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+        }
+
+        .view-subtasks-btn {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .view-subtasks-btn:hover {
+            background: rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Tarefa atrasada */
+        .task-item.overdue {
+            border-left: 5px solid #dc2626;
+            animation: shakeOverdue 3s ease-in-out infinite;
+        }
+
+        @keyframes shakeOverdue {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            2%,
+            6% {
+                transform: translateX(-2px);
+            }
+
+            4%,
+            8% {
+                transform: translateX(2px);
+            }
+        }
+
+        /* Tarefa para hoje */
+        .task-item.today {
+            border-left: 4px solid #ff6b6b;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .complete-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .complete-btn:hover {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            transform: scale(1.1);
+        }
+
+        .edit-btn {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            transform: scale(1.1);
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            transform: scale(1.1);
+            animation: shakeDelete 1s ease infinite;
+        }
+
+        .undo-btn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .undo-btn:hover {
+            background: #d97706;
+            transform: scale(1.1);
+            animation: rotateUndo 1.5s ease infinite;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-style: italic;
+            margin-top: 50px;
+        }
+
+        .completed .task-text {
+            text-decoration: line-through;
+            opacity: 0.8;
+            color: #ffffff !important;
+        }
+
+        /* NOVIDADE: Modal de Edição */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: #2d2d2d;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #667eea;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .edit-icon {
+            color: #f59e0b;
+            font-style: normal;
+            margin-right: 8px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #999;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            line-height: 1;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: #404040;
+            border: 2px solid #555;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .modal-input:focus {
+            background: #4a4a4a;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .modal-btn.cancel {
+            background: #555;
+            color: white;
+        }
+
+        .modal-btn.cancel:hover {
+            background: #666;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn.save {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .modal-btn.save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* NOVIDADE: Animação de Conclusão Melhorada */
+        @keyframes celebrate {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            10% {
+                transform: scale(1.15) rotate(-5deg);
+            }
+
+            20% {
+                transform: scale(1.15) rotate(5deg);
+            }
+
+            30% {
+                transform: scale(1.15) rotate(-5deg);
+            }
+
+            40% {
+                transform: scale(1.15) rotate(5deg);
+            }
+
+            50% {
+                transform: scale(1.2) rotate(0deg);
+            }
+
+            60% {
+                transform: scale(1.1) rotate(0deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes confetti {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) rotate(var(--rotation)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            }
+
+            50% {
+                box-shadow: 0 0 0 20px rgba(16, 185, 129, 0);
+            }
+        }
+
+        .task-item.celebrating {
+            animation: celebrate 0.8s ease-out;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(52, 211, 153, 0.4)) !important;
+            border: 2px solid #10b981 !important;
+            position: relative;
+            z-index: 10;
+        }
+
+        .task-item.celebrating::before {
+            content: '✨';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            animation: sparkle 0.8s ease-out;
+            pointer-events: none;
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(2) rotate(360deg);
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: confetti 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            z-index: 9999;
+        }
+
+        .confetti.square {
+            border-radius: 2px;
+        }
+
+        .confetti.triangle {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 12px solid;
+        }
+
+        /* Animação de sucesso no botão */
+        @keyframes buttonSuccess {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.3) rotate(360deg);
+                background: #10b981;
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .complete-btn.success {
+            animation: buttonSuccess 0.6s ease-out;
+        }
+
+        /* NOVIDADE: Animação do botão de deletar */
+        @keyframes buttonDelete {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            25% {
+                transform: scale(1.2) rotate(-10deg);
+            }
+
+            50% {
+                transform: scale(1.2) rotate(10deg);
+            }
+
+            75% {
+                transform: scale(1.2) rotate(-10deg);
+            }
+
+            100% {
+                transform: scale(0) rotate(0deg);
+            }
+        }
+
+        .delete-btn.deleting {
+            animation: buttonDelete 0.5s ease-out;
+        }
+
+        /* NOVIDADE: Animação da tarefa sendo deletada */
+        @keyframes taskDelete {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scale(0.8) rotateX(90deg);
+                opacity: 0;
+            }
+        }
+
+        .task-item.deleting {
+            animation: taskDelete 0.5s ease-out forwards;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(220, 38, 38, 0.3)) !important;
+            border: 2px solid #ef4444 !important;
+        }
+
+        /* Partículas de destruição */
+        .particle {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            pointer-events: none;
+            animation: particleExplode 0.8s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes particleExplode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* NOVIDADE: Animação do botão de desfazer */
+        @keyframes buttonUndo {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+
+            50% {
+                transform: scale(1.3) rotate(-360deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(-720deg);
+            }
+        }
+
+        .undo-btn.undoing {
+            animation: buttonUndo 0.7s ease-out;
+        }
+
+        /* Animação da tarefa sendo desfeita */
+        @keyframes taskUndo {
+            0% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(0.9) rotate(-5deg);
+            }
+
+            50% {
+                transform: scale(1.1) rotate(5deg);
+            }
+
+            75% {
+                transform: scale(0.9) rotate(-5deg);
+            }
+
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .task-item.undoing {
+            animation: taskUndo 0.7s ease-out;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.3), rgba(217, 119, 6, 0.3)) !important;
+            border: 2px solid #f59e0b !important;
+        }
+
+        /* Efeito de ondas para desfazer */
+        .wave {
+            position: fixed;
+            border: 3px solid #f59e0b;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: waveExpand 0.8s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes waveExpand {
+            0% {
+                width: 20px;
+                height: 20px;
+                opacity: 1;
+            }
+
+            100% {
+                width: 150px;
+                height: 150px;
+                opacity: 0;
+            }
+        }
+
+        /* ANIMAÇÃO 1: Shake para botão deletar no hover */
+        @keyframes shakeDelete {
+
+            0%,
+            100% {
+                transform: translateX(0) scale(1.1);
+            }
+
+            10%,
+            30%,
+            50%,
+            70%,
+            90% {
+                transform: translateX(-3px) scale(1.1) rotate(-2deg);
+            }
+
+            20%,
+            40%,
+            60%,
+            80% {
+                transform: translateX(3px) scale(1.1) rotate(2deg);
+            }
+        }
+
+        /* ANIMAÇÃO 2: Rotação contínua para botão desfazer no hover */
+        @keyframes rotateUndo {
+            0% {
+                transform: rotate(0deg) scale(1.1);
+            }
+
+            50% {
+                transform: rotate(-180deg) scale(1.15);
+            }
+
+            100% {
+                transform: rotate(-360deg) scale(1.1);
+            }
+        }
+
+        /* ANIMAÇÃO EXTRA: Pulso para botão deletar ao clicar */
+        @keyframes pulseDelete {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* ANIMAÇÃO EXTRA: Bounce para botão desfazer ao clicar */
+        @keyframes bounceUndo {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(0.8) rotate(-15deg);
+            }
+
+            50% {
+                transform: scale(1.2) rotate(0deg);
+            }
+
+            75% {
+                transform: scale(0.95) rotate(15deg);
+            }
+        }
+
+        /* Adicionar efeito de pulso ao deletar */
+        .delete-btn:active {
+            animation: pulseDelete 0.6s ease-out;
+        }
+
+        /* Adicionar efeito de bounce ao desfazer */
+        .undo-btn:active {
+            animation: bounceUndo 0.5s ease-out;
+        }
+
+        /* ============================================
+           DARK/LIGHT MODE E BARRA DE PROGRESSO
+           ============================================ */
+
+        /* Botão de alternar tema */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #a78bfa, #ec4899);
+            border-radius: 50%;
+            border: none;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(167, 139, 250, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: 0 6px 20px rgba(167, 139, 250, 0.6);
+        }
+
+        .theme-toggle:active {
+            transform: rotate(180deg) scale(0.95);
+        }
+
+        /* Barra de progresso */
+        .progress-container {
+            margin-top: 25px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+            width: 0%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.3),
+                    transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #ccc;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        /* MODO CLARO */
+        body.light-mode {
+            background: linear-gradient(135deg, #fafbfc 0%, #e1e7ef 100%);
+            color: #1e293b;
+        }
+
+        body.light-mode .container {
+            color: #1e293b;
+        }
+
+        body.light-mode header h1 {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        body.light-mode header p {
+            color: #475569;
+        }
+
+        body.light-mode .greeting {
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+            color: white;
+        }
+
+        body.light-mode .date-display {
+            background: linear-gradient(135deg, #3b82f6, #6366f1);
+            color: white;
+        }
+
+        body.light-mode .weather-display {
+            background: linear-gradient(135deg, #0ea5e9, #06b6d4);
+            color: white;
+        }
+
+        body.light-mode .motivational-quote {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-left-color: #6366f1;
+        }
+
+        body.light-mode .quote-title {
+            color: #6366f1;
+        }
+
+        body.light-mode .quote-text {
+            color: #475569;
+        }
+
+        body.light-mode .bible-verse {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(74, 222, 128, 0.1));
+            border-left-color: #22c55e;
+        }
+
+        body.light-mode .verse-title {
+            color: #22c55e;
+        }
+
+        body.light-mode .verse-text {
+            color: #475569;
+        }
+
+        body.light-mode .verse-reference {
+            color: #22c55e;
+        }
+
+        body.light-mode .input-section,
+        body.light-mode .timer-card {
+            background: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode #taskInput {
+            background: white;
+            color: #1e293b;
+            border: 2px solid #e2e8f0;
+        }
+
+        body.light-mode #taskInput:focus {
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        body.light-mode #taskInput::placeholder {
+            color: #94a3b8;
+        }
+
+        /* Light mode para inputs avançados */
+        body.light-mode .advanced-inputs {
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        body.light-mode .category-select,
+        body.light-mode .date-input,
+        body.light-mode .time-input,
+        body.light-mode .notes-input {
+            background: #f8fafc;
+            color: #1e293b;
+            border-color: #e2e8f0;
+        }
+
+        body.light-mode .category-select:focus,
+        body.light-mode .date-input:focus,
+        body.light-mode .time-input:focus,
+        body.light-mode .notes-input:focus {
+            background: white;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        body.light-mode .input-group label {
+            color: #64748b;
+        }
+
+        body.light-mode .task-text {
+            color: #1e293b !important;
+            font-weight: 700 !important;
+            font-size: 1.05rem !important;
+        }
+
+        body.light-mode .task-item.completed .task-text {
+            color: #64748b !important;
+            font-weight: 600 !important;
+        }
+
+        body.light-mode .task-category {
+            background: rgba(99, 102, 241, 0.1);
+            font-weight: 600;
+            color: #1e293b !important;
+        }
+
+        body.light-mode .task-date {
+            background: rgba(59, 130, 246, 0.15);
+            color: #1e293b !important;
+            border-color: #3b82f6;
+            font-weight: 600;
+        }
+
+        body.light-mode .task-time {
+            background: rgba(34, 197, 94, 0.15);
+            color: #1e293b !important;
+            border-color: #22c55e;
+            font-weight: 600;
+        }
+
+        body.light-mode .task-priority {
+            background: rgba(251, 191, 36, 0.15);
+            color: #1e293b !important;
+            border-color: #f59e0b;
+            font-weight: 600;
+        }
+
+        body.light-mode .view-notes-btn {
+            background: rgba(139, 92, 246, 0.12);
+            color: #1e293b !important;
+            border-color: #8b5cf6;
+        }
+
+        body.light-mode .view-notes-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.25);
+        }
+
+        body.light-mode .view-subtasks-btn {
+            background: rgba(16, 185, 129, 0.12);
+            color: #1e293b !important;
+            border-color: #10b981;
+        }
+
+        body.light-mode .view-subtasks-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+
+        body.light-mode .timer-control-btn {
+            background: linear-gradient(135deg, #334155, #0ea5e9);
+            color: #ffffff;
+            border-color: #0ea5e9;
+        }
+
+        body.light-mode .timer-control-btn:hover {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            border-color: #0284c7;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.5);
+        }
+
+        body.light-mode .subtask-input {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.2);
+            color: #1a1a1a;
+        }
+
+        body.light-mode .subtask-input:focus {
+            background: rgba(0, 0, 0, 0.08);
+            border-color: #10b981;
+        }
+
+        body.light-mode .subtask-item {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        body.light-mode .subtask-item:hover {
+            background: rgba(0, 0, 0, 0.06);
+        }
+
+        body.light-mode .notes-content {
+            background: rgba(0, 0, 0, 0.05);
+            color: #1a1a1a;
+        }
+
+        body.light-mode .modal-close-btn {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: #dc2626;
+            color: #dc2626;
+        }
+
+        body.light-mode .modal-close-btn:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        body.light-mode .tasks-section {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9) !important;
+            backdrop-filter: blur(10px);
+            border: 2px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .tasks-section h2 {
+            color: #1e293b !important;
+            text-shadow: none;
+        }
+
+        body.light-mode .tasks-section.pending {
+            border-left: 4px solid #a78bfa;
+        }
+
+        body.light-mode .tasks-section.completed {
+            border-left: 4px solid #22c55e;
+        }
+
+        body.light-mode .task-item {
+            background: white;
+            border: 2px solid #e2e8f0;
+            color: #1e293b;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .task-item:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+        }
+
+        body.light-mode .task-number {
+            background: white;
+            color: #1e293b;
+            border: 2px solid #cbd5e1;
+            font-weight: 700;
+        }
+
+        body.light-mode .tasks-section.pending .task-number {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            color: white;
+            border-color: #8b5cf6;
+        }
+
+        body.light-mode .tasks-section.completed .task-number {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-color: #16a34a;
+        }
+
+        body.light-mode .task-text {
+            color: #1e293b !important;
+            font-weight: 700 !important;
+            font-size: 1.05rem !important;
+        }
+
+        body.light-mode .tasks-section.completed .task-text {
+            color: #64748b !important;
+            font-weight: 600 !important;
+        }
+
+        body.light-mode .empty-state {
+            color: #94a3b8;
+            font-weight: 500;
+            background: rgba(148, 163, 184, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        body.light-mode .progress-bar {
+            background: #e2e8f0;
+        }
+
+        body.light-mode .progress-text {
+            color: #22c55e;
+        }
+
+        body.light-mode .modal-overlay {
+            background: rgba(15, 23, 42, 0.7);
+        }
+
+        body.light-mode .modal-content {
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body.light-mode .modal-input {
+            background: #f8fafc;
+            color: #1e293b;
+            border: 2px solid #e2e8f0;
+        }
+
+        body.light-mode .modal-input:focus {
+            background: white;
+            border-color: #6366f1;
+        }
+
+        body.light-mode .edit-icon {
+            color: #6366f1;
+        }
+
+        body.light-mode .timer-display,
+        body.light-mode .pomodoro-status {
+            color: #8b5cf6;
+        }
+
+        body.light-mode .theme-toggle {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        body.light-mode .theme-toggle:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        body.light-mode .notification-toast {
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        body.light-mode .notification-title {
+            color: #1e293b;
+        }
+
+        body.light-mode .notification-message {
+            color: #64748b;
+        }
+
+        body.light-mode .task-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .task-item:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .tasks-section h2 {
+            color: #1e293b;
+        }
+
+        @media (max-width: 768px) {
+            .tasks-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .input-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .priority-checkbox {
+                justify-content: center;
+            }
+
+            /* Responsivo para inputs avançados */
+            .input-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .advanced-inputs {
+                padding: 15px;
+            }
+
+            .task-meta {
+                flex-wrap: wrap;
+            }
+
+            .notes-content {
+                max-height: 150px;
+                font-size: 0.9rem;
+            }
+
+            .notification-toast.notes-modal {
+                max-width: 90%;
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .greeting {
+                padding: 10px 20px;
+                margin: 10px 10px;
+                max-width: 100%;
+            }
+
+            .greeting-emoji {
+                font-size: 1.5rem;
+            }
+
+            .greeting-text {
+                font-size: 1rem;
+            }
+
+            .header-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .date-display,
+            .weather-display {
+                font-size: 0.9rem;
+                padding: 6px 15px;
+            }
+
+            .motivational-quote,
+            .bible-verse {
+                padding: 15px 20px;
+                margin: 15px 10px;
+            }
+
+            .quote-text,
+            .verse-text {
+                font-size: 0.95rem;
+            }
+
+            .quote-icon,
+            .verse-icon {
+                font-size: 1.5rem;
+            }
+
+            .verse-reference {
+                font-size: 0.85rem;
+            }
+
+            .timer-display {
+                font-size: 2.5rem;
+            }
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .notification-toast {
+                min-width: 280px;
+                max-width: 90%;
+                padding: 25px 30px;
+            }
+
+            .notification-icon-wrapper {
+                width: 60px;
+                height: 60px;
+            }
+
+            .notification-emoji {
+                font-size: 2.2rem;
+            }
+
+            .notification-title {
+                font-size: 1.1rem;
+            }
+
+            .notification-message {
+                font-size: 0.85rem;
+            }
+
+            .celebration-particle {
+                font-size: 1.2rem;
+            }
+
+            .tasks-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .input-controls {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+
+            .priority-checkbox {
+                justify-content: center;
+            }
+
+            header h1 {
+                font-size: 2rem;
+                padding-right: 70px;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .theme-toggle {
+                width: 45px;
+                height: 45px;
+                font-size: 1.4rem;
+                top: 15px;
+                right: 15px;
+            }
+        }
+
+        /* Ajuste específico para telas de 393x852 e similares */
+        @media (max-width: 400px) {
+            header h1 {
+                font-size: 1.8rem;
+                padding-right: 65px;
+                padding-left: 10px;
+            }
+
+            .timer-end-modal {
+                min-width: 300px;
+                max-width: 90%;
+            }
+
+            .timer-end-actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .timer-action-btn {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .timer-control-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 0.6rem;
+            }
+        }
