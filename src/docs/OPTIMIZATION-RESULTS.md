@@ -1,4 +1,4 @@
-# ��� RESULTADOS DA OTIMIZAÇÃO DO PROJETO
+# 📊 RESULTADOS DA OTIMIZAÇÃO DO PROJETO
 
 ## Status: ✅ CONCLUÍDO
 
@@ -25,7 +25,7 @@
 
 #### Depois da Otimização:
 - **Linhas:** 2639 (-3% em linhas, mas +valor em organização)
-- **Tamanho:** 53KB (**-23% / -16KB** ���)
+- **Tamanho:** 53KB (**-23% / -16KB** 🎉)
 - **Organização:** 10 seções bem definidas
 - **body.light-mode:** Todas em 1 seção consolidada
 - **@media queries:** Consolidadas e organizadas
@@ -99,7 +99,7 @@
 
 ---
 
-## ��� Conclusão:
+## 🎯 Conclusão:
 
 A otimização foi **bem-sucedida**! O projeto está:
 - ✅ **23% mais leve** (53KB vs 69KB)
@@ -109,4 +109,4 @@ A otimização foi **bem-sucedida**! O projeto está:
 - ✅ **Com backups de segurança**
 
 **Tempo de carregamento estimado:** ~15ms mais rápido
-**Manutenibilidade:** Drasticamente melhorada ���
+**Manutenibilidade:** Drasticamente melhorada 🚀

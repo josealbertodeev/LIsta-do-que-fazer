@@ -645,7 +645,12 @@ class TodoApp {
 
     addTask() {
         const text = this.taskInput.value.trim();
-        if (!text) return;
+
+        // Validação: verifica se o campo está vazio
+        if (!text) {
+            this.showEmptyTaskWarning();
+            return;
+        }
 
         const task = {
             id: this.taskIdCounter++,
@@ -665,6 +670,7 @@ class TodoApp {
         this.saveToStorage();
         this.renderTasks();
 
+        // Limpa os campos
         this.taskInput.value = '';
         this.priorityCheckbox.checked = false;
         if (document.getElementById('categorySelect')) document.getElementById('categorySelect').value = 'pessoal';
@@ -674,6 +680,9 @@ class TodoApp {
 
         // Notificação interativa
         this.showToast('Tarefa adicionada com sucesso!', 'success');
+
+        // Validação suave: mostra dica se campos importantes estão vazios
+        this.showSoftValidationTips(task);
     }
 
     getNextOrderNumber() {
@@ -1401,6 +1410,135 @@ class TodoApp {
 
             setTimeout(() => particle.remove(), 1500);
         }
+    }
+
+    // Mostra aviso quando tentar adicionar tarefa vazia
+    showEmptyTaskWarning() {
+        // Cria o overlay de fundo
+        const overlay = document.createElement('div');
+        overlay.className = 'notification-overlay';
+        document.body.appendChild(overlay);
+
+        // Cria o modal de aviso
+        const modal = document.createElement('div');
+        modal.className = 'notification-toast warning';
+        modal.innerHTML = `
+            <div class="notification-icon-wrapper">
+                <div class="notification-icon-bg warning-bg">
+                    <span class="notification-emoji">⚠️</span>
+                </div>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Atenção! ⚠️</div>
+                <div class="notification-message">Por favor, digite uma tarefa antes de adicionar.</div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Foca no input após mostrar o aviso
+        setTimeout(() => {
+            this.taskInput.focus();
+        }, 100);
+
+        // Cria partículas de aviso
+        this.createWarningParticles();
+
+        // Remove após 3 segundos
+        setTimeout(() => {
+            modal.remove();
+            overlay.remove();
+        }, 3000);
+    }
+
+    // Cria partículas de aviso
+    createWarningParticles() {
+        const particles = ['⚠️', '❗', '⚡', '🚫', '❌'];
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        for (let i = 0; i < 8; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'celebration-particle warning-particle';
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+
+            const angle = (Math.PI * 2 * i) / 8;
+            const radius = 90;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.animationDelay = (i * 0.05) + 's';
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => particle.remove(), 1500);
+        }
+    }
+
+    // Validação suave: mostra dicas amigáveis (não bloqueia)
+    showSoftValidationTips(task) {
+        const tips = [];
+
+        // Verifica se tem prioridade mas não tem data
+        if (task.priority && !task.dueDate) {
+            tips.push({
+                icon: '📅',
+                message: 'Tarefa prioritária! Que tal definir um prazo?',
+                type: 'date'
+            });
+        }
+
+        // Verifica se tem data mas não tem tempo estimado
+        if (task.dueDate && !task.timeEstimate) {
+            tips.push({
+                icon: '⏱️',
+                message: 'Adicione um tempo estimado para usar o cronômetro!',
+                type: 'time'
+            });
+        }
+
+        // Verifica se é uma tarefa simples sem detalhes
+        if (!task.priority && !task.dueDate && !task.timeEstimate && !task.notes && task.category === 'pessoal') {
+            // Apenas 30% de chance de mostrar dica (não ser chato)
+            if (Math.random() < 0.3) {
+                tips.push({
+                    icon: '💡',
+                    message: 'Dica: Use categorias, datas e notas para organizar melhor!',
+                    type: 'general'
+                });
+            }
+        }
+
+        // Mostra apenas a primeira dica (não sobrecarrega o usuário)
+        if (tips.length > 0) {
+            setTimeout(() => {
+                this.showTipBadge(tips[0]);
+            }, 3500); // Mostra depois da notificação de sucesso
+        }
+    }
+
+    // Mostra badge de dica sutil no canto
+    showTipBadge(tip) {
+        const badge = document.createElement('div');
+        badge.className = 'tip-badge';
+        badge.innerHTML = `
+            <span class="tip-icon">${tip.icon}</span>
+            <span class="tip-message">${tip.message}</span>
+            <button class="tip-close" onclick="this.parentElement.remove()">✕</button>
+        `;
+
+        document.body.appendChild(badge);
+
+        // Animação de entrada
+        setTimeout(() => badge.classList.add('show'), 100);
+
+        // Remove automaticamente após 6 segundos
+        setTimeout(() => {
+            badge.classList.remove('show');
+            setTimeout(() => badge.remove(), 300);
+        }, 6000);
     }
 
     // Obter previsão do tempo

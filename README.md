@@ -2,14 +2,15 @@
 
 Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas diárias com estilo, produtividade e recursos avançados.
 
-![To-Do List Preview](https://img.shields.io/badge/Status-Completo-brightgreen) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black) ![Performance](https://img.shields.io/badge/Performance-Otimizado_23%25-success) ![Code Size](https://img.shields.io/badge/CSS-53KB-blue) ![Lines](https://img.shields.io/badge/JS-1554_linhas-yellow)
+![To-Do List Preview](https://img.shields.io/badge/Status-Completo-brightgreen) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black) ![Performance](https://img.shields.io/badge/Performance-Otimizado_23%25-success) ![Code Size](https://img.shields.io/badge/CSS-53KB-blue) ![Lines](https://img.shields.io/badge/JS-1693_linhas-yellow) ![Validation](https://img.shields.io/badge/Validação-Inteligente-pink)
 
 ## 📑 Índice
 
 - [🌟 Destaques Principais](#-destaques-principais)
 - [✨ Características](#-características)
 - [🚀 Funcionalidades](#-funcionalidades)
-- [🛠️ Tecnologias](#️-tecnologias)
+- [�️ Sistema de Validação](#️-sistema-de-validação)
+- [�🛠️ Tecnologias](#️-tecnologias)
 - [📦 Instalação](#-instalação)
 - [📁 Estrutura do Projeto](#-estrutura-do-projeto)
 - [🎯 Como Usar](#-como-usar)
@@ -20,17 +21,6 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 
 <img width="1332" height="821" alt="Screenshot_2" src="https://github.com/user-attachments/assets/aefd91d7-3980-4b50-80c0-57e04b62bc56" />
 
-## 🌟 Destaques Principais
-
-| Feature | Descrição |
-|---------|-----------|
-| ⏱️ **Cronômetro por Tarefa** | Timer regressivo individual com notificações de 5min e modal de término |
-| 📂 **Sistema Completo** | Categorias, Datas, Notas, Subtarefas e Tempo Estimado |
-| 🎨 **Design Moderno** | Glassmorphism, gradientes e 21 animações keyframes |
-| 🌓 **Tema Claro/Escuro** | Alternância suave com suporte completo a todos os componentes |
-| ⚡ **Performance** | CSS otimizado (-23%), código organizado em 10 seções |
-| 🎯 **Pomodoro Integrado** | Técnica de produtividade 25min/5min com notificações |
-
 ## ✨ Características
 
 - 🎨 **Design Moderno**: Interface elegante com gradientes, glassmorphism e tema claro/escuro
@@ -40,6 +30,7 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 - ⚡ **Sistema de Prioridades**: Destaque visual para tarefas importantes
 - 💾 **Persistência Automática**: Salva todas as alterações no navegador
 - 🎊 **Notificações Interativas**: Feedback visual moderno com animações e partículas
+- 🛡️ **Validação Inteligente**: Sistema duplo com avisos obrigatórios e dicas amigáveis
 - 🎯 **Técnica Pomodoro**: Temporizador integrado para aumentar a produtividade
 - ⏱️ **Cronômetro por Tarefa**: Timer regressivo individual com notificações e controles
 - 📂 **Categorias**: Organize tarefas por Trabalho, Pessoal, Estudos, Saúde, Compras e Outros
@@ -54,6 +45,7 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 
 ### ➕ Gerenciamento de Tarefas
 - **Adicionar**: Campo intuitivo com suporte a Enter para adição rápida
+- **Validação Inteligente**: Sistema duplo de validação (obrigatório + sugestões amigáveis)
 - **Categorizar**: 6 categorias (Trabalho, Pessoal, Estudos, Saúde, Compras, Outros)
 - **Prazo**: Defina data de vencimento com destaque visual (Hoje, Amanhã, Atrasado)
 - **Tempo Estimado**: Configure duração esperada (5 min a 8 horas)
@@ -64,7 +56,6 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 - **Concluir**: Marcar como finalizada com animação de confete
 - **Excluir**: Remover tarefas com confirmação visual
 - **Desfazer**: Reverter conclusão de tarefas
-- **Arrastar**: Reordenar tarefas por drag & drop
 
 ### 🎯 Técnica Pomodoro
 - **Timer Inteligente**: 25 minutos de foco / 5 minutos de pausa
@@ -86,6 +77,21 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 - **Barra de Progresso**: Visualização do percentual de tarefas concluídas
 - **Animações Suaves**: Transições e efeitos em todas as interações
 
+### 🛡️ Sistema de Validação
+- **Validação Obrigatória**: Modal de aviso ao tentar adicionar tarefa vazia
+  - Ícone de alerta (⚠️) com animação
+  - Partículas de aviso flutuantes (⚠️❗⚡🚫❌)
+  - Foco automático no campo de entrada
+  - Feedback visual e sonoro
+- **Validação Suave (Dicas Inteligentes)**: Sugestões não-invasivas após adicionar tarefa
+  - 📅 Tarefa prioritária sem prazo → Sugere definir data
+  - ⏱️ Tarefa com prazo sem tempo → Sugere adicionar cronômetro
+  - 💡 Tarefa simples → Dica de organização (30% de chance)
+  - Badge rosa vibrante no canto inferior direito
+  - Auto-fechamento após 6 segundos
+  - Botão de fechar manual (✕)
+  - Aparece 3.5s após adicionar (não sobrepõe notificação de sucesso)
+
 ### 🌟 Recursos Extras
 - **Previsão do Tempo**: Temperatura e clima da sua localização via API
 - **Frases Motivacionais**: Inspiração diária aleatória
@@ -96,15 +102,17 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 ## 🛠️ Tecnologias
 
 - **HTML5**: Estrutura semântica e acessível
-- **CSS3** (53KB otimizado, -23% do original): 
+- **CSS3** (2765 linhas, 53KB otimizado, -23% do original): 
   - Estilização moderna com gradientes e glassmorphism
-  - Animações e transições avançadas (21 keyframes, cubic-bezier)
+  - Animações e transições avançadas (21+ keyframes, cubic-bezier)
+  - Sistema de validação visual (modais, badges, partículas)
   - Flexbox e Grid para layouts responsivos
   - Media queries para adaptação mobile
   - Código organizado em 10 seções bem definidas
-- **JavaScript ES6+** (1554 linhas): 
+- **JavaScript ES6+** (1693 linhas): 
   - 2 Classes principais (PomodoroTimer e TodoApp)
   - Programação orientada a objetos
+  - Sistema de validação duplo (obrigatório + sugestões)
   - LocalStorage API para persistência
   - Geolocation API para localização
   - Notification API para alertas nativos
@@ -150,35 +158,27 @@ LIsta-do-que-fazer/
 ├── index.html                    # Estrutura HTML da aplicação
 ├── src/
 │   ├── css/
-│   │   ├── style.css            # Estilos otimizados (53KB, 10 seções)
+│   │   ├── style.css            # Estilos otimizados (2765 linhas, 53KB, 10 seções)
 │   │   ├── style.css.backup     # Backup original (69KB)
 │   │   └── style.css.before-optimization  # Backup pré-otimização
 │   ├── js/
-│   │   └── index.js            # Lógica JavaScript (1554 linhas)
-│   └── img/                    # Imagens e assets
-├── README.md                    # Documentação do projeto
-├── OPTIMIZATION-REPORT.md       # Análise de otimização
-└── OPTIMIZATION-RESULTS.md      # Resultados da otimização
+│   │   └── index.js            # Lógica JavaScript (1693 linhas, validação)
+│   └── docs/                    # Documentação técnica
+│       ├── OPTIMIZATION-REPORT.md   # Análise de otimização
+│       └── OPTIMIZATION-RESULTS.md  # Resultados da otimização
+└── README.md                    # Documentação do projeto
 ```
 
 ## 🎯 Como Usar
 
 ### Tarefas
 1. **Adicionar**: Digite no campo e pressione Enter ou clique em "+ Adicionar"
-2. **Configurar**: Antes de adicionar, escolha:
-   - **Categoria**: Trabalho, Pessoal, Estudos, Saúde, Compras ou Outros
-   - **Data**: Defina prazo de vencimento
-   - **Tempo Estimado**: Configure duração esperada (ativa cronômetro)
-   - **Notas**: Adicione observações detalhadas
-   - **Prioridade**: Marque o checkbox "⚡ Prioridade"
-3. **Gerenciar Subtarefas**: Clique em "Subtarefas (0)" para criar checklist
-4. **Ver Notas**: Clique em "📝 Notas" para visualizar observações
-5. **Usar Cronômetro**: Clique em ▶️ para iniciar o timer da tarefa
-6. **Editar**: Clique no ícone ✎ (laranja) para modificar
-7. **Concluir**: Clique no ✓ (verde) para marcar como feita
-8. **Excluir**: Clique no 🗑️ (vermelho) para remover
-9. **Desfazer**: Clique no ↶ (laranja) em tarefas concluídas
-10. **Reordenar**: Arraste e solte tarefas para reorganizar
+2. **Priorizar**: Marque o checkbox "⚡ Prioridade" antes de adicionar
+3. **Editar**: Clique no ícone ✎ (laranja) para modificar
+4. **Concluir**: Clique no ✓ (verde) para marcar como feita
+5. **Excluir**: Clique no 🗑️ (vermelho) para remover
+6. **Desfazer**: Clique no ↶ (laranja) em tarefas concluídas
+7. **Reordenar**: Arraste e solte tarefas para reorganizar
 
 ### Pomodoro
 1. Clique em **"Iniciar"** para começar uma sessão de foco (25 min)
@@ -193,6 +193,8 @@ LIsta-do-que-fazer/
 
 ### Notificações Interativas
 - **Adicionar Tarefa**: Notificação central com partículas de celebração (⭐✨🎉🎊💫🌟)
+- **Tarefa Vazia**: Modal de aviso com partículas de alerta (⚠️❗⚡🚫❌)
+- **Dicas Inteligentes**: Badge rosa vibrante com sugestões contextuais (📅⏱️💡)
 - **Deletar Tarefa**: Notificação com partículas de despedida (💨👋✨)
 - **Pomodoro Foco**: Notificação roxa com partículas motivacionais (🎯⚡💪🔥)
 - **Pomodoro Pausa**: Notificação laranja com partículas relaxantes (☕😌🌸💤)
@@ -277,8 +279,8 @@ O projeto passou por uma **otimização completa** focada em performance e manut
 - 💾 **Backups de segurança** para rollback se necessário
 
 Para mais detalhes, veja os arquivos:
-- `OPTIMIZATION-REPORT.md` - Análise completa do código
-- `OPTIMIZATION-RESULTS.md` - Resultados da otimização
+- [`src/docs/OPTIMIZATION-REPORT.md`](./src/docs/OPTIMIZATION-REPORT.md) - Análise completa do código
+- [`src/docs/OPTIMIZATION-RESULTS.md`](./src/docs/OPTIMIZATION-RESULTS.md) - Resultados da otimização
 
 ## 🎯 Melhorias Recentes
 
@@ -306,6 +308,21 @@ Para mais detalhes, veja os arquivos:
 - 🎨 **Duplicações Removidas**: Código mais limpo e manutenível
 - 💾 **Backups**: 2 versões de backup para segurança
 
+### Sistema de Validação (Fase 4)
+- 🛡️ **Validação Obrigatória**: Modal de aviso ao tentar adicionar tarefa sem texto
+  - ⚠️ Ícone de alerta animado
+  - 💥 8 partículas flutuantes com emojis de aviso (⚠️❗⚡🚫❌)
+  - 🎯 Foco automático no campo de entrada
+  - ⏱️ Auto-fechamento após 3 segundos
+- 🎨 **Validação Suave (Dicas Inteligentes)**: Sugestões contextuais não-invasivas
+  - 📅 Tarefa prioritária sem prazo → Sugere adicionar data de vencimento
+  - ⏱️ Tarefa com data mas sem tempo → Sugere usar cronômetro
+  - 💡 Tarefa simples → Dica de organização (30% de chance, não ser chato)
+  - 🎀 Badge rosa vibrante (#f093fb → #f5576c) no canto inferior direito
+  - ⏲️ Aparece 3.5s após adicionar (não sobrepõe notificação de sucesso)
+  - ✕ Botão de fechar manual ou auto-fechamento em 6s
+  - 📱 Totalmente responsivo (mobile-friendly)
+
 ### Melhorias Anteriores
 - ✨ Sistema de notificações completamente reformulado
 - 🎨 Ícone do modal de edição colorido (✎ laranja)
@@ -314,32 +331,6 @@ Para mais detalhes, veja os arquivos:
 - 📝 Favicon atualizado (📝) diferente do ícone do H1 (✅)
 - 🌓 Suporte completo para tema claro em todos os componentes
 - 💫 Animações de partículas específicas para cada tipo de ação
-
-## 📊 Estatísticas do Projeto
-
-```
-📦 Tamanho Total: ~120KB (otimizado)
-├── 📄 HTML: ~15KB (index.html)
-├── 🎨 CSS: 53KB (style.css - otimizado -23%)
-└── 💻 JS: 64KB (index.js - 1554 linhas)
-
-🎯 Funcionalidades:
-├── ✅ 6 Categorias
-├── ⏱️ 2 Sistemas de Timer (Pomodoro + Individual)
-├── 📝 Sistema de Notas
-├── ✓ Sistema de Subtarefas
-├── 📅 Datas com 3 formatos (Hoje/Amanhã/DD-MM)
-├── 🎨 21 Animações Keyframes
-├── 🌓 2 Temas (Escuro/Claro)
-└── 📱 3 Breakpoints Responsivos
-
-🔧 Otimização:
-├── ✅ -23% tamanho CSS (69KB → 53KB)
-├── ✅ 10 Seções organizadas
-├── ✅ 77 regras light-mode consolidadas
-├── ✅ Media queries unificadas
-└── ✅ 5 arquivos não utilizados removidos
-```
 
 ## 🤝 Contribuindo
 
@@ -356,7 +347,7 @@ Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes
 
 ## 👨‍💻 Desenvolvedor
 
-Desenvolvido com ❤️ por [José Alberto](https://github.com/josealbertodeev)
+Desenvolvido por [José Alberto](https://github.com/josealbertodeev)
 
 🔗Acesse site aqui - [link](https://l-ista-do-que-fazer.vercel.app)
 
