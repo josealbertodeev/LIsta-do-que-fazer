@@ -222,6 +222,16 @@ class TodoApp {
         this.taskIdCounter = parseInt(localStorage.getItem('taskIdCounter')) || 1;
         this.editingTaskId = null; // ID da tarefa sendo editada
 
+        // Definição de categorias com cores
+        this.categories = {
+            trabalho: { name: 'Trabalho', color: '#3b82f6', icon: '💼' },
+            estudo: { name: 'Estudo', color: '#8b5cf6', icon: '📚' },
+            pessoal: { name: 'Pessoal', color: '#10b981', icon: '🏠' },
+            saude: { name: 'Saúde', color: '#ef4444', icon: '❤️' },
+            compras: { name: 'Compras', color: '#f59e0b', icon: '🛒' },
+            outros: { name: 'Outros', color: '#6b7280', icon: '📌' }
+        };
+
         this.taskInput = document.getElementById('taskInput');
         this.priorityCheckbox = document.getElementById('priorityCheckbox');
         this.addBtn = document.getElementById('addBtn');
@@ -245,6 +255,10 @@ class TodoApp {
         this.bibleVerse = document.getElementById('bibleVerse');
         this.greeting = document.getElementById('greeting');
 
+        // Sistema de timers para tarefas
+        this.taskTimers = {};
+        this.timerIntervals = {};
+
         this.initEventListeners();
         this.displayGreeting();
         this.displayCurrentDate();
@@ -254,6 +268,211 @@ class TodoApp {
         this.requestNotificationPermission();
         this.getWeather();
         this.renderTasks();
+    }
+
+    // Formata o tempo em MM:SS
+    formatTimer(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    // Inicia ou pausa o timer de uma tarefa
+    toggleTimer(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task || !task.timeEstimate) return;
+
+        if (task.timerRunning) {
+            // Pausar
+            this.pauseTimer(taskId);
+        } else {
+            // Iniciar
+            this.startTimer(taskId);
+        }
+    }
+
+    // Inicia o timer
+    startTimer(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Inicializa o tempo restante se ainda não existe
+        if (!task.timeRemaining) {
+            task.timeRemaining = task.timeEstimate * 60; // Converte minutos para segundos
+        }
+
+        task.timerRunning = true;
+        task.notified5min = false; // Reset da notificação de 5 minutos
+        this.saveToStorage();
+        this.renderTasks();
+
+        // Cria o intervalo
+        this.timerIntervals[taskId] = setInterval(() => {
+            this.updateTimer(taskId);
+        }, 1000);
+    }
+
+    // Pausa o timer
+    pauseTimer(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        task.timerRunning = false;
+        this.saveToStorage();
+        this.renderTasks();
+
+        // Limpa o intervalo
+        if (this.timerIntervals[taskId]) {
+            clearInterval(this.timerIntervals[taskId]);
+            delete this.timerIntervals[taskId];
+        }
+    }
+
+    // Atualiza o timer a cada segundo
+    updateTimer(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task || !task.timerRunning) {
+            this.pauseTimer(taskId);
+            return;
+        }
+
+        task.timeRemaining--;
+        this.saveToStorage();
+
+        // Atualiza o display do tempo
+        const timeDisplay = document.getElementById(`time-display-${taskId}`);
+        if (timeDisplay) {
+            timeDisplay.textContent = `⏱️ ${this.formatTimer(task.timeRemaining)}`;
+        }
+
+        // Notificação quando faltam 5 minutos
+        if (task.timeRemaining === 300 && !task.notified5min) {
+            task.notified5min = true;
+            this.showTimerNotification(task, '5 minutos restantes!', 'warning');
+        }
+
+        // Timer acabou
+        if (task.timeRemaining <= 0) {
+            this.pauseTimer(taskId);
+            this.showTimerEndModal(task);
+        }
+    }
+
+    // Mostra notificação de timer
+    showTimerNotification(task, message, type) {
+        const overlay = document.createElement('div');
+        overlay.className = 'notification-overlay';
+        document.body.appendChild(overlay);
+
+        const notification = document.createElement('div');
+        notification.className = `notification-toast timer-${type}`;
+
+        notification.innerHTML = `
+            <div class="notification-icon-wrapper">
+                <div class="notification-icon-bg" style="background: linear-gradient(135deg, ${type === 'warning' ? '#f59e0b, #d97706' : '#ef4444, #dc2626'});">
+                    <span class="notification-emoji">${type === 'warning' ? '⏰' : '⏱️'}</span>
+                </div>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">${message}</div>
+                <div class="notification-message">${task.text}</div>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+            overlay.remove();
+        }, 3000);
+    }
+
+    // Modal quando o tempo acaba
+    showTimerEndModal(task) {
+        const overlay = document.createElement('div');
+        overlay.className = 'notification-overlay';
+        document.body.appendChild(overlay);
+
+        const modal = document.createElement('div');
+        modal.className = 'notification-toast timer-end-modal';
+
+        modal.innerHTML = `
+            <div class="notification-icon-wrapper">
+                <div class="notification-icon-bg" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                    <span class="notification-emoji">⏱️</span>
+                </div>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Tempo Esgotado!</div>
+                <div class="notification-message">${task.text}</div>
+                <div class="timer-end-actions">
+                    <button class="timer-action-btn complete" onclick="todoApp.completeTaskFromTimer(${task.id})">✓ Concluir</button>
+                    <button class="timer-action-btn extend" onclick="todoApp.extendTimer(${task.id}, 5)">+5 min</button>
+                    <button class="timer-action-btn extend" onclick="todoApp.extendTimer(${task.id}, 10)">+10 min</button>
+                    <button class="timer-action-btn cancel" onclick="todoApp.cancelTimerModal()">Cancelar</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Som de alerta
+        this.playTimerEndSound();
+
+        // Armazena referência para poder fechar depois
+        this.currentTimerModal = { modal, overlay };
+    }
+
+    // Conclui a tarefa a partir do modal
+    completeTaskFromTimer(taskId) {
+        this.toggleTask(taskId);
+        this.cancelTimerModal();
+    }
+
+    // Estende o tempo do timer
+    extendTimer(taskId, minutes) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        task.timeRemaining = minutes * 60;
+        task.timeEstimate += minutes;
+        this.saveToStorage();
+        this.cancelTimerModal();
+        this.startTimer(taskId);
+    }
+
+    // Cancela o modal
+    cancelTimerModal() {
+        if (this.currentTimerModal) {
+            this.currentTimerModal.modal.remove();
+            this.currentTimerModal.overlay.remove();
+            this.currentTimerModal = null;
+        }
+    }
+
+    // Som de alerta do timer
+    playTimerEndSound() {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Toca 3 beeps
+        for (let i = 0; i < 3; i++) {
+            setTimeout(() => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            }, i * 400);
+        }
     }
 
     displayGreeting() {
@@ -433,6 +652,11 @@ class TodoApp {
             text: text,
             completed: false,
             priority: this.priorityCheckbox.checked,
+            category: document.getElementById('categorySelect')?.value || 'pessoal',
+            dueDate: document.getElementById('dueDateInput')?.value || null,
+            notes: document.getElementById('notesInput')?.value.trim() || '',
+            timeEstimate: parseInt(document.getElementById('timeEstimate')?.value) || null,
+            subtasks: [],
             createdAt: new Date().toISOString(),
             order: this.getNextOrderNumber()
         };
@@ -443,6 +667,10 @@ class TodoApp {
 
         this.taskInput.value = '';
         this.priorityCheckbox.checked = false;
+        if (document.getElementById('categorySelect')) document.getElementById('categorySelect').value = 'pessoal';
+        if (document.getElementById('dueDateInput')) document.getElementById('dueDateInput').value = '';
+        if (document.getElementById('notesInput')) document.getElementById('notesInput').value = '';
+        if (document.getElementById('timeEstimate')) document.getElementById('timeEstimate').value = '';
 
         // Notificação interativa
         this.showToast('Tarefa adicionada com sucesso!', 'success');
@@ -538,6 +766,9 @@ class TodoApp {
                         // Som de sucesso (se quiser adicionar)
                         this.playSuccessSound();
 
+                        // Mostra notificação de conclusão
+                        this.showToast('Tarefa concluída! Parabéns! 🎉', 'success');
+
                         // Remove a classe depois da animação
                         setTimeout(() => {
                             taskElement.classList.remove('celebrating');
@@ -549,6 +780,9 @@ class TodoApp {
                 // Se está desfazendo (estava completa e agora não está)
                 // Toca o som de desfazer
                 this.playUndoSound();
+
+                // Mostra notificação de desfazer
+                this.showToast('Tarefa reaberta', 'undo');
             }
 
             task.completed = !task.completed;
@@ -675,6 +909,9 @@ class TodoApp {
             this.saveToStorage();
             this.renderTasks();
             this.closeModal();
+
+            // Mostra notificação de edição bem-sucedida
+            this.showToast('Tarefa atualizada com sucesso!', 'edit');
         }
     }
 
@@ -690,12 +927,50 @@ class TodoApp {
     createTaskElement(task) {
         const taskItem = document.createElement('div');
         taskItem.className = 'task-item';
-        taskItem.setAttribute('data-task-id', task.id); // NOVIDADE: adiciona ID ao elemento
+        taskItem.setAttribute('data-task-id', task.id);
+
+        // Verifica se a tarefa está atrasada ou é para hoje
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let taskDate = null;
+        if (task.dueDate) {
+            const [year, month, day] = task.dueDate.split('-').map(Number);
+            taskDate = new Date(year, month - 1, day);
+            taskDate.setHours(0, 0, 0, 0);
+        }
+
+        const isOverdue = taskDate && taskDate < today && !task.completed;
+        const isToday = taskDate && taskDate.getTime() === today.getTime() && !task.completed;
+
+        if (isOverdue) taskItem.classList.add('overdue');
+        if (isToday) taskItem.classList.add('today');
+
+        // Formata a data
+        const formattedDate = task.dueDate ? this.formatDate(task.dueDate) : '';
+
+        // Pega informações da categoria
+        const category = this.categories[task.category] || this.categories.pessoal;
+
         taskItem.innerHTML = `
                     <div class="task-number">${task.order || 1}</div>
                     <div class="task-content">
                         <div class="task-text">${task.text}</div>
-                        ${task.priority ? '<div class="task-priority">Prioridade</div>' : ''}
+                        <div class="task-meta">
+                            ${task.category ? `<span class="task-category" style="background: ${category.color}20; color: ${category.color}; border-color: ${category.color}">${category.icon} ${category.name}</span>` : ''}
+                            ${task.dueDate ? `<span class="task-date ${isOverdue ? 'overdue-badge' : isToday ? 'today-badge' : ''}">${isOverdue ? '⚠️ ATRASADA - ' + formattedDate : '📅 ' + formattedDate}</span>` : ''}
+                            ${task.timeEstimate ? `
+                                <span class="task-time-wrapper">
+                                    <span class="task-time" id="time-display-${task.id}">⏱️ ${task.timerRunning ? this.formatTimer(task.timeRemaining || task.timeEstimate * 60) : task.timeEstimate + 'min'}</span>
+                                    ${!task.completed ? `<button class="timer-control-btn ${task.timerRunning ? 'running' : ''}" onclick="todoApp.toggleTimer(${task.id})" title="${task.timerRunning ? 'Pausar' : 'Iniciar'}">${task.timerRunning ? '⏸' : '▶'}</button>` : ''}
+                                </span>
+                            ` : ''}
+                            ${task.priority ? '<span class="task-priority">⭐ Prioridade</span>' : ''}
+                        </div>
+                        <div class="task-extra-actions">
+                            ${task.notes ? `<button class="view-notes-btn" onclick="todoApp.showNotes(${task.id})" title="Ver notas">📝 Ver notas</button>` : ''}
+                            ${!task.completed ? `<button class="view-subtasks-btn" onclick="todoApp.showSubtasks(${task.id})" title="Subtarefas">☑️ Subtarefas ${task.subtasks && task.subtasks.length > 0 ? `(${task.subtasks.filter(st => st.completed).length}/${task.subtasks.length})` : ''}</button>` : ''}
+                        </div>
                     </div>
                     <div class="task-actions">
                         ${task.completed
@@ -707,6 +982,180 @@ class TodoApp {
                     </div>
                 `;
         return taskItem;
+    }
+
+    // Formata a data para exibição
+    formatDate(dateString) {
+        // Converte a string YYYY-MM-DD para data local (evita problemas de timezone)
+        const [year, month, day] = dateString.split('-').map(Number);
+        const date = new Date(year, month - 1, day);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const compareDate = new Date(date);
+        compareDate.setHours(0, 0, 0, 0);
+
+        if (compareDate.getTime() === today.getTime()) {
+            return 'Hoje';
+        } else if (compareDate.getTime() === tomorrow.getTime()) {
+            return 'Amanhã';
+        } else {
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        }
+    }
+
+    // Mostra modal com as notas da tarefa
+    showNotes(id) {
+        const task = this.tasks.find(t => t.id === id);
+        if (task && task.notes) {
+            const overlay = document.createElement('div');
+            overlay.className = 'notification-overlay';
+            document.body.appendChild(overlay);
+
+            const notification = document.createElement('div');
+            notification.className = 'notification-toast notes-modal';
+
+            notification.innerHTML = `
+                <div class="notification-icon-wrapper">
+                    <div class="notification-icon-bg" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <span class="notification-emoji">📝</span>
+                    </div>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">Notas da Tarefa</div>
+                    <div class="notification-message" style="text-align: left; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${task.notes}</div>
+                </div>
+                <button class="modal-close-btn" onclick="this.closest('.notification-toast').remove(); document.querySelector('.notification-overlay').remove();">×</button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Remove o fechamento ao clicar no overlay
+            // overlay.addEventListener('click', () => {
+            //     notification.remove();
+            //     overlay.remove();
+            // });
+        }
+    }
+
+    // Mostra modal para gerenciar subtarefas
+    showSubtasks(id) {
+        const task = this.tasks.find(t => t.id === id);
+        if (!task) return;
+
+        if (!task.subtasks) task.subtasks = [];
+
+        const overlay = document.createElement('div');
+        overlay.className = 'notification-overlay';
+        document.body.appendChild(overlay);
+
+        const modal = document.createElement('div');
+        modal.className = 'notification-toast subtasks-modal';
+
+        const renderSubtasksList = () => {
+            const subtasksList = task.subtasks.map((st, index) => `
+                <div class="subtask-item ${st.completed ? 'completed' : ''}">
+                    <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="todoApp.toggleSubtask(${id}, ${index})">
+                    <span>${st.text}</span>
+                    <button class="delete-subtask-btn" onclick="todoApp.deleteSubtask(${id}, ${index})">×</button>
+                </div>
+            `).join('');
+
+            const progress = task.subtasks.length > 0
+                ? Math.round((task.subtasks.filter(st => st.completed).length / task.subtasks.length) * 100)
+                : 0;
+
+            modal.innerHTML = `
+                <div class="notification-icon-wrapper">
+                    <div class="notification-icon-bg" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <span class="notification-emoji">☑️</span>
+                    </div>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">Subtarefas</div>
+                    <div class="subtask-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progress}%"></div>
+                        </div>
+                        <span class="progress-text">${task.subtasks.filter(st => st.completed).length}/${task.subtasks.length} concluídas</span>
+                    </div>
+                    <div class="subtasks-list">
+                        ${subtasksList || '<p style="text-align: center; color: #aaa;">Nenhuma subtarefa ainda</p>'}
+                    </div>
+                    <div class="add-subtask-form">
+                        <input type="text" id="newSubtaskInput" placeholder="Nova subtarefa..." class="subtask-input">
+                        <button onclick="todoApp.addSubtask(${id})" class="add-subtask-btn">+</button>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="this.closest('.notification-toast').remove(); document.querySelector('.notification-overlay').remove();">×</button>
+            `;
+        };
+
+        renderSubtasksList();
+        document.body.appendChild(modal);
+
+        // Remove o fechamento ao clicar no overlay
+        // overlay.addEventListener('click', () => {
+        //     modal.remove();
+        //     overlay.remove();
+        // });
+
+        // Armazena referência ao modal para poder atualizar
+        this.currentSubtaskModal = { modal, renderSubtasksList, taskId: id };
+    }
+
+    addSubtask(taskId) {
+        const input = document.getElementById('newSubtaskInput');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        if (!task.subtasks) task.subtasks = [];
+        task.subtasks.push({ text, completed: false });
+
+        this.saveToStorage();
+        this.renderTasks();
+
+        // Atualiza o modal
+        if (this.currentSubtaskModal && this.currentSubtaskModal.taskId === taskId) {
+            this.currentSubtaskModal.renderSubtasksList();
+        }
+
+        input.value = '';
+    }
+
+    toggleSubtask(taskId, subtaskIndex) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task || !task.subtasks[subtaskIndex]) return;
+
+        task.subtasks[subtaskIndex].completed = !task.subtasks[subtaskIndex].completed;
+        this.saveToStorage();
+        this.renderTasks();
+
+        // Atualiza o modal
+        if (this.currentSubtaskModal && this.currentSubtaskModal.taskId === taskId) {
+            this.currentSubtaskModal.renderSubtasksList();
+        }
+    }
+
+    deleteSubtask(taskId, subtaskIndex) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task || !task.subtasks[subtaskIndex]) return;
+
+        task.subtasks.splice(subtaskIndex, 1);
+        this.saveToStorage();
+        this.renderTasks();
+
+        // Atualiza o modal
+        if (this.currentSubtaskModal && this.currentSubtaskModal.taskId === taskId) {
+            this.currentSubtaskModal.renderSubtasksList();
+        }
     }
 
     renderTasks() {
@@ -809,6 +1258,12 @@ class TodoApp {
         } else if (type === 'delete') {
             title = 'Removido! 🗑️';
             icon = '👋';
+        } else if (type === 'undo') {
+            title = 'Desfeito! ↶';
+            icon = '🔄';
+        } else if (type === 'edit') {
+            title = 'Atualizado! ✎';
+            icon = '📝';
         }
 
         notification.innerHTML = `
@@ -830,6 +1285,10 @@ class TodoApp {
             this.createCelebrationParticles();
         } else if (type === 'delete') {
             this.createDeleteParticles();
+        } else if (type === 'undo') {
+            this.createUndoParticles();
+        } else if (type === 'edit') {
+            this.createEditParticles();
         }
 
         // Remove após 3 segundos (animação completa)
@@ -885,6 +1344,58 @@ class TodoApp {
             particle.style.left = x + 'px';
             particle.style.top = y + 'px';
             particle.style.animationDelay = (i * 0.04) + 's';
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => particle.remove(), 1500);
+        }
+    }
+
+    // Cria partículas ao desfazer tarefa
+    createUndoParticles() {
+        const particles = ['🔄', '↶', '⏪', '🔙'];
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        for (let i = 0; i < 8; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'celebration-particle';
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+
+            const angle = (Math.PI * 2 * i) / 8;
+            const radius = 80;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.animationDelay = (i * 0.04) + 's';
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => particle.remove(), 1500);
+        }
+    }
+
+    // Cria partículas ao editar tarefa
+    createEditParticles() {
+        const particles = ['📝', '✎', '✏️', '📄', '✨', '💡'];
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        for (let i = 0; i < 10; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'celebration-particle';
+            particle.textContent = particles[Math.floor(Math.random() * particles.length)];
+
+            const angle = (Math.PI * 2 * i) / 10;
+            const radius = 90;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.animationDelay = (i * 0.05) + 's';
 
             document.body.appendChild(particle);
 

@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📝</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="src/css/style.css">
     <title>Minhas Tarefas</title>
 </head>
@@ -93,13 +97,54 @@
 
         <div class="input-section">
             <input type="text" id="taskInput" placeholder="Digite sua nova tarefa...">
+
+            <div class="advanced-inputs">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="categorySelect">📁 Categoria</label>
+                        <select id="categorySelect" class="category-select">
+                            <option value="pessoal">🏠 Pessoal</option>
+                            <option value="trabalho">💼 Trabalho</option>
+                            <option value="estudo">📚 Estudo</option>
+                            <option value="saude">❤️ Saúde</option>
+                            <option value="compras">🛒 Compras</option>
+                            <option value="outros">📌 Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="dueDateInput">📅 Vencimento</label>
+                        <input type="date" id="dueDateInput" class="date-input">
+                    </div>
+
+                    <div class="input-group">
+                        <label for="timeEstimate">⏱️ Tempo Estimado</label>
+                        <input type="number" id="timeEstimate" class="time-input" placeholder="Min" min="5" step="5">
+                    </div>
+                </div>
+
+                <div class="input-group full-width">
+                    <label for="notesInput">📝 Notas (opcional)</label>
+                    <textarea id="notesInput" class="notes-input"
+                        placeholder="Adicione detalhes, links ou observações..." rows="2"></textarea>
+                </div>
+            </div>
+
             <div class="input-controls">
                 <label class="priority-checkbox">
                     <input type="checkbox" id="priorityCheckbox">
-                    <span>Prioridade</span>
+                    <span>⭐ Prioridade</span>
                 </label>
-                <button id="addBtn">+ Adicionar</button>
+                <button id="addBtn">+ Adicionar Tarefa</button>
             </div>
+        </div>
+
+        <!-- Metas e Objetivos -->
+        <div class="goals-section">
+            <div class="section-header">
+                <h2>🎯 Metas e Objetivos</h2>
+            </div>
+            <div id="goalsList" class="goals-list"></div>
         </div>
 
         <div class="tasks-container">
