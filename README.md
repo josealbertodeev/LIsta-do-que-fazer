@@ -4,9 +4,14 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 
 ![To-Do List Preview](https://img.shields.io/badge/Status-Completo-brightgreen) ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white) ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white) ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black) ![Performance](https://img.shields.io/badge/Performance-Otimizado_23%25-success) ![Code Size](https://img.shields.io/badge/CSS-53KB-blue) ![Lines](https://img.shields.io/badge/JS-1554_linhas-yellow)
 
+## Desktop 💻
+![minhas tarefas escuro desktop ](https://github.com/user-attachments/assets/87e38641-bf7b-4d87-a442-91d0671ee00e)
+
+## Mobile 📱
+![minhas tarefas mobile](https://github.com/user-attachments/assets/5620f441-db01-406d-bc85-b189578c3a4f)
+
 ## 📑 Índice
 
-- [🌟 Destaques Principais](#-destaques-principais)
 - [✨ Características](#-características)
 - [🚀 Funcionalidades](#-funcionalidades)
 - [🛠️ Tecnologias](#️-tecnologias)
@@ -15,10 +20,8 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 - [🎯 Como Usar](#-como-usar)
 - [⚡ Performance e Otimização](#-performance-e-otimização)
 - [📱 Responsividade](#-responsividade)
-- [📊 Estatísticas do Projeto](#-estatísticas-do-projeto)
 - [🤝 Contribuindo](#-contribuindo)
 
-<img width="1332" height="821" alt="Screenshot_2" src="https://github.com/user-attachments/assets/aefd91d7-3980-4b50-80c0-57e04b62bc56" />
 
 ## ✨ Características
 
