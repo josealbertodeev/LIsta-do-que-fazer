@@ -12,7 +12,6 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 
 ## 📑 Índice
 
-- [🌟 Destaques Principais](#-destaques-principais)
 - [✨ Características](#-características)
 - [🚀 Funcionalidades](#-funcionalidades)
 - [�️ Sistema de Validação](#️-sistema-de-validação)
@@ -22,10 +21,8 @@ Uma aplicação web moderna, interativa e completa para gerenciar suas tarefas d
 - [🎯 Como Usar](#-como-usar)
 - [⚡ Performance e Otimização](#-performance-e-otimização)
 - [📱 Responsividade](#-responsividade)
-- [📊 Estatísticas do Projeto](#-estatísticas-do-projeto)
 - [🤝 Contribuindo](#-contribuindo)
 
-<img width="1332" height="821" alt="Screenshot_2" src="https://github.com/user-attachments/assets/aefd91d7-3980-4b50-80c0-57e04b62bc56" />
 
 ## ✨ Características
 
