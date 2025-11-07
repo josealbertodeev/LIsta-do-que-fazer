@@ -11,17 +11,7 @@
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript"/>
 </p>
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Linhas_JS-3017-yellow?style=flat-square" alt="JS Lines"/>
-  <img src="https://img.shields.io/badge/Linhas_CSS-4640-blue?style=flat-square" alt="CSS Lines"/>
-  <img src="https://img.shields.io/badge/CSS_Size-53KB-success?style=flat-square" alt="CSS Size"/>
-  <img src="https://img.shields.io/badge/Otimização-23%25-success?style=flat-square" alt="Optimization"/>
-  <img src="https://img.shields.io/badge/Validação-Inteligente-pink?style=flat-square" alt="Validation"/>
-</p>
-
 > Uma aplicação moderna, interativa e completa para gerenciar suas tarefas diárias com estilo, produtividade e gamificação!
-
-[🚀 Demo ao Vivo](https://l-ista-do-que-fazer.vercel.app) • [📖 Documentação](#-documentação) • [🎯 Funcionalidades](#-funcionalidades-principais)
 
 </div>
 
@@ -31,11 +21,11 @@
 
 <div align="center">
 
-### 🖥️ Desktop - Tema Escuro
-![Desktop Dark](https://github.com/user-attachments/assets/87e38641-bf7b-4d87-a442-91d0671ee00e)
+## 🖥️ Desktop - Tema Escuro
+![minhas tarefas escuro desktop ](https://github.com/user-attachments/assets/5cf39f31-213e-48bb-b96a-84172587581a)
 
-### 📱 Mobile - Interface Responsiva
-![Mobile](https://github.com/user-attachments/assets/5620f441-db01-406d-bc85-b189578c3a4f)
+## 📱 Mobile - Interface Responsiva
+![minhas tarefas escuro mobile](https://github.com/user-attachments/assets/edad7d36-646a-4b7c-ad41-6c6ee54603fa)
 
 </div>
 
@@ -518,21 +508,6 @@ git push origin feature/MinhaNovaFeature
 
 ---
 
-## 📝 Licença
-
-Este projeto está sob a licença **MIT**. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-```
-MIT License
-
-Copyright (c) 2025 José Alberto
-
-É permitido usar, copiar, modificar, fundir, publicar, distribuir,
-sublicenciar e/ou vender cópias do Software.
-```
-
----
-
 ## 👨‍💻 Desenvolvedor
 
 <div align="center">
@@ -540,33 +515,9 @@ sublicenciar e/ou vender cópias do Software.
 ### **José Alberto**
 
 [![GitHub](https://img.shields.io/badge/GitHub-josealbertodeev-black?style=for-the-badge&logo=github)](https://github.com/josealbertodeev)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visite-blue?style=for-the-badge&logo=google-chrome)](https://seu-portfolio.com)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conecte-blue?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/seu-perfil)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conecte-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/jos%C3%A9alberto/)
 
 **"Transformando ideias em código, um commit por vez."** 💻✨
-
-</div>
-
----
-
-## 🌟 Agradecimentos Especiais
-
-- 🎨 **Google Fonts** pela fonte Poppins
-- 🌤️ **OpenWeatherMap** pela API de clima
-- 💡 **Comunidade Dev** por todo o suporte e inspiração
-- ☕ **Café** por manter o desenvolvedor acordado
-
----
-
-## 📞 Suporte e Contato
-
-<div align="center">
-
-### 💬 **Precisa de Ajuda?**
-
-[![Issues](https://img.shields.io/badge/Issues-Abra_uma_Issue-red?style=for-the-badge&logo=github)](https://github.com/josealbertodeev/LIsta-do-que-fazer/issues)
-[![Discussions](https://img.shields.io/badge/Discussions-Participe-blue?style=for-the-badge&logo=github)](https://github.com/josealbertodeev/LIsta-do-que-fazer/discussions)
-[![Email](https://img.shields.io/badge/Email-Contato-green?style=for-the-badge&logo=gmail)](mailto:seu-email@example.com)
 
 </div>
 
@@ -580,7 +531,7 @@ sublicenciar e/ou vender cópias do Software.
 
 [![Vercel](https://img.shields.io/badge/Vercel-Deploy-black?style=for-the-badge&logo=vercel)](https://l-ista-do-que-fazer.vercel.app)
 
-**Acesse agora:** [l-ista-do-que-fazer.vercel.app](https://l-ista-do-que-fazer.vercel.app)
+**Acesse agora:** [Link](https://l-ista-do-que-fazer.vercel.app)
 
 ---
 
