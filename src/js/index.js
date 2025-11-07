@@ -1,4 +1,117 @@
 // ============================================
+// SISTEMA DE SONS E NOTIFICAÇÕES
+// ============================================
+class SoundSystem {
+    constructor() {
+        this.audioContext = null;
+        this.enabled = localStorage.getItem('soundEnabled') !== 'false';
+        this.volume = parseFloat(localStorage.getItem('soundVolume')) || 0.3;
+    }
+
+    initAudioContext() {
+        if (!this.audioContext) {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this.audioContext;
+    }
+
+    playTone(frequency, duration, type = 'sine') {
+        if (!this.enabled) return;
+
+        const ctx = this.initAudioContext();
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+
+        gainNode.gain.setValueAtTime(this.volume, ctx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + duration);
+
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + duration);
+    }
+
+    // Som de sucesso (conquista, tarefa completada)
+    playSuccess() {
+        this.playTone(523.25, 0.1); // C5
+        setTimeout(() => this.playTone(659.25, 0.1), 100); // E5
+        setTimeout(() => this.playTone(783.99, 0.2), 200); // G5
+    }
+
+    // Som de nível (level up)
+    playLevelUp() {
+        this.playTone(392, 0.1); // G4
+        setTimeout(() => this.playTone(523.25, 0.1), 100); // C5
+        setTimeout(() => this.playTone(659.25, 0.1), 200); // E5
+        setTimeout(() => this.playTone(783.99, 0.3), 300); // G5
+    }
+
+    // Som de conquista desbloqueada
+    playAchievement() {
+        this.playTone(523.25, 0.15); // C5
+        setTimeout(() => this.playTone(659.25, 0.15), 150); // E5
+        setTimeout(() => this.playTone(783.99, 0.15), 300); // G5
+        setTimeout(() => this.playTone(1046.50, 0.3), 450); // C6
+    }
+
+    // Som de erro/aviso
+    playWarning() {
+        this.playTone(220, 0.2); // A3
+        setTimeout(() => this.playTone(196, 0.3), 200); // G3
+    }
+
+    // Som de notificação suave
+    playNotification() {
+        this.playTone(523.25, 0.15); // C5
+        setTimeout(() => this.playTone(659.25, 0.15), 150); // E5
+    }
+
+    // Som de desafio completado
+    playChallengeComplete() {
+        this.playTone(440, 0.1); // A4
+        setTimeout(() => this.playTone(554.37, 0.1), 100); // C#5
+        setTimeout(() => this.playTone(659.25, 0.1), 200); // E5
+        setTimeout(() => this.playTone(880, 0.3), 300); // A5
+    }
+
+    // Som de meta completada
+    playGoalComplete() {
+        this.playTone(392, 0.1); // G4
+        setTimeout(() => this.playTone(493.88, 0.1), 100); // B4
+        setTimeout(() => this.playTone(587.33, 0.1), 200); // D5
+        setTimeout(() => this.playTone(783.99, 0.1), 300); // G5
+        setTimeout(() => this.playTone(987.77, 0.3), 400); // B5
+    }
+
+    // Som do Pomodoro finalizado
+    playPomodoroComplete() {
+        this.playTone(523.25, 0.2); // C5
+        setTimeout(() => this.playTone(523.25, 0.2), 250); // C5
+        setTimeout(() => this.playTone(523.25, 0.4), 500); // C5
+    }
+
+    setEnabled(enabled) {
+        this.enabled = enabled;
+        localStorage.setItem('soundEnabled', enabled);
+    }
+
+    setVolume(volume) {
+        this.volume = Math.max(0, Math.min(1, volume));
+        localStorage.setItem('soundVolume', this.volume);
+    }
+
+    toggle() {
+        this.enabled = !this.enabled;
+        localStorage.setItem('soundEnabled', this.enabled);
+        return this.enabled;
+    }
+}
+
+// ============================================
 // CLASSE DO CRONÔMETRO POMODORO
 // ============================================
 class PomodoroTimer {
@@ -136,6 +249,11 @@ class PomodoroTimer {
 
     // Nova notificação no estilo das tarefas
     showPomodoroNotification(message, type) {
+        // Tocar som do Pomodoro completado
+        if (window.soundSystem) {
+            window.soundSystem.playPomodoroComplete();
+        }
+
         // Cria o overlay de fundo
         const overlay = document.createElement('div');
         overlay.className = 'notification-overlay';
@@ -661,6 +779,7 @@ class TodoApp {
             dueDate: document.getElementById('dueDateInput')?.value || null,
             notes: document.getElementById('notesInput')?.value.trim() || '',
             timeEstimate: parseInt(document.getElementById('timeEstimate')?.value) || null,
+            goalId: document.getElementById('goalSelect')?.value || null,
             subtasks: [],
             createdAt: new Date().toISOString(),
             order: this.getNextOrderNumber()
@@ -677,6 +796,7 @@ class TodoApp {
         if (document.getElementById('dueDateInput')) document.getElementById('dueDateInput').value = '';
         if (document.getElementById('notesInput')) document.getElementById('notesInput').value = '';
         if (document.getElementById('timeEstimate')) document.getElementById('timeEstimate').value = '';
+        if (document.getElementById('goalSelect')) document.getElementById('goalSelect').value = '';
 
         // Notificação interativa
         this.showToast('Tarefa adicionada com sucesso!', 'success');
@@ -967,6 +1087,7 @@ class TodoApp {
                         <div class="task-text">${task.text}</div>
                         <div class="task-meta">
                             ${task.category ? `<span class="task-category" style="background: ${category.color}20; color: ${category.color}; border-color: ${category.color}">${category.icon} ${category.name}</span>` : ''}
+                            ${this.getGoalBadge(task)}
                             ${task.dueDate ? `<span class="task-date ${isOverdue ? 'overdue-badge' : isToday ? 'today-badge' : ''}">${isOverdue ? '⚠️ ATRASADA - ' + formattedDate : '📅 ' + formattedDate}</span>` : ''}
                             ${task.timeEstimate ? `
                                 <span class="task-time-wrapper">
@@ -991,6 +1112,16 @@ class TodoApp {
                     </div>
                 `;
         return taskItem;
+    }
+
+    // Retorna badge da meta vinculada
+    getGoalBadge(task) {
+        if (!task.goalId || !window.goalsManager) return '';
+
+        const goal = window.goalsManager.goals.find(g => g.id === parseInt(task.goalId));
+        if (!goal) return '';
+
+        return `<span class="task-goal" title="Vinculada à meta: ${goal.title}">🎯 ${goal.title}</span>`;
     }
 
     // Formata a data para exibição
@@ -1678,16 +1809,1209 @@ class TodoApp {
 }
 
 // ============================================
+// SISTEMA DE METAS E OBJETIVOS
+// ============================================
+
+class GoalsManager {
+    constructor() {
+        this.goals = this.loadGoals();
+        this.currentGoalId = null;
+        this.initElements();
+        this.bindEvents();
+        this.renderGoals();
+    }
+
+    initElements() {
+        this.goalsList = document.getElementById('goalsList');
+        this.addGoalBtn = document.getElementById('addGoalBtn');
+        this.goalModal = document.getElementById('goalModal');
+        this.goalModalClose = document.getElementById('goalModalClose');
+        this.goalModalCancel = document.getElementById('goalModalCancel');
+        this.goalModalSave = document.getElementById('goalModalSave');
+        this.goalModalTitle = document.getElementById('goalModalTitle');
+        this.goalTitle = document.getElementById('goalTitle');
+        this.goalDescription = document.getElementById('goalDescription');
+        this.goalCategory = document.getElementById('goalCategory');
+        this.goalDeadline = document.getElementById('goalDeadline');
+        this.goalTarget = document.getElementById('goalTarget');
+    }
+
+    bindEvents() {
+        this.addGoalBtn.addEventListener('click', () => this.openModal());
+        this.goalModalClose.addEventListener('click', () => this.closeModal());
+        this.goalModalCancel.addEventListener('click', () => this.closeModal());
+        this.goalModalSave.addEventListener('click', () => this.saveGoal());
+        this.goalModal.addEventListener('click', (e) => {
+            if (e.target === this.goalModal) this.closeModal();
+        });
+    }
+
+    loadGoals() {
+        return JSON.parse(localStorage.getItem('goals')) || [];
+    }
+
+    saveGoals() {
+        localStorage.setItem('goals', JSON.stringify(this.goals));
+    }
+
+    openModal(goalId = null) {
+        this.currentGoalId = goalId;
+
+        if (goalId) {
+            const goal = this.goals.find(g => g.id === goalId);
+            if (goal) {
+                this.goalModalTitle.textContent = 'Editar Meta';
+                this.goalTitle.value = goal.title;
+                this.goalDescription.value = goal.description || '';
+                this.goalCategory.value = goal.category;
+                this.goalDeadline.value = goal.deadline || '';
+                this.goalTarget.value = goal.target || '';
+            }
+        } else {
+            this.goalModalTitle.textContent = 'Nova Meta';
+            this.goalTitle.value = '';
+            this.goalDescription.value = '';
+            this.goalCategory.value = 'pessoal';
+            this.goalDeadline.value = '';
+            this.goalTarget.value = '';
+        }
+
+        this.goalModal.classList.add('active');
+    }
+
+    closeModal() {
+        this.goalModal.classList.remove('active');
+        this.currentGoalId = null;
+    }
+
+    saveGoal() {
+        const title = this.goalTitle.value.trim();
+        const deadline = this.goalDeadline.value;
+
+        if (!title) {
+            this.showGoalMessage('Por favor, digite um título para a meta!', 'error');
+            return;
+        }
+
+        if (!deadline) {
+            this.showGoalMessage('Por favor, defina uma data de prazo para a meta!', 'error');
+            return;
+        }
+
+        const goalData = {
+            title,
+            description: this.goalDescription.value.trim(),
+            category: this.goalCategory.value,
+            deadline: deadline,
+            target: parseInt(this.goalTarget.value) || null,
+            progress: 0,
+            createdAt: new Date().toISOString()
+        };
+
+        if (this.currentGoalId) {
+            // Editar meta existente
+            const index = this.goals.findIndex(g => g.id === this.currentGoalId);
+            if (index !== -1) {
+                this.goals[index] = { ...this.goals[index], ...goalData };
+                this.showGoalMessage('✅ Meta atualizada com sucesso!', 'success');
+            }
+        } else {
+            // Nova meta
+            goalData.id = Date.now();
+            this.goals.push(goalData);
+            this.showGoalMessage('🎯 Nova meta criada com sucesso!', 'success');
+
+            // Notificar sistema de gamificação
+            if (window.gamificationSystem) {
+                window.gamificationSystem.onGoalCreated();
+            }
+        }
+
+        this.saveGoals();
+        this.renderGoals();
+        this.closeModal();
+    }
+
+    deleteGoal(goalId) {
+        const goal = this.goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        this.showDeleteConfirmation(goal.title, () => {
+            this.goals = this.goals.filter(g => g.id !== goalId);
+            this.saveGoals();
+            this.renderGoals();
+            this.showGoalMessage('🗑️ Meta excluída com sucesso!', 'success');
+        });
+    }
+
+    showGoalMessage(message, type = 'success') {
+        // Criar elemento de notificação
+        const notification = document.createElement('div');
+        notification.className = `goal-notification ${type}`;
+        notification.innerHTML = `
+            <div class="goal-notification-content">
+                <span class="goal-notification-message">${message}</span>
+                <button class="goal-notification-close">&times;</button>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+
+        // Fechar ao clicar no X
+        notification.querySelector('.goal-notification-close').addEventListener('click', () => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        });
+
+        // Mostrar notificação
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        // Auto fechar após 3 segundos
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    showDeleteConfirmation(goalTitle, onConfirm) {
+        const modal = document.createElement('div');
+        modal.className = 'confirmation-modal';
+        modal.innerHTML = `
+            <div class="confirmation-content">
+                <div class="confirmation-header">
+                    <span class="confirmation-icon">⚠️</span>
+                    <h3>Confirmar Exclusão</h3>
+                </div>
+                <p class="confirmation-message">
+                    Tem certeza que deseja excluir a meta<br>
+                    <strong>"${goalTitle}"</strong>?
+                </p>
+                <p class="confirmation-warning">Esta ação não pode ser desfeita.</p>
+                <div class="confirmation-buttons">
+                    <button class="confirmation-btn cancel">Cancelar</button>
+                    <button class="confirmation-btn confirm">Excluir</button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        setTimeout(() => modal.classList.add('show'), 10);
+
+        const closeModal = () => {
+            modal.classList.remove('show');
+            setTimeout(() => modal.remove(), 300);
+        };
+
+        modal.querySelector('.cancel').addEventListener('click', closeModal);
+        modal.querySelector('.confirm').addEventListener('click', () => {
+            onConfirm();
+            closeModal();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
+    }
+
+    updateGoalProgress(goalId, progress) {
+        const goal = this.goals.find(g => g.id === goalId);
+        if (goal) {
+            goal.progress = Math.min(100, Math.max(0, progress));
+            this.saveGoals();
+            this.renderGoals();
+        }
+    }
+
+    getCategoryEmoji(category) {
+        const emojis = {
+            'pessoal': '🏠',
+            'trabalho': '💼',
+            'estudo': '📚',
+            'saude': '❤️',
+            'outros': '📌'
+        };
+        return emojis[category] || '📌';
+    }
+
+    renderGoals() {
+        if (this.goals.length === 0) {
+            this.goalsList.innerHTML = '<div class="empty-state-goals">Nenhuma meta criada. Comece adicionando uma meta!</div>';
+            return;
+        }
+
+        this.goalsList.innerHTML = this.goals.map(goal => {
+            const progressPercentage = goal.target ?
+                Math.round((goal.progress / goal.target) * 100) : goal.progress;
+
+            const deadlineText = goal.deadline ?
+                new Date(goal.deadline).toLocaleDateString('pt-BR') : 'Sem prazo';
+
+            const isOverdue = goal.deadline && new Date(goal.deadline) < new Date();
+
+            return `
+                <div class="goal-card" data-goal-id="${goal.id}">
+                    <div class="goal-header">
+                        <div>
+                            <div class="goal-title">${goal.title}</div>
+                            <div class="goal-category">${this.getCategoryEmoji(goal.category)} ${goal.category}</div>
+                        </div>
+                    </div>
+                    
+                    ${goal.description ? `<div class="goal-description">${goal.description}</div>` : ''}
+                    
+                    <div class="goal-progress">
+                        <div class="goal-progress-bar">
+                            <div class="goal-progress-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                        <div class="goal-progress-text">
+                            <span>${progressPercentage}% concluído</span>
+                            ${goal.target ? `<span>${goal.progress} / ${goal.target}</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="goal-deadline" style="color: ${isOverdue ? '#ff6b6b' : 'var(--text-secondary)'}">
+                        📅 ${deadlineText}
+                        ${isOverdue ? ' (Vencida)' : ''}
+                    </div>
+                    
+                    <div class="goal-actions">
+                        <button class="goal-btn edit" onclick="window.goalsManager.openModal(${goal.id})">
+                            ✏️ Editar
+                        </button>
+                        <button class="goal-btn delete" onclick="window.goalsManager.deleteGoal(${goal.id})">
+                            🗑️ Excluir
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+}
+
+// ============================================
+// SISTEMA DE GAMIFICAÇÃO E CONQUISTAS
+// ============================================
+
+class GamificationSystem {
+    constructor() {
+        this.achievements = this.initAchievements();
+        this.userStats = this.loadUserStats();
+        this.initElements();
+        this.generateDailyChallenge();
+        this.resetDailyStats();
+        this.renderStats();
+        this.renderAchievements();
+        this.renderDailyChallenge();
+        this.checkDailyStreak();
+    }
+
+    initElements() {
+        this.userLevel = document.getElementById('userLevel');
+        this.userPoints = document.getElementById('userPoints');
+        this.userStreak = document.getElementById('userStreak');
+        this.totalCompleted = document.getElementById('totalCompleted');
+        this.currentLevel = document.getElementById('currentLevel');
+        this.currentXP = document.getElementById('currentXP');
+        this.nextLevelXP = document.getElementById('nextLevelXP');
+        this.levelFill = document.getElementById('levelFill');
+        this.achievementsGrid = document.getElementById('achievementsGrid');
+        this.achievementNotification = document.getElementById('achievementNotification');
+        this.achievementName = document.getElementById('achievementName');
+        this.achievementXP = document.getElementById('achievementXP');
+    }
+
+    initAchievements() {
+        return [
+            // Conquistas de Tarefas Básicas
+            { id: 'first_task', name: 'Primeira Tarefa', description: 'Complete sua primeira tarefa', icon: '🌟', xp: 10, tier: 'bronze', unlocked: false, condition: (stats) => stats.totalCompleted >= 1 },
+            { id: 'task_5', name: 'Produtivo', description: 'Complete 5 tarefas', icon: '⭐', xp: 25, tier: 'bronze', unlocked: false, condition: (stats) => stats.totalCompleted >= 5 },
+            { id: 'task_10', name: 'Dedicado', description: 'Complete 10 tarefas', icon: '🏅', xp: 50, tier: 'bronze', unlocked: false, condition: (stats) => stats.totalCompleted >= 10 },
+            { id: 'task_25', name: 'Comprometido', description: 'Complete 25 tarefas', icon: '🎖️', xp: 100, tier: 'prata', unlocked: false, condition: (stats) => stats.totalCompleted >= 25 },
+            { id: 'task_50', name: 'Expert', description: 'Complete 50 tarefas', icon: '🏆', xp: 200, tier: 'ouro', unlocked: false, condition: (stats) => stats.totalCompleted >= 50 },
+            { id: 'task_100', name: 'Mestre', description: 'Complete 100 tarefas', icon: '👑', xp: 500, tier: 'diamante', unlocked: false, condition: (stats) => stats.totalCompleted >= 100 },
+            { id: 'task_250', name: 'Lendário', description: 'Complete 250 tarefas', icon: '💎', xp: 1000, tier: 'lendario', unlocked: false, condition: (stats) => stats.totalCompleted >= 250 },
+
+            // Conquistas de Sequência (Streak)
+            { id: 'streak_3', name: 'Consistente', description: '3 dias de sequência', icon: '🔥', xp: 50, tier: 'bronze', unlocked: false, condition: (stats) => stats.streak >= 3 },
+            { id: 'streak_7', name: 'Persistente', description: '7 dias de sequência', icon: '💪', xp: 100, tier: 'prata', unlocked: false, condition: (stats) => stats.streak >= 7 },
+            { id: 'streak_15', name: 'Determinado', description: '15 dias de sequência', icon: '⚡', xp: 250, tier: 'ouro', unlocked: false, condition: (stats) => stats.streak >= 15 },
+            { id: 'streak_30', name: 'Imparável', description: '30 dias de sequência', icon: '🚀', xp: 500, tier: 'diamante', unlocked: false, condition: (stats) => stats.streak >= 30 },
+            { id: 'streak_60', name: 'Titã', description: '60 dias de sequência', icon: '🦸', xp: 1500, tier: 'lendario', unlocked: false, condition: (stats) => stats.streak >= 60 },
+
+            // Conquistas de Metas
+            { id: 'first_goal', name: 'Planejador', description: 'Crie sua primeira meta', icon: '🎯', xp: 25, tier: 'bronze', unlocked: false, condition: (stats) => stats.goalsCreated >= 1 },
+            { id: 'goal_complete', name: 'Realizador', description: 'Complete uma meta', icon: '✨', xp: 100, tier: 'prata', unlocked: false, condition: (stats) => stats.goalsCompleted >= 1 },
+            { id: 'goal_5', name: 'Visionário', description: 'Complete 5 metas', icon: '🌠', xp: 300, tier: 'ouro', unlocked: false, condition: (stats) => stats.goalsCompleted >= 5 },
+            { id: 'goal_10', name: 'Conquistador', description: 'Complete 10 metas', icon: '🏰', xp: 750, tier: 'diamante', unlocked: false, condition: (stats) => stats.goalsCompleted >= 10 },
+
+            // Conquistas de Prioridade
+            { id: 'priority_master', name: 'Focado', description: 'Complete 10 tarefas prioritárias', icon: '🎪', xp: 150, tier: 'prata', unlocked: false, condition: (stats) => stats.priorityCompleted >= 10 },
+            { id: 'priority_25', name: 'Estrategista', description: 'Complete 25 tarefas prioritárias', icon: '🎯', xp: 300, tier: 'ouro', unlocked: false, condition: (stats) => stats.priorityCompleted >= 25 },
+            { id: 'priority_50', name: 'Maestro', description: 'Complete 50 tarefas prioritárias', icon: '🎼', xp: 600, tier: 'diamante', unlocked: false, condition: (stats) => stats.priorityCompleted >= 50 },
+
+            // Conquistas Especiais
+            { id: 'early_bird', name: 'Madrugador', description: 'Complete uma tarefa antes das 7h', icon: '🌅', xp: 100, tier: 'especial', unlocked: false, condition: (stats) => stats.earlyBirdTasks >= 1 },
+            { id: 'night_owl', name: 'Coruja Noturna', description: 'Complete uma tarefa depois das 23h', icon: '🦉', xp: 100, tier: 'especial', unlocked: false, condition: (stats) => stats.nightOwlTasks >= 1 },
+            { id: 'speed_demon', name: 'Veloz', description: 'Complete 10 tarefas em um dia', icon: '⚡', xp: 200, tier: 'especial', unlocked: false, condition: (stats) => stats.maxTasksOneDay >= 10 },
+            { id: 'perfectionist', name: 'Perfeccionista', description: 'Complete todas as tarefas do dia 7 dias seguidos', icon: '💯', xp: 500, tier: 'especial', unlocked: false, condition: (stats) => stats.perfectDays >= 7 },
+            { id: 'pomodoro_master', name: 'Mestre Pomodoro', description: 'Use o Pomodoro 25 vezes', icon: '🍅', xp: 250, tier: 'especial', unlocked: false, condition: (stats) => stats.pomodoroSessions >= 25 },
+        ];
+    }
+
+    loadUserStats() {
+        const defaultStats = {
+            level: 1,
+            xp: 0,
+            totalCompleted: 0,
+            streak: 0,
+            lastActiveDate: null,
+            goalsCreated: 0,
+            goalsCompleted: 0,
+            priorityCompleted: 0,
+            earlyBirdTasks: 0,
+            nightOwlTasks: 0,
+            maxTasksOneDay: 0,
+            tasksToday: 0,
+            perfectDays: 0,
+            pomodoroSessions: 0,
+            currentTitle: 'Novato',
+            unlockedAchievements: [],
+            dailyChallenge: null,
+            dailyChallengeCompleted: false
+        };
+        return JSON.parse(localStorage.getItem('userStats')) || defaultStats;
+    }
+
+    saveUserStats() {
+        localStorage.setItem('userStats', JSON.stringify(this.userStats));
+    }
+
+    addXP(amount, reason = '') {
+        this.userStats.xp += amount;
+
+        // Calcular nível baseado em XP
+        const xpForNextLevel = this.getXPForLevel(this.userStats.level + 1);
+
+        if (this.userStats.xp >= xpForNextLevel) {
+            this.levelUp();
+        }
+
+        this.saveUserStats();
+        this.renderStats();
+    }
+
+    levelUp() {
+        // Tocar som de level up
+        if (window.soundSystem) {
+            window.soundSystem.playLevelUp();
+        }
+
+        this.userStats.level++;
+        this.showLevelUpNotification();
+        this.saveUserStats();
+    }
+
+    getXPForLevel(level) {
+        return Math.floor(100 * Math.pow(1.5, level - 1));
+    }
+
+    showLevelUpNotification() {
+        // Pode adicionar notificação de level up aqui
+        console.log(`🎉 Parabéns! Você subiu para o nível ${this.userStats.level}!`);
+    }
+
+    onTaskCompleted(taskData = {}) {
+        // Tocar som de sucesso
+        if (window.soundSystem) {
+            window.soundSystem.playSuccess();
+        }
+
+        this.userStats.totalCompleted++;
+        this.userStats.tasksToday++;
+        this.addXP(10, 'Tarefa concluída');
+
+        // Verificar hora da conclusão
+        const hour = new Date().getHours();
+        if (hour < 7) {
+            this.userStats.earlyBirdTasks++;
+        } else if (hour >= 23) {
+            this.userStats.nightOwlTasks++;
+        }
+
+        // Atualizar máximo de tarefas em um dia
+        if (this.userStats.tasksToday > this.userStats.maxTasksOneDay) {
+            this.userStats.maxTasksOneDay = this.userStats.tasksToday;
+        }
+
+        if (taskData.priority) {
+            this.userStats.priorityCompleted++;
+            this.addXP(5, 'Tarefa prioritária');
+        }
+
+        this.updateDailyStreak();
+        this.checkDailyChallenge();
+        this.checkAchievements();
+        this.updateTitle();
+        this.saveUserStats();
+        this.renderStats();
+    }
+
+    onGoalCreated() {
+        this.userStats.goalsCreated++;
+        this.addXP(15, 'Meta criada');
+        this.checkAchievements();
+        this.saveUserStats();
+    }
+
+    onGoalCompleted() {
+        // Tocar som de meta completada
+        if (window.soundSystem) {
+            window.soundSystem.playGoalComplete();
+        }
+
+        this.userStats.goalsCompleted++;
+        this.addXP(50, 'Meta completada');
+        this.checkAchievements();
+        this.saveUserStats();
+    }
+
+    updateDailyStreak() {
+        const today = new Date().toDateString();
+        const lastActive = this.userStats.lastActiveDate;
+
+        if (!lastActive) {
+            this.userStats.streak = 1;
+        } else {
+            const lastDate = new Date(lastActive).toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+            if (lastDate === yesterday) {
+                this.userStats.streak++;
+            } else if (lastDate !== today) {
+                this.userStats.streak = 1;
+            }
+        }
+
+        this.userStats.lastActiveDate = today;
+        this.saveUserStats();
+    }
+
+    resetDailyStats() {
+        const today = new Date().toDateString();
+        const lastDate = this.userStats.lastActiveDate;
+
+        if (lastDate !== today) {
+            this.userStats.tasksToday = 0;
+            this.saveUserStats();
+        }
+    }
+
+    checkDailyStreak() {
+        const today = new Date().toDateString();
+        const lastActive = this.userStats.lastActiveDate;
+
+        if (lastActive) {
+            const lastDate = new Date(lastActive).toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+            if (lastDate !== today && lastDate !== yesterday) {
+                this.userStats.streak = 0;
+                this.saveUserStats();
+            }
+        }
+    }
+
+    checkAchievements() {
+        this.achievements.forEach(achievement => {
+            if (!this.userStats.unlockedAchievements.includes(achievement.id)) {
+                if (achievement.condition(this.userStats)) {
+                    this.unlockAchievement(achievement);
+                }
+            }
+        });
+    }
+
+    unlockAchievement(achievement) {
+        this.userStats.unlockedAchievements.push(achievement.id);
+        achievement.unlocked = true;
+        this.addXP(achievement.xp, `Conquista: ${achievement.name}`);
+        this.showAchievementNotification(achievement);
+        this.saveUserStats();
+        this.renderAchievements();
+    }
+
+    showAchievementNotification(achievement) {
+        // Tocar som de conquista
+        if (window.soundSystem) {
+            window.soundSystem.playAchievement();
+        }
+
+        this.achievementName.textContent = achievement.name;
+        this.achievementXP.textContent = achievement.xp;
+
+        this.achievementNotification.classList.add('show');
+
+        setTimeout(() => {
+            this.achievementNotification.classList.remove('show');
+        }, 4000);
+    }
+
+    renderStats() {
+        this.userLevel.textContent = this.userStats.level;
+        this.userPoints.textContent = this.userStats.xp;
+        this.userStreak.textContent = `${this.userStats.streak} dias`;
+        this.totalCompleted.textContent = this.userStats.totalCompleted;
+
+        this.currentLevel.textContent = this.userStats.level;
+        this.currentXP.textContent = this.userStats.xp;
+
+        const nextLevelXP = this.getXPForLevel(this.userStats.level + 1);
+        const currentLevelXP = this.getXPForLevel(this.userStats.level);
+        const xpProgress = this.userStats.xp - currentLevelXP;
+        const xpNeeded = nextLevelXP - currentLevelXP;
+        const percentage = Math.min(100, (xpProgress / xpNeeded) * 100);
+
+        this.nextLevelXP.textContent = nextLevelXP;
+        this.levelFill.style.width = `${percentage}%`;
+
+        // Renderizar título atual
+        this.renderUserTitle();
+    }
+
+    renderUserTitle() {
+        const titles = [
+            { minXP: 0, title: 'Novato', icon: '🌱' },
+            { minXP: 100, title: 'Aprendiz', icon: '📚' },
+            { minXP: 300, title: 'Praticante', icon: '⚙️' },
+            { minXP: 600, title: 'Competente', icon: '💼' },
+            { minXP: 1000, title: 'Experiente', icon: '🎯' },
+            { minXP: 1500, title: 'Veterano', icon: '🛡️' },
+            { minXP: 2500, title: 'Expert', icon: '🏆' },
+            { minXP: 4000, title: 'Mestre', icon: '👑' },
+            { minXP: 6000, title: 'Grão-Mestre', icon: '💎' },
+            { minXP: 10000, title: 'Lenda', icon: '🌟' },
+        ];
+
+        const titleIcon = document.getElementById('titleIcon');
+        const titleName = document.getElementById('titleName');
+
+        if (!titleIcon || !titleName) return;
+
+        let currentTitle = titles[0];
+        for (let i = titles.length - 1; i >= 0; i--) {
+            if (this.userStats.xp >= titles[i].minXP) {
+                currentTitle = titles[i];
+                break;
+            }
+        }
+
+        titleIcon.textContent = currentTitle.icon;
+        titleName.textContent = currentTitle.title;
+    }
+
+    renderAchievements() {
+        const tierColors = {
+            bronze: '#cd7f32',
+            prata: '#c0c0c0',
+            ouro: '#ffd700',
+            diamante: '#b9f2ff',
+            lendario: '#ff1493',
+            especial: '#9370db'
+        };
+
+        this.achievementsGrid.innerHTML = this.achievements.map(achievement => {
+            const isUnlocked = this.userStats.unlockedAchievements.includes(achievement.id);
+            const tierColor = tierColors[achievement.tier] || '#fff';
+
+            return `
+                <div class="achievement-item ${isUnlocked ? 'unlocked' : 'locked'}" data-tier="${achievement.tier}">
+                    <div class="achievement-badge">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                    <div class="achievement-description">${achievement.description}</div>
+                    <div class="achievement-tier" style="color: ${tierColor}; text-transform: uppercase;">${achievement.tier}</div>
+                    <div class="achievement-xp">+${achievement.xp} XP</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Renderizar Desafio Diário
+    renderDailyChallenge() {
+        const challenge = this.userStats.dailyChallenge;
+        if (!challenge) return;
+
+        const challengeCard = document.getElementById('dailyChallengeCard');
+        const challengeDescription = document.getElementById('challengeDescription');
+        const challengeProgressFill = document.getElementById('challengeProgressFill');
+        const challengeProgressText = document.getElementById('challengeProgressText');
+
+        if (!challengeCard) return;
+
+        const progressPercent = Math.min((challenge.progress / challenge.target) * 100, 100);
+        const isComplete = this.userStats.dailyChallengeCompleted;
+
+        challengeDescription.textContent = challenge.description;
+        challengeProgressFill.style.width = `${progressPercent}%`;
+        challengeProgressText.innerHTML = `<span>${challenge.progress} / ${challenge.target}</span><span class="challenge-reward">+${challenge.reward} XP 💎</span>`;
+
+        if (isComplete) {
+            challengeCard.style.opacity = '0.7';
+            challengeCard.style.borderColor = 'rgba(46, 213, 115, 0.6)';
+        } else {
+            challengeCard.style.opacity = '1';
+            challengeCard.style.borderColor = 'rgba(102, 126, 234, 0.4)';
+        }
+    }
+
+    // Sistema de Títulos
+    updateTitle() {
+        const titles = [
+            { minXP: 0, title: 'Novato', icon: '🌱' },
+            { minXP: 100, title: 'Aprendiz', icon: '📚' },
+            { minXP: 300, title: 'Praticante', icon: '⚙️' },
+            { minXP: 600, title: 'Competente', icon: '💼' },
+            { minXP: 1000, title: 'Experiente', icon: '🎯' },
+            { minXP: 1500, title: 'Veterano', icon: '🛡️' },
+            { minXP: 2500, title: 'Expert', icon: '🏆' },
+            { minXP: 4000, title: 'Mestre', icon: '👑' },
+            { minXP: 6000, title: 'Grão-Mestre', icon: '💎' },
+            { minXP: 10000, title: 'Lenda', icon: '🌟' },
+        ];
+
+        for (let i = titles.length - 1; i >= 0; i--) {
+            if (this.userStats.xp >= titles[i].minXP) {
+                if (this.userStats.currentTitle !== titles[i].title) {
+                    this.userStats.currentTitle = titles[i].title;
+                    this.showTitleUpdate(titles[i]);
+                }
+                break;
+            }
+        }
+    }
+
+    showTitleUpdate(title) {
+        const notification = document.createElement('div');
+        notification.className = 'title-notification';
+        notification.innerHTML = `
+            <div class="title-notification-content">
+                <div class="title-badge">${title.icon}</div>
+                <div class="title-info">
+                    <div class="title-message">Novo Título Desbloqueado!</div>
+                    <div class="title-name">${title.title}</div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    }
+
+    // Sistema de Desafios Diários
+    generateDailyChallenge() {
+        const challenges = [
+            { type: 'complete_tasks', target: 5, description: 'Complete 5 tarefas hoje', reward: 50, icon: '✅' },
+            { type: 'complete_tasks', target: 10, description: 'Complete 10 tarefas hoje', reward: 100, icon: '💪' },
+            { type: 'priority_tasks', target: 3, description: 'Complete 3 tarefas prioritárias', reward: 75, icon: '⭐' },
+            { type: 'early_tasks', target: 2, description: 'Complete 2 tarefas antes das 10h', reward: 80, icon: '🌅' },
+            { type: 'pomodoro', target: 3, description: 'Use o Pomodoro 3 vezes', reward: 60, icon: '🍅' },
+            { type: 'create_goal', target: 1, description: 'Crie uma nova meta', reward: 50, icon: '🎯' },
+        ];
+
+        const today = new Date().toDateString();
+        if (!this.userStats.dailyChallenge || this.userStats.dailyChallenge.date !== today) {
+            const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
+            this.userStats.dailyChallenge = {
+                ...randomChallenge,
+                date: today,
+                progress: 0,
+                completed: false
+            };
+            this.userStats.dailyChallengeCompleted = false;
+            this.saveUserStats();
+        }
+    }
+
+    checkDailyChallenge() {
+        if (!this.userStats.dailyChallenge || this.userStats.dailyChallengeCompleted) return;
+
+        const challenge = this.userStats.dailyChallenge;
+        const today = new Date().toDateString();
+
+        // Se mudou de dia, gerar novo desafio
+        if (challenge.date !== today) {
+            this.generateDailyChallenge();
+            return;
+        }
+
+        // Atualizar progresso baseado no tipo
+        if (challenge.type === 'complete_tasks') {
+            challenge.progress = this.userStats.tasksToday;
+        } else if (challenge.type === 'priority_tasks') {
+            // Contar tarefas prioritárias de hoje (precisaria implementar tracking)
+            challenge.progress = Math.min(challenge.progress + 1, challenge.target);
+        }
+
+        // Verificar se completou
+        if (challenge.progress >= challenge.target && !challenge.completed) {
+            challenge.completed = true;
+            this.userStats.dailyChallengeCompleted = true;
+            this.addXP(challenge.reward, 'Desafio Diário Completado!');
+            this.showChallengeComplete(challenge);
+        }
+
+        this.saveUserStats();
+        this.renderDailyChallenge();
+    }
+
+    showChallengeComplete(challenge) {
+        // Tocar som de desafio completado
+        if (window.soundSystem) {
+            window.soundSystem.playChallengeComplete();
+        }
+
+        const notification = document.createElement('div');
+        notification.className = 'challenge-notification';
+        notification.innerHTML = `
+            <div class="challenge-notification-content">
+                <div class="challenge-badge">${challenge.icon}</div>
+                <div class="challenge-info">
+                    <div class="challenge-title">Desafio Diário Completado!</div>
+                    <div class="challenge-description">${challenge.description}</div>
+                    <div class="challenge-reward">+${challenge.reward} XP</div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    }
+}
+
+// ============================================
+// SISTEMA DE ATALHOS DE TECLADO E UX
+// ============================================
+class KeyboardShortcuts {
+    constructor() {
+        this.initShortcuts();
+    }
+
+    initShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + Enter - Adicionar tarefa
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                const addBtn = document.getElementById('addBtn');
+                if (addBtn) addBtn.click();
+            }
+
+            // Esc - Fechar modais
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal-overlay.active');
+                modals.forEach(modal => modal.classList.remove('active'));
+
+                const confirmModals = document.querySelectorAll('.confirmation-modal.show');
+                confirmModals.forEach(modal => modal.classList.remove('show'));
+            }
+
+            // Ctrl/Cmd + K - Focar no input de busca/tarefa
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const taskInput = document.getElementById('taskInput');
+                if (taskInput) {
+                    taskInput.focus();
+                    taskInput.select();
+                }
+            }
+
+            // Ctrl/Cmd + M - Abrir modal de nova meta
+            if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+                e.preventDefault();
+                const addGoalBtn = document.getElementById('addGoalBtn');
+                if (addGoalBtn) addGoalBtn.click();
+            }
+
+            // Ctrl/Cmd + P - Alternar prioridade
+            if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+                e.preventDefault();
+                const priorityCheckbox = document.getElementById('priorityCheckbox');
+                if (priorityCheckbox) {
+                    priorityCheckbox.checked = !priorityCheckbox.checked();
+                }
+            }
+        });
+
+        // Enter no input de tarefa - Adicionar
+        const taskInput = document.getElementById('taskInput');
+        if (taskInput) {
+            taskInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const addBtn = document.getElementById('addBtn');
+                    if (addBtn) addBtn.click();
+                }
+            });
+        }
+    }
+
+    showShortcutsHelp() {
+        const shortcuts = [
+            { keys: 'Ctrl/Cmd + Enter', description: 'Adicionar tarefa' },
+            { keys: 'Enter', description: 'Adicionar tarefa (no input)' },
+            { keys: 'Esc', description: 'Fechar modais' },
+            { keys: 'Ctrl/Cmd + K', description: 'Focar no input' },
+            { keys: 'Ctrl/Cmd + M', description: 'Nova meta' },
+            { keys: 'Ctrl/Cmd + P', description: 'Alternar prioridade' }
+        ];
+
+        alert('⌨️ Atalhos de Teclado:\n\n' +
+            shortcuts.map(s => `${s.keys} → ${s.description}`).join('\n'));
+    }
+}
+
+// ============================================
 // INICIALIZAÇÃO - Quando a página carregar
 // ============================================
 if (!window.appInitialized) {
     window.appInitialized = true;
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Cria o sistema de sons
+        window.soundSystem = new SoundSystem();
+
         // Cria o cronômetro Pomodoro
         window.pomodoroTimer = new PomodoroTimer();
 
         // Cria a lista de tarefas
         window.todoApp = new TodoApp();
+
+        // Cria o gerenciador de metas
+        window.goalsManager = new GoalsManager();
+
+        // Cria o sistema de gamificação
+        window.gamificationSystem = new GamificationSystem();
+
+        // Cria sistema de atalhos
+        window.keyboardShortcuts = new KeyboardShortcuts();
+
+        // Cria o calendário
+        window.calendarManager = new CalendarManager(window.todoApp);
+
+        // Configurar botão de som
+        const soundToggle = document.getElementById('soundToggle');
+        if (soundToggle && window.soundSystem) {
+            // Atualizar ícone inicial
+            soundToggle.textContent = window.soundSystem.enabled ? '🔊' : '🔇';
+            if (!window.soundSystem.enabled) {
+                soundToggle.classList.add('muted');
+            }
+
+            soundToggle.addEventListener('click', () => {
+                const enabled = window.soundSystem.toggle();
+                soundToggle.textContent = enabled ? '🔊' : '🔇';
+                soundToggle.classList.toggle('muted', !enabled);
+
+                // Feedback sonoro ao ativar
+                if (enabled && window.soundSystem) {
+                    window.soundSystem.playNotification();
+                }
+            });
+        }
+
+        // Atualizar lista de metas no select quando renderizar
+        const originalRenderGoals = window.goalsManager.renderGoals.bind(window.goalsManager);
+        window.goalsManager.renderGoals = function () {
+            originalRenderGoals();
+            updateGoalSelect();
+        };
+
+        // Função para atualizar o select de metas
+        function updateGoalSelect() {
+            const goalSelect = document.getElementById('goalSelect');
+            if (!goalSelect) return;
+
+            const goals = window.goalsManager.goals || [];
+            goalSelect.innerHTML = '<option value="">Nenhuma meta</option>';
+
+            goals.forEach(goal => {
+                const option = document.createElement('option');
+                option.value = goal.id;
+                option.textContent = `🎯 ${goal.title}`;
+                goalSelect.appendChild(option);
+            });
+        }
+
+        // Atualizar lista inicial
+        setTimeout(() => updateGoalSelect(), 100);
+
+        // Integração: quando uma tarefa for concluída
+        const originalCompleteTask = window.todoApp.completeTask.bind(window.todoApp);
+        window.todoApp.completeTask = function (id) {
+            const task = this.tasks.find(t => t.id === id && !t.completed);
+            originalCompleteTask(id);
+            if (task) {
+                window.gamificationSystem.onTaskCompleted({
+                    priority: task.priority
+                });
+
+                // Atualizar progresso da meta vinculada
+                if (task.goalId && window.goalsManager) {
+                    const goal = window.goalsManager.goals.find(g => g.id === parseInt(task.goalId));
+                    if (goal) {
+                        goal.progress = (goal.progress || 0) + 1;
+                        window.goalsManager.saveGoals();
+                        window.goalsManager.renderGoals();
+
+                        // Verificar se completou a meta
+                        if (goal.target && goal.progress >= goal.target) {
+                            window.gamificationSystem.onGoalCompleted();
+                            window.goalsManager.showGoalMessage(
+                                `🎉 Parabéns! Você completou a meta "${goal.title}"!`,
+                                'success'
+                            );
+                        }
+                    }
+                }
+
+                // Atualizar calendário
+                if (window.calendarManager) {
+                    window.calendarManager.refresh();
+                }
+            }
+        };
+
+        // Sobrescrever addTask para atualizar calendário
+        const originalAddTask = window.todoApp.addTask.bind(window.todoApp);
+        window.todoApp.addTask = function (text, category, priority, dueDate, timeEstimate, notes, goalId) {
+            originalAddTask(text, category, priority, dueDate, timeEstimate, notes, goalId);
+
+            // Atualizar calendário
+            if (window.calendarManager) {
+                window.calendarManager.refresh();
+            }
+        };
+
+        // Sobrescrever deleteTask para atualizar calendário
+        const originalDeleteTask = window.todoApp.deleteTask.bind(window.todoApp);
+        window.todoApp.deleteTask = function (id) {
+            originalDeleteTask(id);
+
+            // Atualizar calendário
+            if (window.calendarManager) {
+                window.calendarManager.refresh();
+            }
+        };
     });
 }
+
+// ========================================
+// CLASSE: CALENDAR MANAGER
+// ========================================
+class CalendarManager {
+    constructor(todoApp) {
+        this.todoApp = todoApp;
+        this.currentDate = new Date();
+        this.initElements();
+        this.initEventListeners();
+        this.render();
+    }
+
+    initElements() {
+        this.calendarGrid = document.getElementById('calendarGrid');
+        this.calendarMonthYear = document.getElementById('calendarMonthYear');
+        this.prevMonthBtn = document.getElementById('prevMonth');
+        this.nextMonthBtn = document.getElementById('nextMonth');
+        this.dayTasksModal = document.getElementById('dayTasksModal');
+        this.dayTasksTitle = document.getElementById('dayTasksTitle');
+        this.dayTasksList = document.getElementById('dayTasksList');
+        this.dayTasksClose = document.getElementById('dayTasksClose');
+    }
+
+    initEventListeners() {
+        this.prevMonthBtn?.addEventListener('click', () => this.previousMonth());
+        this.nextMonthBtn?.addEventListener('click', () => this.nextMonth());
+        this.dayTasksClose?.addEventListener('click', () => this.closeDayModal());
+        this.dayTasksModal?.addEventListener('click', (e) => {
+            if (e.target === this.dayTasksModal) {
+                this.closeDayModal();
+            }
+        });
+    }
+
+    previousMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() - 1);
+        this.render();
+    }
+
+    nextMonth() {
+        this.currentDate.setMonth(this.currentDate.getMonth() + 1);
+        this.render();
+    }
+
+    render() {
+        this.renderMonthYear();
+        this.renderDays();
+    }
+
+    renderMonthYear() {
+        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+        const month = months[this.currentDate.getMonth()];
+        const year = this.currentDate.getFullYear();
+
+        this.calendarMonthYear.textContent = `${month} ${year}`;
+    }
+
+    renderDays() {
+        if (!this.calendarGrid) return;
+
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+
+        // Primeiro dia do mês
+        const firstDay = new Date(year, month, 1);
+        const firstDayWeek = firstDay.getDay();
+
+        // Último dia do mês
+        const lastDay = new Date(year, month + 1, 0);
+        const lastDate = lastDay.getDate();
+
+        // Último dia do mês anterior
+        const prevLastDay = new Date(year, month, 0);
+        const prevLastDate = prevLastDay.getDate();
+
+        // Data atual
+        const today = new Date();
+        const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+
+        let daysHTML = '';
+
+        // Dias do mês anterior
+        for (let i = firstDayWeek - 1; i >= 0; i--) {
+            const dayNum = prevLastDate - i;
+            daysHTML += this.createDayHTML(dayNum, year, month - 1, true, false);
+        }
+
+        // Dias do mês atual
+        for (let day = 1; day <= lastDate; day++) {
+            const isToday = isCurrentMonth && day === today.getDate();
+            daysHTML += this.createDayHTML(day, year, month, false, isToday);
+        }
+
+        // Dias do próximo mês
+        const remainingDays = 42 - (firstDayWeek + lastDate);
+        for (let day = 1; day <= remainingDays; day++) {
+            daysHTML += this.createDayHTML(day, year, month + 1, true, false);
+        }
+
+        this.calendarGrid.innerHTML = daysHTML;
+
+        // Adicionar event listeners
+        this.calendarGrid.querySelectorAll('.calendar-day').forEach(dayEl => {
+            dayEl.addEventListener('click', () => {
+                const date = dayEl.dataset.date;
+                if (date) this.showDayTasks(date);
+            });
+        });
+    }
+
+    createDayHTML(day, year, month, isOtherMonth, isToday) {
+        const date = new Date(year, month, day);
+        const dateStr = this.formatDate(date);
+        const tasks = this.getTasksForDate(dateStr);
+        const taskCount = tasks.length;
+
+        let classes = 'calendar-day';
+        if (isOtherMonth) classes += ' other-month';
+        if (isToday) classes += ' today';
+        if (taskCount > 0) classes += ' has-tasks';
+
+        return `
+            <div class="${classes}" data-date="${dateStr}">
+                <div class="day-number">${day}</div>
+                ${taskCount > 0 ? `<div class="day-task-count">${taskCount} ${taskCount === 1 ? 'tarefa' : 'tarefas'}</div>` : ''}
+            </div>
+        `;
+    }
+
+    formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    getTasksForDate(dateStr) {
+        if (!this.todoApp || !this.todoApp.tasks) return [];
+
+        return this.todoApp.tasks.filter(task => {
+            if (!task.dueDate) return false;
+            return task.dueDate === dateStr;
+        });
+    }
+
+    showDayTasks(dateStr) {
+        const tasks = this.getTasksForDate(dateStr);
+        const date = new Date(dateStr + 'T00:00:00');
+
+        // Formatar data para exibição
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+
+        this.dayTasksTitle.textContent = `Tarefas de ${formattedDate}`;
+
+        if (tasks.length === 0) {
+            this.dayTasksList.innerHTML = '<div class="empty-state">Nenhuma tarefa para este dia</div>';
+        } else {
+            this.dayTasksList.innerHTML = tasks.map(task => {
+                const categoryEmojis = {
+                    pessoal: '🏠',
+                    trabalho: '💼',
+                    estudo: '📚',
+                    saude: '❤️',
+                    compras: '🛒',
+                    outros: '📌'
+                };
+
+                return `
+                    <div class="day-task-item ${task.completed ? 'completed' : ''}">
+                        <div class="day-task-text">
+                            ${task.completed ? '✓' : '○'} ${task.text}
+                        </div>
+                        <div class="day-task-meta">
+                            <span class="day-task-badge">${categoryEmojis[task.category] || '📌'} ${task.category}</span>
+                            ${task.priority ? '<span class="day-task-badge">⭐ Prioritária</span>' : ''}
+                            ${task.timeEstimate ? `<span class="day-task-badge">⏱️ ${task.timeEstimate} min</span>` : ''}
+                            ${task.completed ? '<span class="day-task-badge">✅ Concluída</span>' : '<span class="day-task-badge">⏳ Pendente</span>'}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        this.dayTasksModal.classList.add('show');
+    }
+
+    closeDayModal() {
+        this.dayTasksModal?.classList.remove('show');
+    }
+
+    refresh() {
+        this.render();
+    }
+}
+
+// Inicializar o app
+initApp();

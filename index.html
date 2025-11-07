@@ -56,14 +56,6 @@
                 <p class="verse-text">Carregando versículo...</p>
                 <p class="verse-reference"></p>
             </div>
-
-            <!-- Barra de Progresso -->
-            <div class="progress-container">
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="progress-text" id="progressText">0% Concluído</div>
-            </div>
         </header>
 
         <!-- NOVIDADE: Modal de Edição -->
@@ -121,6 +113,13 @@
                         <label for="timeEstimate">⏱️ Tempo Estimado</label>
                         <input type="number" id="timeEstimate" class="time-input" placeholder="Min" min="5" step="5">
                     </div>
+
+                    <div class="input-group">
+                        <label for="goalSelect">🎯 Meta (opcional)</label>
+                        <select id="goalSelect" class="goal-select">
+                            <option value="">Nenhuma meta</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="input-group full-width">
@@ -139,14 +138,6 @@
             </div>
         </div>
 
-        <!-- Metas e Objetivos -->
-        <div class="goals-section">
-            <div class="section-header">
-                <h2>🎯 Metas e Objetivos</h2>
-            </div>
-            <div id="goalsList" class="goals-list"></div>
-        </div>
-
         <div class="tasks-container">
             <div class="tasks-section pending">
                 <h2><span class="icon">≡</span> Tarefas Pendentes</h2>
@@ -162,8 +153,221 @@
                 </div>
             </div>
         </div>
+
+        <!-- Barra de Progresso -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text" id="progressText">0% Concluído</div>
+        </div>
+
+        <!-- Metas e Objetivos -->
+        <div class="goals-section">
+            <div class="section-header">
+                <h2>🎯 Metas e Objetivos</h2>
+                <button class="add-goal-btn" id="addGoalBtn">+ Nova Meta</button>
+            </div>
+            <div id="goalsList" class="goals-list">
+                <div class="empty-state-goals">Nenhuma meta criada. Comece adicionando uma meta!</div>
+            </div>
+        </div>
+
+        <!-- Calendário de Tarefas -->
+        <div class="calendar-section">
+            <div class="section-header">
+                <h2>📅 Calendário de Tarefas</h2>
+                <div class="calendar-controls">
+                    <button class="calendar-nav-btn" id="prevMonth">◀</button>
+                    <span class="calendar-month-year" id="calendarMonthYear">Novembro 2025</span>
+                    <button class="calendar-nav-btn" id="nextMonth">▶</button>
+                </div>
+            </div>
+
+            <div class="calendar-container">
+                <div class="calendar-weekdays">
+                    <div class="weekday">Dom</div>
+                    <div class="weekday">Seg</div>
+                    <div class="weekday">Ter</div>
+                    <div class="weekday">Qua</div>
+                    <div class="weekday">Qui</div>
+                    <div class="weekday">Sex</div>
+                    <div class="weekday">Sáb</div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Dias serão inseridos aqui -->
+                </div>
+            </div>
+
+            <!-- Modal de Tarefas do Dia -->
+            <div class="day-tasks-modal" id="dayTasksModal">
+                <div class="day-tasks-content">
+                    <div class="day-tasks-header">
+                        <h3 id="dayTasksTitle">Tarefas de 07/11/2025</h3>
+                        <button class="modal-close" id="dayTasksClose">&times;</button>
+                    </div>
+                    <div class="day-tasks-list" id="dayTasksList">
+                        <!-- Tarefas do dia serão listadas aqui -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conquistas e Gamificação -->
+        <div class="achievements-section">
+            <div class="section-header">
+                <h2>🏆 Conquistas e Estatísticas</h2>
+            </div>
+
+            <!-- Título do Usuário -->
+            <div class="user-title-card">
+                <div class="title-icon" id="titleIcon">🌱</div>
+                <div class="title-content">
+                    <div class="title-label">Seu Título</div>
+                    <div class="title-name" id="titleName">Novato</div>
+                </div>
+            </div>
+
+            <!-- Estatísticas de Usuário -->
+            <div class="user-stats">
+                <div class="stat-card level">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Nível</div>
+                        <div class="stat-value" id="userLevel">1</div>
+                    </div>
+                </div>
+
+                <div class="stat-card points">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Pontos</div>
+                        <div class="stat-value" id="userPoints">0</div>
+                    </div>
+                </div>
+
+                <div class="stat-card streak">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Sequência</div>
+                        <div class="stat-value" id="userStreak">0 dias</div>
+                    </div>
+                </div>
+
+                <div class="stat-card completed">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <div class="stat-label">Concluídas</div>
+                        <div class="stat-value" id="totalCompleted">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Desafio Diário -->
+            <div class="daily-challenge" id="dailyChallengeCard">
+                <div class="challenge-header">
+                    <div class="challenge-icon">🎯</div>
+                    <div class="challenge-title-text">Desafio Diário</div>
+                </div>
+                <div class="challenge-description" id="challengeDescription">
+                    Complete 3 tarefas hoje
+                </div>
+                <div class="challenge-progress">
+                    <div class="challenge-progress-bar">
+                        <div class="challenge-progress-fill" id="challengeProgressFill"></div>
+                    </div>
+                    <div class="challenge-progress-text">
+                        <span id="challengeProgressText">0 / 3</span>
+                        <span class="challenge-reward">+100 XP 💎</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barra de Progresso de Nível -->
+            <div class="level-progress">
+                <div class="level-info">
+                    <span>Nível <span id="currentLevel">1</span></span>
+                    <span><span id="currentXP">0</span> / <span id="nextLevelXP">100</span> XP</span>
+                </div>
+                <div class="level-bar">
+                    <div class="level-fill" id="levelFill"></div>
+                </div>
+            </div>
+
+            <!-- Grid de Conquistas -->
+            <div class="achievements-grid" id="achievementsGrid">
+                <!-- Conquistas serão inseridas aqui -->
+            </div>
+        </div>
     </div>
 
+    <!-- Modal de Meta -->
+    <div class="modal-overlay" id="goalModal">
+        <div class="modal-content modal-goal">
+            <div class="modal-header">
+                <h3><span class="goal-icon">🎯</span><span id="goalModalTitle">Nova Meta</span></h3>
+                <button class="modal-close" id="goalModalClose">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="input-group">
+                    <label for="goalTitle">📝 Título da Meta <span style="color: #ff6b6b;">*</span></label>
+                    <input type="text" id="goalTitle" class="modal-input" placeholder="Ex: Concluir 50 tarefas"
+                        required>
+                </div>
+
+                <div class="input-group">
+                    <label for="goalDescription">📄 Descrição</label>
+                    <textarea id="goalDescription" class="modal-textarea" placeholder="Descreva sua meta..."
+                        rows="3"></textarea>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="goalCategory">📁 Categoria</label>
+                        <select id="goalCategory" class="category-select">
+                            <option value="pessoal">🏠 Pessoal</option>
+                            <option value="trabalho">💼 Trabalho</option>
+                            <option value="estudo">📚 Estudo</option>
+                            <option value="saude">❤️ Saúde</option>
+                            <option value="outros">📌 Outros</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="goalDeadline">📅 Prazo <span style="color: #ff6b6b;">*</span></label>
+                        <input type="date" id="goalDeadline" class="date-input" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="goalTarget">🎯 Meta Numérica (opcional)</label>
+                    <input type="number" id="goalTarget" class="modal-input" placeholder="Ex: 50 tarefas" min="1">
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn cancel" id="goalModalCancel">Cancelar</button>
+                <button class="modal-btn save" id="goalModalSave">Salvar Meta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificação de Conquista -->
+    <div class="achievement-notification" id="achievementNotification">
+        <div class="achievement-content">
+            <div class="achievement-badge">🏆</div>
+            <div class="achievement-info">
+                <div class="achievement-title">Conquista Desbloqueada!</div>
+                <div class="achievement-name" id="achievementName"></div>
+                <div class="achievement-xp">+<span id="achievementXP"></span> XP</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Carrega os módulos ES6 -->
+    <script type="module" src="src/js/main.js"></script>
+    <!-- Mantém o index.js por compatibilidade (será refatorado gradualmente) -->
     <script src="src/js/index.js"></script>
 </body>
 
