@@ -1762,6 +1762,7 @@ header p {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+    margin-top: 24px;
 }
 
 .modal-btn {
