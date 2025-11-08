@@ -2268,34 +2268,62 @@ class AppointmentsManager {
 
         this.saveToStorage();
         this.renderAppointments();
-        
-        // Fechar modal ANTES de atualizar calendário
-        this.closeModal();
 
-        // Atualizar calendário se existir (com pequeno delay para garantir)
-        setTimeout(() => {
-            if (window.calendarManager) {
-                window.calendarManager.refresh();
-            }
-        }, 100);
+        // Fechar modal imediatamente
+        this.appointmentModal.classList.remove('active');
+        this.currentAppointmentId = null;
+
+        // Atualizar calendário imediatamente e forçar re-render
+        if (window.calendarManager) {
+            // Força atualização imediata
+            window.calendarManager.render();
+        }
     }
 
     deleteAppointment(appointmentId) {
         const appointment = this.appointments.find(a => a.id === appointmentId);
         if (!appointment) return;
 
-        const confirmDelete = confirm(`Deseja realmente excluir o compromisso "${appointment.title}"?`);
-        if (confirmDelete) {
+        // Mostrar modal de confirmação personalizado
+        this.showDeleteConfirmation(appointment, () => {
             this.appointments = this.appointments.filter(a => a.id !== appointmentId);
             this.saveToStorage();
             this.renderAppointments();
             this.showAppointmentMessage('🗑️ Compromisso excluído com sucesso!', 'success');
 
-            // Atualizar calendário
+            // Atualizar calendário imediatamente
             if (window.calendarManager) {
-                window.calendarManager.refresh();
+                window.calendarManager.render();
             }
-        }
+        });
+    }
+
+    showDeleteConfirmation(appointment, onConfirm) {
+        const modal = document.getElementById('deleteAppointmentModal');
+        const message = document.getElementById('deleteAppointmentMessage');
+        const cancelBtn = document.getElementById('deleteAppointmentCancel');
+        const confirmBtn = document.getElementById('deleteAppointmentConfirm');
+
+        message.textContent = `Tem certeza que deseja excluir "${appointment.title}"?`;
+
+        const closeModal = () => {
+            modal.classList.remove('show');
+        };
+
+        cancelBtn.onclick = closeModal;
+
+        confirmBtn.onclick = () => {
+            closeModal();
+            if (onConfirm) onConfirm();
+        };
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        };
+
+        modal.classList.add('show');
     }
 
     renderAppointments() {
@@ -2517,16 +2545,16 @@ class AppointmentsManager {
 
         const modal = document.getElementById('appointmentDetailModal');
         const body = document.getElementById('appointmentDetailBody');
-        
+
         const appointmentDate = new Date(appointment.dateTime);
-        const dateText = appointmentDate.toLocaleDateString('pt-BR', { 
-            day: '2-digit', 
-            month: 'long', 
-            year: 'numeric' 
+        const dateText = appointmentDate.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
         });
-        const timeText = appointmentDate.toLocaleTimeString('pt-BR', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        const timeText = appointmentDate.toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
         });
 
         const categoryEmojis = {
@@ -2588,6 +2616,11 @@ class AppointmentsManager {
 
         editBtn.onclick = () => {
             modal.classList.remove('show');
+            // Fechar também o modal do dia se estiver aberto
+            const dayModal = document.getElementById('dayTasksModal');
+            if (dayModal) {
+                dayModal.classList.remove('show');
+            }
             this.openModal(appointmentId);
         };
 
