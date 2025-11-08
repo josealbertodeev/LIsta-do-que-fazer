@@ -2915,6 +2915,31 @@ body.light-mode .goal-card {
     border: 2px solid #e2e8f0;
 }
 
+body.light-mode .appointment-card {
+    background: white;
+    border: 2px solid #fce7f3;
+}
+
+body.light-mode .appointment-card.today {
+    border-color: #10b981;
+    background: #d1fae5;
+}
+
+body.light-mode .appointment-title {
+    color: #0f172a;
+    font-weight: 800;
+}
+
+body.light-mode .appointment-description {
+    background: #f8fafc;
+    color: #475569;
+}
+
+body.light-mode .day-appointment-item {
+    background: #fce7f3;
+    border-color: #f9a8d4;
+}
+
 body.light-mode .goal-title {
     color: #0f172a;
     font-weight: 800;
@@ -3547,6 +3572,350 @@ body.light-mode .day-task-count {
     outline: none;
     border-color: #667eea;
     background: rgba(255, 255, 255, 0.08);
+}
+
+/* ============================================
+   SEÇÃO: COMPROMISSOS E AGENDAMENTOS
+   ============================================ */
+
+/* Botões de ação */
+.goals-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.add-appointment-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+}
+
+.add-appointment-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+}
+
+/* Modal de Compromisso */
+.modal-appointment {
+    max-width: 600px;
+}
+
+.appointment-icon {
+    font-size: 24px;
+    margin-right: 10px;
+}
+
+.time-input {
+    padding: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-color);
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.time-input:focus {
+    outline: none;
+    border-color: #f093fb;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Lista de Compromissos */
+.appointments-list {
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.empty-state-appointments {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    font-style: italic;
+    background: rgba(240, 147, 251, 0.05);
+    border: 2px dashed rgba(240, 147, 251, 0.2);
+    border-radius: 15px;
+}
+
+/* Card de Compromisso */
+.appointment-card {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.1) 0%, rgba(245, 87, 108, 0.1) 100%);
+    border: 2px solid rgba(240, 147, 251, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.appointment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(240, 147, 251, 0.3);
+    border-color: rgba(240, 147, 251, 0.5);
+}
+
+.appointment-card.today {
+    border-color: #10b981;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.15) 100%);
+}
+
+.appointment-card.past {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+}
+
+.appointment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.appointment-title-section {
+    flex: 1;
+}
+
+.appointment-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.appointment-category {
+    display: inline-block;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: rgba(240, 147, 251, 0.2);
+    color: #f093fb;
+}
+
+.appointment-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.appointment-edit-btn,
+.appointment-delete-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.appointment-edit-btn:hover {
+    background: rgba(102, 126, 234, 0.3);
+    border-color: #667eea;
+}
+
+.appointment-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: #ef4444;
+}
+
+.appointment-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+
+.appointment-detail {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.detail-icon {
+    font-size: 16px;
+}
+
+.detail-text {
+    color: var(--text-color);
+}
+
+.appointment-description {
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 10px;
+}
+
+.appointment-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.today-badge {
+    background: #10b981;
+    color: white;
+}
+
+.past-badge {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-secondary);
+}
+
+/* Notificação de Compromisso */
+.appointment-notification {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    min-width: 300px;
+    max-width: 400px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    transform: translateX(500px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.appointment-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.appointment-notification.error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.appointment-notification.warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.appointment-notification-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.appointment-notification-message {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.appointment-notification-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.appointment-notification-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Calendário - Badges de Items */
+.calendar-day .day-items {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.day-item-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    justify-content: center;
+}
+
+.day-item-badge.tasks {
+    background: rgba(102, 126, 234, 0.3);
+    color: #667eea;
+}
+
+.day-item-badge.appointments {
+    background: rgba(240, 147, 251, 0.3);
+    color: #f093fb;
+}
+
+.calendar-day.has-items {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Modal do Dia - Seções */
+.day-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 20px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.day-section-title:first-child {
+    margin-top: 0;
+}
+
+.day-appointment-item {
+    background: rgba(240, 147, 251, 0.1);
+    border: 1px solid rgba(240, 147, 251, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.day-appointment-time {
+    font-size: 14px;
+    color: #f093fb;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.day-appointment-title {
+    font-size: 16px;
+    color: var(--text-color);
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.day-appointment-location {
+    font-size: 13px;
+    color: var(--text-secondary);
 }
 
 /* ========================================

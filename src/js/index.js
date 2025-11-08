@@ -2107,6 +2107,408 @@ class GoalsManager {
 }
 
 // ============================================
+// SISTEMA DE COMPROMISSOS E AGENDAMENTOS
+// ============================================
+
+class AppointmentsManager {
+    constructor() {
+        this.appointments = this.loadAppointments();
+        this.currentAppointmentId = null;
+        this.notificationCheckInterval = null;
+        
+        // Elementos do DOM
+        this.appointmentModal = document.getElementById('appointmentModal');
+        this.appointmentModalTitle = document.getElementById('appointmentModalTitle');
+        this.appointmentTitle = document.getElementById('appointmentTitle');
+        this.appointmentDate = document.getElementById('appointmentDate');
+        this.appointmentTime = document.getElementById('appointmentTime');
+        this.appointmentLocation = document.getElementById('appointmentLocation');
+        this.appointmentDescription = document.getElementById('appointmentDescription');
+        this.appointmentReminder = document.getElementById('appointmentReminder');
+        this.appointmentCategory = document.getElementById('appointmentCategory');
+        this.appointmentsList = document.getElementById('appointmentsList');
+        
+        this.initEventListeners();
+        this.renderAppointments();
+        this.startNotificationChecker();
+        
+        // Solicitar permissão para notificações
+        this.requestNotificationPermission();
+    }
+    
+    initEventListeners() {
+        // Botão adicionar compromisso
+        document.getElementById('addAppointmentBtn')?.addEventListener('click', () => this.openModal());
+        
+        // Botões do modal
+        document.getElementById('appointmentModalClose')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('appointmentModalCancel')?.addEventListener('click', () => this.closeModal());
+        document.getElementById('appointmentModalSave')?.addEventListener('click', () => this.saveAppointment());
+        
+        // Fechar modal ao clicar fora
+        this.appointmentModal?.addEventListener('click', (e) => {
+            if (e.target === this.appointmentModal) {
+                this.closeModal();
+            }
+        });
+    }
+    
+    requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+    
+    loadAppointments() {
+        const stored = localStorage.getItem('appointments');
+        return stored ? JSON.parse(stored) : [];
+    }
+    
+    saveToStorage() {
+        localStorage.setItem('appointments', JSON.stringify(this.appointments));
+    }
+    
+    openModal(appointmentId = null) {
+        this.currentAppointmentId = appointmentId;
+        
+        if (appointmentId) {
+            const appointment = this.appointments.find(a => a.id === appointmentId);
+            if (appointment) {
+                this.appointmentModalTitle.textContent = 'Editar Compromisso';
+                this.appointmentTitle.value = appointment.title;
+                
+                // Converter data ISO para formato YYYY-MM-DD
+                const date = new Date(appointment.dateTime);
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                this.appointmentDate.value = `${year}-${month}-${day}`;
+                
+                // Extrair horário
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                this.appointmentTime.value = `${hours}:${minutes}`;
+                
+                this.appointmentLocation.value = appointment.location || '';
+                this.appointmentDescription.value = appointment.description || '';
+                this.appointmentReminder.value = appointment.reminder || '1hour';
+                this.appointmentCategory.value = appointment.category || 'pessoal';
+            }
+        } else {
+            this.appointmentModalTitle.textContent = 'Novo Compromisso';
+            this.appointmentTitle.value = '';
+            this.appointmentDate.value = '';
+            this.appointmentTime.value = '';
+            this.appointmentLocation.value = '';
+            this.appointmentDescription.value = '';
+            this.appointmentReminder.value = '1hour';
+            this.appointmentCategory.value = 'pessoal';
+        }
+        
+        this.appointmentModal.classList.add('active');
+    }
+    
+    closeModal() {
+        this.appointmentModal.classList.remove('active');
+        this.currentAppointmentId = null;
+    }
+    
+    saveAppointment() {
+        const title = this.appointmentTitle.value.trim();
+        const date = this.appointmentDate.value;
+        const time = this.appointmentTime.value;
+        
+        if (!title) {
+            this.showAppointmentMessage('Por favor, digite um título para o compromisso!', 'error');
+            return;
+        }
+        
+        if (!date) {
+            this.showAppointmentMessage('Por favor, selecione uma data!', 'error');
+            return;
+        }
+        
+        if (!time) {
+            this.showAppointmentMessage('Por favor, selecione um horário!', 'error');
+            return;
+        }
+        
+        // Combinar data e hora
+        const dateTime = new Date(`${date}T${time}:00`);
+        
+        const appointmentData = {
+            title,
+            dateTime: dateTime.toISOString(),
+            location: this.appointmentLocation.value.trim(),
+            description: this.appointmentDescription.value.trim(),
+            reminder: this.appointmentReminder.value,
+            category: this.appointmentCategory.value,
+            notified: false,
+            createdAt: new Date().toISOString()
+        };
+        
+        if (this.currentAppointmentId) {
+            // Editar compromisso existente
+            const index = this.appointments.findIndex(a => a.id === this.currentAppointmentId);
+            if (index !== -1) {
+                this.appointments[index] = { ...this.appointments[index], ...appointmentData };
+                this.showAppointmentMessage('✅ Compromisso atualizado com sucesso!', 'success');
+            }
+        } else {
+            // Novo compromisso
+            appointmentData.id = Date.now();
+            this.appointments.push(appointmentData);
+            this.showAppointmentMessage('📅 Compromisso agendado com sucesso!', 'success');
+            
+            // Tocar som de sucesso
+            if (window.soundSystem) {
+                window.soundSystem.playSound('complete');
+            }
+        }
+        
+        this.saveToStorage();
+        this.renderAppointments();
+        this.closeModal();
+        
+        // Atualizar calendário se existir
+        if (window.calendarManager) {
+            window.calendarManager.refresh();
+        }
+    }
+    
+    deleteAppointment(appointmentId) {
+        const appointment = this.appointments.find(a => a.id === appointmentId);
+        if (!appointment) return;
+        
+        const confirmDelete = confirm(`Deseja realmente excluir o compromisso "${appointment.title}"?`);
+        if (confirmDelete) {
+            this.appointments = this.appointments.filter(a => a.id !== appointmentId);
+            this.saveToStorage();
+            this.renderAppointments();
+            this.showAppointmentMessage('🗑️ Compromisso excluído com sucesso!', 'success');
+            
+            // Atualizar calendário
+            if (window.calendarManager) {
+                window.calendarManager.refresh();
+            }
+        }
+    }
+    
+    renderAppointments() {
+        if (this.appointments.length === 0) {
+            this.appointmentsList.innerHTML = '<div class="empty-state-appointments">Nenhum compromisso agendado. Clique em "Agendar Compromisso"!</div>';
+            return;
+        }
+        
+        // Ordenar por data
+        const sortedAppointments = [...this.appointments].sort((a, b) => 
+            new Date(a.dateTime) - new Date(b.dateTime)
+        );
+        
+        this.appointmentsList.innerHTML = sortedAppointments.map(appointment => {
+            const appointmentDate = new Date(appointment.dateTime);
+            const now = new Date();
+            const isPast = appointmentDate < now;
+            const isToday = appointmentDate.toDateString() === now.toDateString();
+            
+            const dateText = appointmentDate.toLocaleDateString('pt-BR', { 
+                day: '2-digit', 
+                month: 'short', 
+                year: 'numeric' 
+            });
+            const timeText = appointmentDate.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const categoryEmojis = {
+                pessoal: '🏠',
+                trabalho: '💼',
+                estudo: '📚',
+                saude: '❤️',
+                outros: '📌'
+            };
+            
+            return `
+                <div class="appointment-card ${isPast ? 'past' : ''} ${isToday ? 'today' : ''}" data-appointment-id="${appointment.id}">
+                    <div class="appointment-header">
+                        <div class="appointment-title-section">
+                            <div class="appointment-title">📅 ${appointment.title}</div>
+                            <div class="appointment-category">${categoryEmojis[appointment.category]} ${appointment.category}</div>
+                        </div>
+                        <div class="appointment-actions">
+                            <button class="appointment-edit-btn" onclick="window.appointmentsManager.openModal(${appointment.id})" title="Editar">
+                                ✏️
+                            </button>
+                            <button class="appointment-delete-btn" onclick="window.appointmentsManager.deleteAppointment(${appointment.id})" title="Excluir">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                    <div class="appointment-details">
+                        <div class="appointment-detail">
+                            <span class="detail-icon">📅</span>
+                            <span class="detail-text">${dateText}</span>
+                        </div>
+                        <div class="appointment-detail">
+                            <span class="detail-icon">⏰</span>
+                            <span class="detail-text">${timeText}</span>
+                        </div>
+                        ${appointment.location ? `
+                            <div class="appointment-detail">
+                                <span class="detail-icon">📍</span>
+                                <span class="detail-text">${appointment.location}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                    ${appointment.description ? `
+                        <div class="appointment-description">
+                            ${appointment.description}
+                        </div>
+                    ` : ''}
+                    ${isToday ? '<div class="appointment-badge today-badge">Hoje!</div>' : ''}
+                    ${isPast ? '<div class="appointment-badge past-badge">Passado</div>' : ''}
+                </div>
+            `;
+        }).join('');
+    }
+    
+    showAppointmentMessage(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = `appointment-notification ${type}`;
+        notification.innerHTML = `
+            <div class="appointment-notification-content">
+                <span class="appointment-notification-message">${message}</span>
+                <button class="appointment-notification-close">&times;</button>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        const closeBtn = notification.querySelector('.appointment-notification-close');
+        closeBtn.addEventListener('click', () => notification.remove());
+        
+        setTimeout(() => notification.classList.add('show'), 10);
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
+    }
+    
+    startNotificationChecker() {
+        // Verificar a cada minuto
+        this.notificationCheckInterval = setInterval(() => {
+            this.checkNotifications();
+        }, 60000); // 60 segundos
+        
+        // Verificar imediatamente ao iniciar
+        this.checkNotifications();
+    }
+    
+    checkNotifications() {
+        const now = new Date();
+        
+        this.appointments.forEach(appointment => {
+            if (appointment.notified) return;
+            
+            const appointmentDate = new Date(appointment.dateTime);
+            const diffMs = appointmentDate - now;
+            const diffMinutes = Math.floor(diffMs / 60000);
+            
+            let shouldNotify = false;
+            let notificationTitle = '';
+            let notificationBody = '';
+            
+            // Verificar tipo de lembrete
+            switch (appointment.reminder) {
+                case 'moment':
+                    if (diffMinutes <= 0 && diffMinutes > -5) {
+                        shouldNotify = true;
+                        notificationTitle = '🔔 Compromisso Agora!';
+                        notificationBody = `${appointment.title} está acontecendo agora!`;
+                    }
+                    break;
+                case '15min':
+                    if (diffMinutes <= 15 && diffMinutes > 10) {
+                        shouldNotify = true;
+                        notificationTitle = '⏰ Compromisso em 15 minutos';
+                        notificationBody = appointment.title;
+                    }
+                    break;
+                case '30min':
+                    if (diffMinutes <= 30 && diffMinutes > 25) {
+                        shouldNotify = true;
+                        notificationTitle = '⏰ Compromisso em 30 minutos';
+                        notificationBody = appointment.title;
+                    }
+                    break;
+                case '1hour':
+                    if (diffMinutes <= 60 && diffMinutes > 55) {
+                        shouldNotify = true;
+                        notificationTitle = '⏰ Compromisso em 1 hora';
+                        notificationBody = appointment.title;
+                    }
+                    break;
+                case '2hours':
+                    if (diffMinutes <= 120 && diffMinutes > 115) {
+                        shouldNotify = true;
+                        notificationTitle = '⏰ Compromisso em 2 horas';
+                        notificationBody = appointment.title;
+                    }
+                    break;
+                case '1day':
+                    if (diffMinutes <= 1440 && diffMinutes > 1435) {
+                        shouldNotify = true;
+                        notificationTitle = '📅 Compromisso amanhã';
+                        notificationBody = appointment.title;
+                    }
+                    break;
+            }
+            
+            if (shouldNotify) {
+                this.sendNotification(notificationTitle, notificationBody, appointment);
+                appointment.notified = true;
+                this.saveToStorage();
+            }
+        });
+    }
+    
+    sendNotification(title, body, appointment) {
+        // Notificação do navegador
+        if ('Notification' in window && Notification.permission === 'granted') {
+            const notification = new Notification(title, {
+                body: body,
+                icon: '📅',
+                badge: '📅',
+                tag: `appointment-${appointment.id}`,
+                requireInteraction: true
+            });
+            
+            notification.onclick = () => {
+                window.focus();
+                notification.close();
+            };
+        }
+        
+        // Notificação visual no app
+        this.showAppointmentMessage(`${title}: ${body}`, 'warning');
+        
+        // Tocar som de notificação
+        if (window.soundSystem) {
+            window.soundSystem.playSound('notification');
+        }
+    }
+    
+    getAppointmentsByDate(date) {
+        const dateStr = date.toISOString().split('T')[0];
+        return this.appointments.filter(appointment => {
+            const appointmentDateStr = new Date(appointment.dateTime).toISOString().split('T')[0];
+            return appointmentDateStr === dateStr;
+        });
+    }
+}
+
+// ============================================
 // SISTEMA DE GAMIFICAÇÃO E CONQUISTAS
 // ============================================
 
@@ -2715,6 +3117,9 @@ if (!window.appInitialized) {
         // Cria o gerenciador de metas
         window.goalsManager = new GoalsManager();
 
+        // Cria o gerenciador de compromissos
+        window.appointmentsManager = new AppointmentsManager();
+
         // Cria o sistema de gamificação
         window.gamificationSystem = new GamificationSystem();
 
@@ -2947,17 +3352,26 @@ class CalendarManager {
         const date = new Date(year, month, day);
         const dateStr = this.formatDate(date);
         const tasks = this.getTasksForDate(dateStr);
-        const taskCount = tasks.length;
+        const appointments = this.getAppointmentsForDate(date);
+        const totalItems = tasks.length + appointments.length;
 
         let classes = 'calendar-day';
         if (isOtherMonth) classes += ' other-month';
         if (isToday) classes += ' today';
-        if (taskCount > 0) classes += ' has-tasks';
+        if (totalItems > 0) classes += ' has-items';
+
+        let itemsHTML = '';
+        if (tasks.length > 0) {
+            itemsHTML += `<div class="day-item-badge tasks">✓ ${tasks.length}</div>`;
+        }
+        if (appointments.length > 0) {
+            itemsHTML += `<div class="day-item-badge appointments">📅 ${appointments.length}</div>`;
+        }
 
         return `
             <div class="${classes}" data-date="${dateStr}">
                 <div class="day-number">${day}</div>
-                ${taskCount > 0 ? `<div class="day-task-count">${taskCount} ${taskCount === 1 ? 'tarefa' : 'tarefas'}</div>` : ''}
+                <div class="day-items">${itemsHTML}</div>
             </div>
         `;
     }
@@ -2978,9 +3392,15 @@ class CalendarManager {
         });
     }
 
+    getAppointmentsForDate(date) {
+        if (!window.appointmentsManager) return [];
+        return window.appointmentsManager.getAppointmentsByDate(date);
+    }
+
     showDayTasks(dateStr) {
         const tasks = this.getTasksForDate(dateStr);
         const date = new Date(dateStr + 'T00:00:00');
+        const appointments = this.getAppointmentsForDate(date);
 
         // Formatar data para exibição
         const day = String(date.getDate()).padStart(2, '0');
@@ -2988,12 +3408,34 @@ class CalendarManager {
         const year = date.getFullYear();
         const formattedDate = `${day}/${month}/${year}`;
 
-        this.dayTasksTitle.textContent = `Tarefas de ${formattedDate}`;
+        this.dayTasksTitle.textContent = `Agenda de ${formattedDate}`;
 
-        if (tasks.length === 0) {
-            this.dayTasksList.innerHTML = '<div class="empty-state">Nenhuma tarefa para este dia</div>';
-        } else {
-            this.dayTasksList.innerHTML = tasks.map(task => {
+        let html = '';
+
+        // Mostrar compromissos primeiro
+        if (appointments.length > 0) {
+            html += '<div class="day-section-title">📅 Compromissos</div>';
+            html += appointments.map(appointment => {
+                const appointmentDate = new Date(appointment.dateTime);
+                const timeText = appointmentDate.toLocaleTimeString('pt-BR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+
+                return `
+                    <div class="day-appointment-item">
+                        <div class="day-appointment-time">⏰ ${timeText}</div>
+                        <div class="day-appointment-title">${appointment.title}</div>
+                        ${appointment.location ? `<div class="day-appointment-location">📍 ${appointment.location}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Mostrar tarefas
+        if (tasks.length > 0) {
+            html += '<div class="day-section-title">✓ Tarefas</div>';
+            html += tasks.map(task => {
                 const categoryEmojis = {
                     pessoal: '🏠',
                     trabalho: '💼',
@@ -3019,6 +3461,12 @@ class CalendarManager {
             }).join('');
         }
 
+        // Mensagem vazia
+        if (appointments.length === 0 && tasks.length === 0) {
+            html = '<div class="empty-state">Nenhum compromisso ou tarefa para este dia</div>';
+        }
+
+        this.dayTasksList.innerHTML = html;
         this.dayTasksModal.classList.add('show');
     }
 
