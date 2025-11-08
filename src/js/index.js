@@ -1864,7 +1864,16 @@ class GoalsManager {
                 this.goalTitle.value = goal.title;
                 this.goalDescription.value = goal.description || '';
                 this.goalCategory.value = goal.category;
-                this.goalDeadline.value = goal.deadline || '';
+                // Converter data ISO para formato YYYY-MM-DD para o input
+                if (goal.deadline) {
+                    const date = new Date(goal.deadline);
+                    const year = date.getUTCFullYear();
+                    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(date.getUTCDate()).padStart(2, '0');
+                    this.goalDeadline.value = `${year}-${month}-${day}`;
+                } else {
+                    this.goalDeadline.value = '';
+                }
                 this.goalTarget.value = goal.target || '';
             }
         } else {
@@ -1898,11 +1907,14 @@ class GoalsManager {
             return;
         }
 
+        // Converter a data para o timezone local para evitar bug do dia anterior
+        const deadlineDate = new Date(deadline + 'T00:00:00');
+
         const goalData = {
             title,
             description: this.goalDescription.value.trim(),
             category: this.goalCategory.value,
-            deadline: deadline,
+            deadline: deadlineDate.toISOString(),
             target: parseInt(this.goalTarget.value) || null,
             progress: 0,
             createdAt: new Date().toISOString()
@@ -2043,10 +2055,16 @@ class GoalsManager {
             const progressPercentage = goal.target ?
                 Math.round((goal.progress / goal.target) * 100) : goal.progress;
 
-            const deadlineText = goal.deadline ?
-                new Date(goal.deadline).toLocaleDateString('pt-BR') : 'Sem prazo';
+            // Corrigir exibição da data para evitar mostrar dia anterior
+            const deadlineText = goal.deadline ? 
+                new Date(goal.deadline).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Sem prazo';
 
-            const isOverdue = goal.deadline && new Date(goal.deadline) < new Date();
+            // Comparar datas considerando apenas o dia (sem horário)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const deadlineDate = goal.deadline ? new Date(goal.deadline) : null;
+            if (deadlineDate) deadlineDate.setHours(0, 0, 0, 0);
+            const isOverdue = deadlineDate && deadlineDate < today;
 
             return `
                 <div class="goal-card" data-goal-id="${goal.id}">
