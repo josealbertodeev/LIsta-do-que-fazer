@@ -2218,8 +2218,21 @@ class AppointmentsManager {
     }
 
     closeModal() {
-        this.appointmentModal.classList.remove('active');
+        const modal = document.getElementById('appointmentModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+
         this.currentAppointmentId = null;
+
+        // Limpar o formulário
+        this.appointmentTitle.value = '';
+        this.appointmentDate.value = '';
+        this.appointmentTime.value = '';
+        this.appointmentLocation.value = '';
+        this.appointmentDescription.value = '';
+        this.appointmentReminder.value = 'none';
+        this.appointmentCategory.value = 'work';
     }
 
     saveAppointment() {
@@ -2271,8 +2284,8 @@ class AppointmentsManager {
             this.appointments.push(appointmentData);
             this.showAppointmentMessage('📅 Compromisso agendado com sucesso!', 'success');
 
-            // Tocar som de sucesso
-            if (window.soundSystem) {
+            // Tocar som de sucesso (verificar se existe o método)
+            if (window.soundSystem && typeof window.soundSystem.playSound === 'function') {
                 window.soundSystem.playSound('complete');
             }
         }
@@ -2280,13 +2293,8 @@ class AppointmentsManager {
         this.saveToStorage();
         this.renderAppointments();
 
-        // Fechar modal de forma mais robusta
-        const modal = document.getElementById('appointmentModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
-        this.appointmentModal.classList.remove('active');
-        this.currentAppointmentId = null;
+        // Fechar modal usando método closeModal para garantir
+        this.closeModal();
 
         // Atualizar calendário FORÇADAMENTE após salvar
         if (window.calendarManager) {
@@ -2351,82 +2359,8 @@ class AppointmentsManager {
     }
 
     renderAppointments() {
-        if (this.appointments.length === 0) {
-            this.appointmentsList.innerHTML = '<div class="empty-state-appointments">Nenhum compromisso agendado. Clique em "Agendar Compromisso"!</div>';
-            return;
-        }
-
-        // Ordenar por data
-        const sortedAppointments = [...this.appointments].sort((a, b) =>
-            new Date(a.dateTime) - new Date(b.dateTime)
-        );
-
-        this.appointmentsList.innerHTML = sortedAppointments.map(appointment => {
-            const appointmentDate = new Date(appointment.dateTime);
-            const now = new Date();
-            const isPast = appointmentDate < now;
-            const isToday = appointmentDate.toDateString() === now.toDateString();
-
-            const dateText = appointmentDate.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
-            });
-            const timeText = appointmentDate.toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-
-            const categoryEmojis = {
-                pessoal: '🏠',
-                trabalho: '💼',
-                estudo: '📚',
-                saude: '❤️',
-                outros: '📌'
-            };
-
-            return `
-                <div class="appointment-card ${isPast ? 'past' : ''} ${isToday ? 'today' : ''}" data-appointment-id="${appointment.id}">
-                    <div class="appointment-header">
-                        <div class="appointment-title-section">
-                            <div class="appointment-title">📅 ${appointment.title}</div>
-                            <div class="appointment-category">${categoryEmojis[appointment.category]} ${appointment.category}</div>
-                        </div>
-                        <div class="appointment-actions">
-                            <button class="appointment-edit-btn" onclick="window.appointmentsManager.openModal(${appointment.id})" title="Editar">
-                                ✏️
-                            </button>
-                            <button class="appointment-delete-btn" onclick="window.appointmentsManager.deleteAppointment(${appointment.id})" title="Excluir">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                    <div class="appointment-details">
-                        <div class="appointment-detail">
-                            <span class="detail-icon">📅</span>
-                            <span class="detail-text">${dateText}</span>
-                        </div>
-                        <div class="appointment-detail">
-                            <span class="detail-icon">⏰</span>
-                            <span class="detail-text">${timeText}</span>
-                        </div>
-                        ${appointment.location ? `
-                            <div class="appointment-detail">
-                                <span class="detail-icon">📍</span>
-                                <span class="detail-text">${appointment.location}</span>
-                            </div>
-                        ` : ''}
-                    </div>
-                    ${appointment.description ? `
-                        <div class="appointment-description">
-                            ${appointment.description}
-                        </div>
-                    ` : ''}
-                    ${isToday ? '<div class="appointment-badge today-badge">Hoje!</div>' : ''}
-                    ${isPast ? '<div class="appointment-badge past-badge">Passado</div>' : ''}
-                </div>
-            `;
-        }).join('');
+        // Não renderizar cards - compromissos aparecem apenas no calendário
+        this.appointmentsList.innerHTML = '';
     }
 
     showAppointmentMessage(message, type = 'success') {
@@ -3435,6 +3369,57 @@ class CalendarManager {
         });
     }
 
+    // Feriados brasileiros fixos e móveis
+    getHolidays(year) {
+        const holidays = {
+            // Feriados fixos
+            [`${year}-01-01`]: '🎉 Ano Novo',
+            [`${year}-04-21`]: '🇧🇷 Tiradentes',
+            [`${year}-05-01`]: '👷 Dia do Trabalho',
+            [`${year}-09-07`]: '🇧🇷 Independência',
+            [`${year}-10-12`]: '🙏 Nossa Sra. Aparecida',
+            [`${year}-11-02`]: '🕯️ Finados',
+            [`${year}-11-15`]: '🇧🇷 Proclamação República',
+            [`${year}-11-20`]: '✊ Consciência Negra',
+            [`${year}-12-25`]: '🎄 Natal'
+        };
+
+        // Calcular Páscoa (algoritmo de Meeus/Jones/Butcher)
+        const a = year % 19;
+        const b = Math.floor(year / 100);
+        const c = year % 100;
+        const d = Math.floor(b / 4);
+        const e = b % 4;
+        const f = Math.floor((b + 8) / 25);
+        const g = Math.floor((b - f + 1) / 3);
+        const h = (19 * a + b - d - g + 15) % 30;
+        const i = Math.floor(c / 4);
+        const k = c % 4;
+        const l = (32 + 2 * e + 2 * i - h - k) % 7;
+        const m = Math.floor((a + 11 * h + 22 * l) / 451);
+        const month = Math.floor((h + l - 7 * m + 114) / 31);
+        const day = ((h + l - 7 * m + 114) % 31) + 1;
+
+        const easter = new Date(year, month - 1, day);
+
+        // Carnaval (47 dias antes da Páscoa)
+        const carnaval = new Date(easter);
+        carnaval.setDate(easter.getDate() - 47);
+        holidays[this.formatDate(carnaval)] = '🎭 Carnaval';
+
+        // Sexta-feira Santa (2 dias antes da Páscoa)
+        const sextaSanta = new Date(easter);
+        sextaSanta.setDate(easter.getDate() - 2);
+        holidays[this.formatDate(sextaSanta)] = '✝️ Sexta-feira Santa';
+
+        // Corpus Christi (60 dias depois da Páscoa)
+        const corpusChristi = new Date(easter);
+        corpusChristi.setDate(easter.getDate() + 60);
+        holidays[this.formatDate(corpusChristi)] = '✝️ Corpus Christi';
+
+        return holidays;
+    }
+
     previousMonth() {
         this.currentDate.setMonth(this.currentDate.getMonth() - 1);
         this.render();
@@ -3516,18 +3501,23 @@ class CalendarManager {
     createDayHTML(day, year, month, isOtherMonth, isToday) {
         const date = new Date(year, month, day);
         const dateStr = this.formatDate(date);
-        const tasks = this.getTasksForDate(dateStr);
+        // Remover tarefas do calendário - mostrar apenas compromissos
         const appointments = this.getAppointmentsForDate(date);
-        const totalItems = tasks.length + appointments.length;
+        const totalItems = appointments.length;
+
+        // Verificar se é feriado
+        const holidays = this.getHolidays(year);
+        const holiday = holidays[dateStr];
 
         let classes = 'calendar-day';
         if (isOtherMonth) classes += ' other-month';
         if (isToday) classes += ' today';
         if (totalItems > 0) classes += ' has-items';
+        if (holiday) classes += ' holiday';
 
         let itemsHTML = '';
-        if (tasks.length > 0) {
-            itemsHTML += `<div class="day-item-badge tasks">✓ ${tasks.length}</div>`;
+        if (holiday) {
+            itemsHTML += `<div class="day-item-badge holiday-badge">${holiday}</div>`;
         }
         if (appointments.length > 0) {
             itemsHTML += `<div class="day-item-badge appointments">📅 ${appointments.length}</div>`;
@@ -3563,7 +3553,7 @@ class CalendarManager {
     }
 
     showDayTasks(dateStr) {
-        const tasks = this.getTasksForDate(dateStr);
+        // Remover tarefas - mostrar apenas compromissos
         const date = new Date(dateStr + 'T00:00:00');
         const appointments = this.getAppointmentsForDate(date);
 
@@ -3573,13 +3563,12 @@ class CalendarManager {
         const year = date.getFullYear();
         const formattedDate = `${day}/${month}/${year}`;
 
-        this.dayTasksTitle.textContent = `Agenda de ${formattedDate}`;
+        this.dayTasksTitle.textContent = `Compromissos de ${formattedDate}`;
 
         let html = '';
 
-        // Mostrar compromissos primeiro
+        // Mostrar apenas compromissos
         if (appointments.length > 0) {
-            html += '<div class="day-section-title">📅 Compromissos</div>';
             html += appointments.map(appointment => {
                 const appointmentDate = new Date(appointment.dateTime);
                 const timeText = appointmentDate.toLocaleTimeString('pt-BR', {
@@ -3598,38 +3587,9 @@ class CalendarManager {
             }).join('');
         }
 
-        // Mostrar tarefas
-        if (tasks.length > 0) {
-            html += '<div class="day-section-title">✓ Tarefas</div>';
-            html += tasks.map(task => {
-                const categoryEmojis = {
-                    pessoal: '🏠',
-                    trabalho: '💼',
-                    estudo: '📚',
-                    saude: '❤️',
-                    compras: '🛒',
-                    outros: '📌'
-                };
-
-                return `
-                    <div class="day-task-item ${task.completed ? 'completed' : ''}">
-                        <div class="day-task-text">
-                            ${task.completed ? '✓' : '○'} ${task.text}
-                        </div>
-                        <div class="day-task-meta">
-                            <span class="day-task-badge">${categoryEmojis[task.category] || '📌'} ${task.category}</span>
-                            ${task.priority ? '<span class="day-task-badge">⭐ Prioritária</span>' : ''}
-                            ${task.timeEstimate ? `<span class="day-task-badge">⏱️ ${task.timeEstimate} min</span>` : ''}
-                            ${task.completed ? '<span class="day-task-badge">✅ Concluída</span>' : '<span class="day-task-badge">⏳ Pendente</span>'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
         // Mensagem vazia
-        if (appointments.length === 0 && tasks.length === 0) {
-            html = '<div class="empty-state">Nenhum compromisso ou tarefa para este dia</div>';
+        if (appointments.length === 0) {
+            html = '<div class="empty-state">Nenhum compromisso para este dia</div>';
         }
 
         this.dayTasksList.innerHTML = html;
