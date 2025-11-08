@@ -2056,7 +2056,7 @@ class GoalsManager {
                 Math.round((goal.progress / goal.target) * 100) : goal.progress;
 
             // Corrigir exibição da data para evitar mostrar dia anterior
-            const deadlineText = goal.deadline ? 
+            const deadlineText = goal.deadline ?
                 new Date(goal.deadline).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Sem prazo';
 
             // Comparar datas considerando apenas o dia (sem horário)
