@@ -137,6 +137,16 @@
         white-space: nowrap;
     }
 
+    /* Ocultar badge dourado do feriado em telas médias */
+    .day-item-badge.holiday-badge {
+        display: none !important;
+    }
+
+    /* Mostrar apenas o texto FERIADO */
+    .day-item-badge.holiday-label {
+        font-size: 8px;
+    }
+
     /* Goals section responsive - 1127px */
     .goals-buttons {
         flex-direction: column;
@@ -221,6 +231,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%;
+    }
+
+    /* Ocultar badge dourado do feriado em tablets */
+    .day-item-badge.holiday-badge {
+        display: none !important;
+    }
+
+    .day-item-badge.holiday-label {
+        font-size: 7px;
     }
 
     .day-appointment-item {
@@ -312,6 +331,15 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         max-width: 100%;
+    }
+
+    /* Ocultar badge dourado do feriado em celulares */
+    .day-item-badge.holiday-badge {
+        display: none !important;
+    }
+
+    .day-item-badge.holiday-label {
+        font-size: 7px;
     }
 
     /* Goals section responsive - 480px */
@@ -409,6 +437,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%;
+    }
+
+    /* Ocultar badge dourado do feriado em telas muito pequenas */
+    .day-item-badge.holiday-badge {
+        display: none !important;
+    }
+
+    .day-item-badge.holiday-label {
+        font-size: 6px;
     }
 
     .day-tasks-content {

@@ -3517,7 +3517,14 @@ class CalendarManager {
 
         let itemsHTML = '';
         if (holiday) {
-            itemsHTML += `<div class="day-item-badge holiday-badge">${holiday}</div>`;
+            itemsHTML += `
+                <div class="day-item-badge holiday-label">
+                    <span class="badge-text">Feriado</span>
+                </div>
+                <div class="day-item-badge holiday-badge">
+                    <span class="badge-text">${holiday}</span>
+                </div>
+            `;
         }
         if (appointments.length > 0) {
             const appointmentText = appointments.length === 1

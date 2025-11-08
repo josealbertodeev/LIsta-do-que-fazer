@@ -4368,6 +4368,7 @@ body.light-mode .day-task-count {
 .calendar-controls {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 20px;
 }
 
@@ -4477,18 +4478,61 @@ body.light-mode .day-task-count {
     text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
 }
 
+.day-item-badge.holiday-label {
+    background: transparent;
+    color: #ffffff;
+    font-size: 8px;
+    padding: 1px 0;
+    border-radius: 0;
+    font-weight: 800;
+    box-shadow: none;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+    opacity: 0.95;
+}
+
 .day-item-badge.holiday-badge {
     background: linear-gradient(135deg, #ffc107, #ffd740);
     color: #1a1a2e;
-    font-size: 9px;
-    padding: 2px 4px;
+    font-size: 8px;
+    padding: 3px 5px;
     border-radius: 4px;
-    font-weight: 600;
+    font-weight: 800;
     box-shadow: 0 2px 4px rgba(255, 193, 7, 0.4);
     animation: pulse-holiday 2s ease-in-out infinite;
     text-align: center;
     justify-content: center;
     width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex-shrink: 1;
+    letter-spacing: 0.3px;
+}
+
+.day-item-badge.holiday-badge .badge-icon {
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.day-item-badge.holiday-badge .badge-text {
+    font-size: 8px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: 0.2px;
 }
 
 @keyframes pulse-holiday {
