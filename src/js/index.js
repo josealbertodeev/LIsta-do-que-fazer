@@ -2233,8 +2233,10 @@ class AppointmentsManager {
             return;
         }
 
-        // Combinar data e hora
-        const dateTime = new Date(`${date}T${time}:00`);
+        // Combinar data e hora (garantir timezone local)
+        const [hours, minutes] = time.split(':');
+        const dateTime = new Date(date + 'T00:00:00');
+        dateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
 
         const appointmentData = {
             title,
@@ -2273,10 +2275,13 @@ class AppointmentsManager {
         this.appointmentModal.classList.remove('active');
         this.currentAppointmentId = null;
 
-        // Atualizar calendário imediatamente e forçar re-render
+        // Atualizar calendário FORÇADAMENTE após salvar
         if (window.calendarManager) {
-            // Força atualização imediata
-            window.calendarManager.render();
+            // Usar setTimeout para garantir que a atualização aconteça após o modal fechar
+            setTimeout(() => {
+                window.calendarManager.currentDate = new Date(window.calendarManager.currentDate);
+                window.calendarManager.render();
+            }, 50);
         }
     }
 
@@ -2532,9 +2537,15 @@ class AppointmentsManager {
     }
 
     getAppointmentsByDate(date) {
-        const dateStr = date.toISOString().split('T')[0];
+        // Normalizar a data para comparação (ignorar horário)
+        const searchDate = new Date(date);
+        searchDate.setHours(0, 0, 0, 0);
+        const dateStr = searchDate.toISOString().split('T')[0];
+        
         return this.appointments.filter(appointment => {
-            const appointmentDateStr = new Date(appointment.dateTime).toISOString().split('T')[0];
+            const appointmentDate = new Date(appointment.dateTime);
+            appointmentDate.setHours(0, 0, 0, 0);
+            const appointmentDateStr = appointmentDate.toISOString().split('T')[0];
             return appointmentDateStr === dateStr;
         });
     }
