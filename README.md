@@ -515,7 +515,7 @@ git push origin feature/MinhaNovaFeature
 ### **José Alberto**
 
 [![GitHub](https://img.shields.io/badge/GitHub-josealbertodeev-black?style=for-the-badge&logo=github)](https://github.com/josealbertodeev)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conecte-blue?style=for-the-badge&logo=linkedin)](www.linkedin.com/in/josealbertofarias)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Conecte-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/josealbertofarias)
 
 **"Transformando ideias em código, um commit por vez."** 💻✨
 
