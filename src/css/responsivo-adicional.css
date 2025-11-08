@@ -1,0 +1,476 @@
+/* Melhorias de responsivo para calendário e metas */
+
+/* Telas médias/grandes (1024px - 1400px) */
+@media (max-width: 1400px) {
+    .calendar-container {
+        max-width: 100%;
+    }
+
+    /* Header responsive */
+    header h1 {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-align: center;
+    }
+
+    /* Goals section responsive */
+    .goals-section .section-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .goals-buttons {
+        justify-content: center;
+    }
+
+    .empty-state-goals {
+        padding: 30px 20px;
+    }
+
+    .calendar-grid {
+        gap: 8px;
+    }
+
+    .calendar-day {
+        padding: 8px 6px;
+        min-height: 80px;
+    }
+
+    .day-item-badge.appointments {
+        font-size: 9px;
+        padding: 3px 6px;
+    }
+
+    .day-item-badge.appointments .badge-icon {
+        font-size: 11px;
+    }
+
+    .day-item-badge.appointments .badge-text {
+        font-size: 8px;
+    }
+
+    .day-item-badge.holiday-badge {
+        font-size: 8px;
+        padding: 2px 5px;
+    }
+}
+
+/* Telas médias (1024px - 1127px) - Problema principal */
+@media (max-width: 1127px) {
+    .calendar-container {
+        padding: 12px;
+        max-width: 100%;
+    }
+
+    .calendar-controls {
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .calendar-nav-btn {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+    }
+
+    .calendar-month-year {
+        font-size: 1.1rem;
+        min-width: 160px;
+    }
+
+    .calendar-grid {
+        gap: 6px;
+    }
+
+    .calendar-day {
+        padding: 6px 4px;
+        min-height: 70px;
+    }
+
+    .day-number {
+        font-size: 14px;
+    }
+
+    .day-items {
+        gap: 2px;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .day-item-badge {
+        font-size: 8px;
+        padding: 2px 4px;
+        max-width: 100%;
+    }
+
+    .day-item-badge.appointments {
+        font-size: 8px;
+        padding: 2px 4px;
+        gap: 2px;
+        max-width: 100%;
+    }
+
+    .day-item-badge.appointments .badge-icon {
+        font-size: 10px;
+    }
+
+    .day-item-badge.appointments .badge-text {
+        font-size: 7px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .day-item-badge.holiday-badge {
+        font-size: 7px;
+        padding: 2px 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Goals section responsive - 1127px */
+    .goals-buttons {
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+    }
+
+    .add-goal-btn,
+    .add-appointment-btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+}
+
+/* Tablets e Mobile Grande (≤ 768px) */
+@media (max-width: 768px) {
+    .calendar-controls {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .calendar-nav-btn {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .calendar-month-year {
+        font-size: 1.05rem;
+        min-width: 140px;
+    }
+
+    .weekday {
+        font-size: 10px;
+        padding: 5px 2px;
+    }
+
+    .calendar-grid {
+        gap: 3px;
+    }
+
+    .calendar-day {
+        padding: 6px 3px;
+        min-height: 65px;
+    }
+
+    .day-number {
+        font-size: 13px;
+        margin-bottom: 3px;
+    }
+
+    .day-items {
+        gap: 2px;
+        flex-direction: column;
+    }
+
+    .day-item-badge.appointments {
+        font-size: 8px;
+        padding: 2px 4px;
+        gap: 2px;
+        max-width: 100%;
+    }
+
+    .day-item-badge.appointments .badge-icon {
+        font-size: 10px;
+    }
+
+    .day-item-badge.appointments .badge-text {
+        font-size: 7px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .day-item-badge.holiday-badge {
+        font-size: 7px;
+        padding: 2px 4px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .day-appointment-item {
+        padding: 12px;
+    }
+
+    .day-appointment-time,
+    .day-appointment-title {
+        font-size: 13px;
+    }
+
+    /* Goals section responsive - 768px */
+    .empty-state-goals {
+        padding: 25px 15px;
+        font-size: 14px;
+    }
+
+    .add-goal-btn,
+    .add-appointment-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+}
+
+/* Responsivo para telas pequenas (480px - 768px) */
+@media (max-width: 480px) {
+    .calendar-container {
+        padding: 6px;
+        margin: 6px;
+    }
+
+    .calendar-month-year {
+        font-size: 1rem;
+    }
+
+    .calendar-nav-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1.1rem;
+    }
+
+    .weekday {
+        font-size: 9px;
+        padding: 4px 1px;
+    }
+
+    .calendar-grid {
+        gap: 2px;
+    }
+
+    .calendar-day {
+        padding: 4px 2px;
+        min-height: 55px;
+    }
+
+    .day-number {
+        font-size: 12px;
+        margin-bottom: 2px;
+    }
+
+    .day-items {
+        gap: 2px;
+        flex-direction: column;
+    }
+
+    .day-item-badge.appointments {
+        font-size: 7px;
+        padding: 2px 3px;
+        gap: 1px;
+        max-width: 100%;
+        word-wrap: break-word;
+    }
+
+    .day-item-badge.appointments .badge-icon {
+        font-size: 9px;
+    }
+
+    .day-item-badge.appointments .badge-text {
+        font-size: 6px;
+        line-height: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .day-item-badge.holiday-badge {
+        font-size: 6px;
+        padding: 1px 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    /* Goals section responsive - 480px */
+    .goals-section .section-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .empty-state-goals {
+        padding: 20px 10px;
+        font-size: 13px;
+    }
+
+    .add-goal-btn,
+    .add-appointment-btn {
+        padding: 9px 18px;
+        font-size: 12px;
+        max-width: 250px;
+    }
+}
+
+/* Responsivo para telas muito pequenas (< 400px) */
+@media (max-width: 400px) {
+    .calendar-container {
+        padding: 5px;
+        margin: 4px;
+        border-radius: 10px;
+    }
+
+    .calendar-controls {
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .calendar-month-year {
+        font-size: 0.95rem;
+        margin-bottom: 6px;
+    }
+
+    .calendar-nav-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 1rem;
+    }
+
+    .weekday {
+        font-size: 8px;
+        padding: 3px 0px;
+        font-weight: 600;
+    }
+
+    .calendar-grid {
+        gap: 2px;
+    }
+
+    .calendar-day {
+        padding: 3px 1px;
+        min-height: 50px;
+        border-radius: 5px;
+    }
+
+    .day-number {
+        font-size: 11px;
+        margin-bottom: 2px;
+    }
+
+    .day-items {
+        gap: 1px;
+        flex-direction: column;
+    }
+
+    .day-item-badge.appointments {
+        font-size: 6px;
+        padding: 1px 2px;
+        gap: 0px;
+        max-width: 100%;
+    }
+
+    .day-item-badge.appointments .badge-icon {
+        font-size: 8px;
+    }
+
+    .day-item-badge.appointments .badge-text {
+        font-size: 5px;
+        line-height: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .day-item-badge.holiday-badge {
+        font-size: 5px;
+        padding: 1px 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    .day-tasks-content {
+        width: 98%;
+        padding: 15px 10px;
+        max-height: 92vh;
+        border-radius: 12px;
+    }
+
+    .day-tasks-header {
+        margin-bottom: 12px;
+    }
+
+    .day-tasks-header h3 {
+        font-size: 16px;
+    }
+
+    .day-tasks-close {
+        width: 30px;
+        height: 30px;
+        font-size: 1.3rem;
+    }
+
+    .day-appointment-item {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    .day-appointment-time {
+        font-size: 11px;
+    }
+
+    .day-appointment-title {
+        font-size: 12px;
+    }
+
+    .day-appointment-location {
+        font-size: 10px;
+    }
+
+    .day-appointment-hint {
+        font-size: 9px;
+    }
+
+    /* Goals section responsive - 400px */
+    .goals-section {
+        margin: 20px 0;
+    }
+
+    .goals-section .section-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .empty-state-goals {
+        padding: 18px 8px;
+        font-size: 12px;
+    }
+
+    .add-goal-btn,
+    .add-appointment-btn {
+        padding: 8px 16px;
+        font-size: 11px;
+        max-width: 220px;
+    }
+}

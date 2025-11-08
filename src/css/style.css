@@ -719,12 +719,18 @@ header h1 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
 }
 
 .title-icon {
     background: none;
     -webkit-text-fill-color: initial;
     font-style: normal;
+    display: inline-block;
 }
 
 /* Saudação ao usuário */
@@ -3912,7 +3918,9 @@ body.light-mode .day-task-count {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    margin-top: 6px;
+    margin-top: auto;
+    width: 100%;
+    max-width: 100%;
 }
 
 .day-item-badge {
@@ -3923,6 +3931,10 @@ body.light-mode .day-task-count {
     align-items: center;
     gap: 3px;
     justify-content: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .day-item-badge.tasks {
@@ -4344,6 +4356,15 @@ body.light-mode .day-task-count {
     margin: 40px 0;
 }
 
+.calendar-section .section-header h2 {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
 .calendar-controls {
     display: flex;
     align-items: center;
@@ -4381,6 +4402,8 @@ body.light-mode .day-task-count {
     border-radius: 15px;
     padding: 20px;
     margin-top: 20px;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .calendar-weekdays {
@@ -4397,12 +4420,15 @@ body.light-mode .day-task-count {
     color: var(--text-secondary);
     text-transform: uppercase;
     padding: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 10px;
+    width: 100%;
 }
 
 .calendar-day {
@@ -4418,6 +4444,8 @@ body.light-mode .day-task-count {
     align-items: center;
     justify-content: space-between;
     position: relative;
+    min-height: 90px;
+    overflow: hidden;
 }
 
 .calendar-day:hover {
@@ -4458,6 +4486,9 @@ body.light-mode .day-task-count {
     font-weight: 600;
     box-shadow: 0 2px 4px rgba(255, 193, 7, 0.4);
     animation: pulse-holiday 2s ease-in-out infinite;
+    text-align: center;
+    justify-content: center;
+    width: 100%;
 }
 
 @keyframes pulse-holiday {
@@ -4494,7 +4525,7 @@ body.light-mode .day-task-count {
     font-size: 16px;
     font-weight: 600;
     color: var(--text-color);
-    margin-bottom: 5px;
+    margin-bottom: 0;
 }
 
 .day-task-count {
