@@ -2304,6 +2304,12 @@ class AppointmentsManager {
             this.renderAppointments();
             this.showAppointmentMessage('🗑️ Compromisso excluído com sucesso!', 'success');
 
+            // Fechar o modal do dia (agenda)
+            const dayModal = document.getElementById('dayTasksModal');
+            if (dayModal) {
+                dayModal.classList.remove('show');
+            }
+
             // Atualizar calendário imediatamente
             if (window.calendarManager) {
                 window.calendarManager.render();
