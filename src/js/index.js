@@ -2141,9 +2141,18 @@ class AppointmentsManager {
         document.getElementById('addAppointmentBtn')?.addEventListener('click', () => this.openModal());
 
         // Botões do modal
-        document.getElementById('appointmentModalClose')?.addEventListener('click', () => this.closeModal());
-        document.getElementById('appointmentModalCancel')?.addEventListener('click', () => this.closeModal());
-        document.getElementById('appointmentModalSave')?.addEventListener('click', () => this.saveAppointment());
+        document.getElementById('appointmentModalClose')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.closeModal();
+        });
+        document.getElementById('appointmentModalCancel')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.closeModal();
+        });
+        document.getElementById('appointmentModalSave')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.saveAppointment();
+        });
 
         // Fechar modal ao clicar fora
         this.appointmentModal?.addEventListener('click', (e) => {
@@ -2271,9 +2280,8 @@ class AppointmentsManager {
         this.saveToStorage();
         this.renderAppointments();
 
-        // Fechar modal imediatamente
-        this.appointmentModal.classList.remove('active');
-        this.currentAppointmentId = null;
+        // Fechar modal usando método closeModal para garantir
+        this.closeModal();
 
         // Atualizar calendário FORÇADAMENTE após salvar
         if (window.calendarManager) {
@@ -2541,7 +2549,7 @@ class AppointmentsManager {
         const searchDate = new Date(date);
         searchDate.setHours(0, 0, 0, 0);
         const dateStr = searchDate.toISOString().split('T')[0];
-        
+
         return this.appointments.filter(appointment => {
             const appointmentDate = new Date(appointment.dateTime);
             appointmentDate.setHours(0, 0, 0, 0);
