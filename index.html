@@ -217,6 +217,23 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Modal de Detalhes do Compromisso -->
+            <div class="appointment-detail-modal" id="appointmentDetailModal">
+                <div class="appointment-detail-content">
+                    <div class="appointment-detail-header">
+                        <h3>📅 Detalhes do Compromisso</h3>
+                        <button class="modal-close" id="appointmentDetailClose">&times;</button>
+                    </div>
+                    <div class="appointment-detail-body" id="appointmentDetailBody">
+                        <!-- Detalhes serão inseridos aqui -->
+                    </div>
+                    <div class="appointment-detail-actions">
+                        <button class="appointment-detail-btn edit" id="appointmentDetailEdit">✏️ Editar</button>
+                        <button class="appointment-detail-btn delete" id="appointmentDetailDelete">🗑️ Excluir</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Conquistas e Gamificação -->
@@ -311,13 +328,15 @@
     <div class="modal-overlay" id="appointmentModal">
         <div class="modal-content modal-appointment">
             <div class="modal-header">
-                <h3><span class="appointment-icon">📅</span><span id="appointmentModalTitle">Novo Compromisso</span></h3>
+                <h3><span class="appointment-icon">📅</span><span id="appointmentModalTitle">Novo Compromisso</span>
+                </h3>
                 <button class="modal-close" id="appointmentModalClose">&times;</button>
             </div>
 
             <div class="modal-body">
                 <div class="input-group">
-                    <label for="appointmentTitle">📝 Título do Compromisso <span style="color: #ff6b6b;">*</span></label>
+                    <label for="appointmentTitle">📝 Título do Compromisso <span
+                            style="color: #ff6b6b;">*</span></label>
                     <input type="text" id="appointmentTitle" class="modal-input" placeholder="Ex: Reunião com cliente"
                         required>
                 </div>
@@ -336,13 +355,14 @@
 
                 <div class="input-group">
                     <label for="appointmentLocation">📍 Local</label>
-                    <input type="text" id="appointmentLocation" class="modal-input" placeholder="Ex: Sala de reuniões, endereço...">
+                    <input type="text" id="appointmentLocation" class="modal-input"
+                        placeholder="Ex: Sala de reuniões, endereço...">
                 </div>
 
                 <div class="input-group">
                     <label for="appointmentDescription">📄 Descrição</label>
-                    <textarea id="appointmentDescription" class="modal-textarea" placeholder="Detalhes do compromisso..."
-                        rows="3"></textarea>
+                    <textarea id="appointmentDescription" class="modal-textarea"
+                        placeholder="Detalhes do compromisso..." rows="3"></textarea>
                 </div>
 
                 <div class="input-group">

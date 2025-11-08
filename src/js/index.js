@@ -2115,7 +2115,7 @@ class AppointmentsManager {
         this.appointments = this.loadAppointments();
         this.currentAppointmentId = null;
         this.notificationCheckInterval = null;
-        
+
         // Elementos do DOM
         this.appointmentModal = document.getElementById('appointmentModal');
         this.appointmentModalTitle = document.getElementById('appointmentModalTitle');
@@ -2127,24 +2127,24 @@ class AppointmentsManager {
         this.appointmentReminder = document.getElementById('appointmentReminder');
         this.appointmentCategory = document.getElementById('appointmentCategory');
         this.appointmentsList = document.getElementById('appointmentsList');
-        
+
         this.initEventListeners();
         this.renderAppointments();
         this.startNotificationChecker();
-        
+
         // Solicitar permissão para notificações
         this.requestNotificationPermission();
     }
-    
+
     initEventListeners() {
         // Botão adicionar compromisso
         document.getElementById('addAppointmentBtn')?.addEventListener('click', () => this.openModal());
-        
+
         // Botões do modal
         document.getElementById('appointmentModalClose')?.addEventListener('click', () => this.closeModal());
         document.getElementById('appointmentModalCancel')?.addEventListener('click', () => this.closeModal());
         document.getElementById('appointmentModalSave')?.addEventListener('click', () => this.saveAppointment());
-        
+
         // Fechar modal ao clicar fora
         this.appointmentModal?.addEventListener('click', (e) => {
             if (e.target === this.appointmentModal) {
@@ -2152,43 +2152,43 @@ class AppointmentsManager {
             }
         });
     }
-    
+
     requestNotificationPermission() {
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
     }
-    
+
     loadAppointments() {
         const stored = localStorage.getItem('appointments');
         return stored ? JSON.parse(stored) : [];
     }
-    
+
     saveToStorage() {
         localStorage.setItem('appointments', JSON.stringify(this.appointments));
     }
-    
+
     openModal(appointmentId = null) {
         this.currentAppointmentId = appointmentId;
-        
+
         if (appointmentId) {
             const appointment = this.appointments.find(a => a.id === appointmentId);
             if (appointment) {
                 this.appointmentModalTitle.textContent = 'Editar Compromisso';
                 this.appointmentTitle.value = appointment.title;
-                
+
                 // Converter data ISO para formato YYYY-MM-DD
                 const date = new Date(appointment.dateTime);
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
                 const day = String(date.getDate()).padStart(2, '0');
                 this.appointmentDate.value = `${year}-${month}-${day}`;
-                
+
                 // Extrair horário
                 const hours = String(date.getHours()).padStart(2, '0');
                 const minutes = String(date.getMinutes()).padStart(2, '0');
                 this.appointmentTime.value = `${hours}:${minutes}`;
-                
+
                 this.appointmentLocation.value = appointment.location || '';
                 this.appointmentDescription.value = appointment.description || '';
                 this.appointmentReminder.value = appointment.reminder || '1hour';
@@ -2204,38 +2204,38 @@ class AppointmentsManager {
             this.appointmentReminder.value = '1hour';
             this.appointmentCategory.value = 'pessoal';
         }
-        
+
         this.appointmentModal.classList.add('active');
     }
-    
+
     closeModal() {
         this.appointmentModal.classList.remove('active');
         this.currentAppointmentId = null;
     }
-    
+
     saveAppointment() {
         const title = this.appointmentTitle.value.trim();
         const date = this.appointmentDate.value;
         const time = this.appointmentTime.value;
-        
+
         if (!title) {
             this.showAppointmentMessage('Por favor, digite um título para o compromisso!', 'error');
             return;
         }
-        
+
         if (!date) {
             this.showAppointmentMessage('Por favor, selecione uma data!', 'error');
             return;
         }
-        
+
         if (!time) {
             this.showAppointmentMessage('Por favor, selecione um horário!', 'error');
             return;
         }
-        
+
         // Combinar data e hora
         const dateTime = new Date(`${date}T${time}:00`);
-        
+
         const appointmentData = {
             title,
             dateTime: dateTime.toISOString(),
@@ -2246,7 +2246,7 @@ class AppointmentsManager {
             notified: false,
             createdAt: new Date().toISOString()
         };
-        
+
         if (this.currentAppointmentId) {
             // Editar compromisso existente
             const index = this.appointments.findIndex(a => a.id === this.currentAppointmentId);
@@ -2259,68 +2259,72 @@ class AppointmentsManager {
             appointmentData.id = Date.now();
             this.appointments.push(appointmentData);
             this.showAppointmentMessage('📅 Compromisso agendado com sucesso!', 'success');
-            
+
             // Tocar som de sucesso
             if (window.soundSystem) {
                 window.soundSystem.playSound('complete');
             }
         }
-        
+
         this.saveToStorage();
         this.renderAppointments();
-        this.closeModal();
         
-        // Atualizar calendário se existir
-        if (window.calendarManager) {
-            window.calendarManager.refresh();
-        }
+        // Fechar modal ANTES de atualizar calendário
+        this.closeModal();
+
+        // Atualizar calendário se existir (com pequeno delay para garantir)
+        setTimeout(() => {
+            if (window.calendarManager) {
+                window.calendarManager.refresh();
+            }
+        }, 100);
     }
-    
+
     deleteAppointment(appointmentId) {
         const appointment = this.appointments.find(a => a.id === appointmentId);
         if (!appointment) return;
-        
+
         const confirmDelete = confirm(`Deseja realmente excluir o compromisso "${appointment.title}"?`);
         if (confirmDelete) {
             this.appointments = this.appointments.filter(a => a.id !== appointmentId);
             this.saveToStorage();
             this.renderAppointments();
             this.showAppointmentMessage('🗑️ Compromisso excluído com sucesso!', 'success');
-            
+
             // Atualizar calendário
             if (window.calendarManager) {
                 window.calendarManager.refresh();
             }
         }
     }
-    
+
     renderAppointments() {
         if (this.appointments.length === 0) {
             this.appointmentsList.innerHTML = '<div class="empty-state-appointments">Nenhum compromisso agendado. Clique em "Agendar Compromisso"!</div>';
             return;
         }
-        
+
         // Ordenar por data
-        const sortedAppointments = [...this.appointments].sort((a, b) => 
+        const sortedAppointments = [...this.appointments].sort((a, b) =>
             new Date(a.dateTime) - new Date(b.dateTime)
         );
-        
+
         this.appointmentsList.innerHTML = sortedAppointments.map(appointment => {
             const appointmentDate = new Date(appointment.dateTime);
             const now = new Date();
             const isPast = appointmentDate < now;
             const isToday = appointmentDate.toDateString() === now.toDateString();
-            
-            const dateText = appointmentDate.toLocaleDateString('pt-BR', { 
-                day: '2-digit', 
-                month: 'short', 
-                year: 'numeric' 
+
+            const dateText = appointmentDate.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
             });
-            const timeText = appointmentDate.toLocaleTimeString('pt-BR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            const timeText = appointmentDate.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
             });
-            
+
             const categoryEmojis = {
                 pessoal: '🏠',
                 trabalho: '💼',
@@ -2328,7 +2332,7 @@ class AppointmentsManager {
                 saude: '❤️',
                 outros: '📌'
             };
-            
+
             return `
                 <div class="appointment-card ${isPast ? 'past' : ''} ${isToday ? 'today' : ''}" data-appointment-id="${appointment.id}">
                     <div class="appointment-header">
@@ -2372,7 +2376,7 @@ class AppointmentsManager {
             `;
         }).join('');
     }
-    
+
     showAppointmentMessage(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `appointment-notification ${type}`;
@@ -2382,43 +2386,43 @@ class AppointmentsManager {
                 <button class="appointment-notification-close">&times;</button>
             </div>
         `;
-        
+
         document.body.appendChild(notification);
-        
+
         const closeBtn = notification.querySelector('.appointment-notification-close');
         closeBtn.addEventListener('click', () => notification.remove());
-        
+
         setTimeout(() => notification.classList.add('show'), 10);
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
         }, 4000);
     }
-    
+
     startNotificationChecker() {
         // Verificar a cada minuto
         this.notificationCheckInterval = setInterval(() => {
             this.checkNotifications();
         }, 60000); // 60 segundos
-        
+
         // Verificar imediatamente ao iniciar
         this.checkNotifications();
     }
-    
+
     checkNotifications() {
         const now = new Date();
-        
+
         this.appointments.forEach(appointment => {
             if (appointment.notified) return;
-            
+
             const appointmentDate = new Date(appointment.dateTime);
             const diffMs = appointmentDate - now;
             const diffMinutes = Math.floor(diffMs / 60000);
-            
+
             let shouldNotify = false;
             let notificationTitle = '';
             let notificationBody = '';
-            
+
             // Verificar tipo de lembrete
             switch (appointment.reminder) {
                 case 'moment':
@@ -2464,7 +2468,7 @@ class AppointmentsManager {
                     }
                     break;
             }
-            
+
             if (shouldNotify) {
                 this.sendNotification(notificationTitle, notificationBody, appointment);
                 appointment.notified = true;
@@ -2472,7 +2476,7 @@ class AppointmentsManager {
             }
         });
     }
-    
+
     sendNotification(title, body, appointment) {
         // Notificação do navegador
         if ('Notification' in window && Notification.permission === 'granted') {
@@ -2483,28 +2487,126 @@ class AppointmentsManager {
                 tag: `appointment-${appointment.id}`,
                 requireInteraction: true
             });
-            
+
             notification.onclick = () => {
                 window.focus();
                 notification.close();
             };
         }
-        
+
         // Notificação visual no app
         this.showAppointmentMessage(`${title}: ${body}`, 'warning');
-        
+
         // Tocar som de notificação
         if (window.soundSystem) {
             window.soundSystem.playSound('notification');
         }
     }
-    
+
     getAppointmentsByDate(date) {
         const dateStr = date.toISOString().split('T')[0];
         return this.appointments.filter(appointment => {
             const appointmentDateStr = new Date(appointment.dateTime).toISOString().split('T')[0];
             return appointmentDateStr === dateStr;
         });
+    }
+
+    showAppointmentDetail(appointmentId) {
+        const appointment = this.appointments.find(a => a.id === appointmentId);
+        if (!appointment) return;
+
+        const modal = document.getElementById('appointmentDetailModal');
+        const body = document.getElementById('appointmentDetailBody');
+        
+        const appointmentDate = new Date(appointment.dateTime);
+        const dateText = appointmentDate.toLocaleDateString('pt-BR', { 
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric' 
+        });
+        const timeText = appointmentDate.toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+
+        const categoryEmojis = {
+            pessoal: '🏠',
+            trabalho: '💼',
+            estudo: '📚',
+            saude: '❤️',
+            outros: '📌'
+        };
+
+        const reminderTexts = {
+            none: 'Sem lembrete',
+            moment: 'No momento',
+            '15min': '15 minutos antes',
+            '30min': '30 minutos antes',
+            '1hour': '1 hora antes',
+            '2hours': '2 horas antes',
+            '1day': '1 dia antes'
+        };
+
+        body.innerHTML = `
+            <div class="appointment-detail-info">
+                <div class="appointment-detail-title">📅 ${appointment.title}</div>
+                <div class="appointment-detail-item">
+                    <span class="detail-label">📅 Data:</span>
+                    <span class="detail-value">${dateText}</span>
+                </div>
+                <div class="appointment-detail-item">
+                    <span class="detail-label">⏰ Horário:</span>
+                    <span class="detail-value">${timeText}</span>
+                </div>
+                ${appointment.location ? `
+                    <div class="appointment-detail-item">
+                        <span class="detail-label">📍 Local:</span>
+                        <span class="detail-value">${appointment.location}</span>
+                    </div>
+                ` : ''}
+                <div class="appointment-detail-item">
+                    <span class="detail-label">📁 Categoria:</span>
+                    <span class="detail-value">${categoryEmojis[appointment.category]} ${appointment.category}</span>
+                </div>
+                <div class="appointment-detail-item">
+                    <span class="detail-label">🔔 Lembrete:</span>
+                    <span class="detail-value">${reminderTexts[appointment.reminder]}</span>
+                </div>
+                ${appointment.description ? `
+                    <div class="appointment-detail-item description">
+                        <span class="detail-label">📄 Descrição:</span>
+                        <div class="detail-value-block">${appointment.description}</div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        // Event listeners para botões
+        const editBtn = document.getElementById('appointmentDetailEdit');
+        const deleteBtn = document.getElementById('appointmentDetailDelete');
+        const closeBtn = document.getElementById('appointmentDetailClose');
+
+        editBtn.onclick = () => {
+            modal.classList.remove('show');
+            this.openModal(appointmentId);
+        };
+
+        deleteBtn.onclick = () => {
+            modal.classList.remove('show');
+            this.deleteAppointment(appointmentId);
+        };
+
+        closeBtn.onclick = () => {
+            modal.classList.remove('show');
+        };
+
+        modal.onclick = (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+            }
+        };
+
+        modal.classList.add('show');
     }
 }
 
@@ -3417,16 +3519,17 @@ class CalendarManager {
             html += '<div class="day-section-title">📅 Compromissos</div>';
             html += appointments.map(appointment => {
                 const appointmentDate = new Date(appointment.dateTime);
-                const timeText = appointmentDate.toLocaleTimeString('pt-BR', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                const timeText = appointmentDate.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit'
                 });
 
                 return `
-                    <div class="day-appointment-item">
+                    <div class="day-appointment-item clickable" onclick="window.appointmentsManager.showAppointmentDetail(${appointment.id})" style="cursor: pointer;">
                         <div class="day-appointment-time">⏰ ${timeText}</div>
                         <div class="day-appointment-title">${appointment.title}</div>
                         ${appointment.location ? `<div class="day-appointment-location">📍 ${appointment.location}</div>` : ''}
+                        <div class="day-appointment-hint">👆 Clique para ver detalhes</div>
                     </div>
                 `;
             }).join('');
