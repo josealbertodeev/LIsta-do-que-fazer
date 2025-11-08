@@ -2280,8 +2280,13 @@ class AppointmentsManager {
         this.saveToStorage();
         this.renderAppointments();
 
-        // Fechar modal usando método closeModal para garantir
-        this.closeModal();
+        // Fechar modal de forma mais robusta
+        const modal = document.getElementById('appointmentModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        this.appointmentModal.classList.remove('active');
+        this.currentAppointmentId = null;
 
         // Atualizar calendário FORÇADAMENTE após salvar
         if (window.calendarManager) {
