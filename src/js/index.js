@@ -3520,7 +3520,15 @@ class CalendarManager {
             itemsHTML += `<div class="day-item-badge holiday-badge">${holiday}</div>`;
         }
         if (appointments.length > 0) {
-            itemsHTML += `<div class="day-item-badge appointments">📅 ${appointments.length}</div>`;
+            const appointmentText = appointments.length === 1
+                ? 'compromisso'
+                : 'compromissos';
+            itemsHTML += `
+                <div class="day-item-badge appointments">
+                    <span class="badge-icon">📅</span>
+                    <span class="badge-text">${appointments.length} ${appointmentText}</span>
+                </div>
+            `;
         }
 
         return `

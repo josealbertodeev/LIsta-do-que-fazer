@@ -3001,6 +3001,12 @@ body.light-mode .calendar-day.holiday .day-number {
     text-shadow: 0 0 8px rgba(245, 124, 0, 0.2);
 }
 
+body.light-mode .day-item-badge.appointments {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.5), rgba(164, 113, 247, 0.5));
+    color: #9333ea;
+    box-shadow: 0 2px 8px rgba(147, 51, 234, 0.3);
+}
+
 body.light-mode .calendar-day.has-tasks {
     border-color: #ec4899;
 }
@@ -3925,8 +3931,26 @@ body.light-mode .day-task-count {
 }
 
 .day-item-badge.appointments {
-    background: rgba(240, 147, 251, 0.3);
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.4), rgba(164, 113, 247, 0.4));
     color: #f093fb;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(240, 147, 251, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.day-item-badge.appointments .badge-icon {
+    font-size: 14px;
+}
+
+.day-item-badge.appointments .badge-text {
+    font-size: 10px;
+    text-transform: lowercase;
 }
 
 .calendar-day.has-items {
