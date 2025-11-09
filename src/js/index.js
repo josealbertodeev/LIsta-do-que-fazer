@@ -2747,6 +2747,7 @@ class GamificationSystem {
 
         this.userStats.totalCompleted++;
         this.userStats.tasksToday++;
+        console.log('✅ Tarefa concluída! Total:', this.userStats.totalCompleted);
         this.addXP(10, 'Tarefa concluída');
 
         // Verificar hora da conclusão
@@ -2841,9 +2842,11 @@ class GamificationSystem {
     }
 
     checkAchievements() {
+        console.log('🔍 Verificando conquistas... Total concluídas:', this.userStats.totalCompleted);
         this.achievements.forEach(achievement => {
             if (!this.userStats.unlockedAchievements.includes(achievement.id)) {
                 if (achievement.condition(this.userStats)) {
+                    console.log('🎉 Conquista desbloqueada!', achievement.name);
                     this.unlockAchievement(achievement);
                 }
             }
@@ -2964,14 +2967,22 @@ class GamificationSystem {
         const challengeProgressFill = document.getElementById('challengeProgressFill');
         const challengeProgressText = document.getElementById('challengeProgressText');
 
-        if (!challengeCard) return;
+        if (!challengeCard || !challengeProgressFill || !challengeProgressText) return;
 
         const progressPercent = Math.min((challenge.progress / challenge.target) * 100, 100);
         const isComplete = this.userStats.dailyChallengeCompleted;
 
+        console.log('🎨 Renderizando desafio:', progressPercent.toFixed(1) + '%', `(${challenge.progress}/${challenge.target})`);
+
         challengeDescription.textContent = challenge.description;
         challengeProgressFill.style.width = `${progressPercent}%`;
-        challengeProgressText.innerHTML = `<span>${challenge.progress} / ${challenge.target}</span><span class="challenge-reward">+${challenge.reward} XP 💎</span>`;
+        // Atualiza apenas o texto do progresso
+        challengeProgressText.textContent = `${challenge.progress} / ${challenge.target}`;
+        // Atualiza a recompensa (se existir)
+        const rewardSpan = challengeProgressText.nextElementSibling;
+        if (rewardSpan && rewardSpan.classList.contains('challenge-reward')) {
+            rewardSpan.textContent = `+${challenge.reward} XP 💎`;
+        }
 
         if (isComplete) {
             challengeCard.style.opacity = '0.7';
@@ -3070,6 +3081,7 @@ class GamificationSystem {
         // Atualizar progresso baseado no tipo
         if (challenge.type === 'complete_tasks') {
             challenge.progress = this.userStats.tasksToday;
+            console.log('📊 Desafio diário:', challenge.progress, '/', challenge.target, 'tarefas');
         } else if (challenge.type === 'priority_tasks') {
             // Contar tarefas prioritárias de hoje (precisaria implementar tracking)
             challenge.progress = Math.min(challenge.progress + 1, challenge.target);
@@ -3080,6 +3092,7 @@ class GamificationSystem {
             challenge.completed = true;
             this.userStats.dailyChallengeCompleted = true;
             this.addXP(challenge.reward, 'Desafio Diário Completado!');
+            console.log('🎯 Desafio diário completado!');
             this.showChallengeComplete(challenge);
         }
 
@@ -3276,30 +3289,36 @@ if (!window.appInitialized) {
         setTimeout(() => updateGoalSelect(), 100);
 
         // Integração: quando uma tarefa for concluída
-        const originalCompleteTask = window.todoApp.completeTask.bind(window.todoApp);
-        window.todoApp.completeTask = function (id) {
-            const task = this.tasks.find(t => t.id === id && !t.completed);
-            originalCompleteTask(id);
-            if (task) {
-                window.gamificationSystem.onTaskCompleted({
-                    priority: task.priority
-                });
+        if (window.todoApp && window.todoApp.toggleTask) {
+            const originalToggleTask = window.todoApp.toggleTask.bind(window.todoApp);
+            window.todoApp.toggleTask = function (id) {
+                const task = this.tasks.find(t => t.id === id);
+                const wasCompleted = task ? task.completed : false;
 
-                // Atualizar progresso da meta vinculada
-                if (task.goalId && window.goalsManager) {
-                    const goal = window.goalsManager.goals.find(g => g.id === parseInt(task.goalId));
-                    if (goal) {
-                        goal.progress = (goal.progress || 0) + 1;
-                        window.goalsManager.saveGoals();
-                        window.goalsManager.renderGoals();
+                originalToggleTask(id);
 
-                        // Verificar se completou a meta
-                        if (goal.target && goal.progress >= goal.target) {
-                            window.gamificationSystem.onGoalCompleted();
-                            window.goalsManager.showGoalMessage(
-                                `🎉 Parabéns! Você completou a meta "${goal.title}"!`,
-                                'success'
-                            );
+                // Se a tarefa foi concluída (não estava completa antes)
+                if (task && !wasCompleted && task.completed) {
+                    window.gamificationSystem.onTaskCompleted({
+                        priority: task.priority
+                    });
+
+                    // Atualizar progresso da meta vinculada
+                    if (task.goalId && window.goalsManager) {
+                        const goal = window.goalsManager.goals.find(g => g.id === parseInt(task.goalId));
+                        if (goal) {
+                            goal.progress = (goal.progress || 0) + 1;
+                            window.goalsManager.saveGoals();
+                            window.goalsManager.renderGoals();
+
+                            // Verificar se completou a meta
+                            if (goal.target && goal.progress >= goal.target) {
+                                window.gamificationSystem.onGoalCompleted();
+                                window.goalsManager.showGoalMessage(
+                                    `🎉 Parabéns! Você completou a meta "${goal.title}"!`,
+                                    'success'
+                                );
+                            }
                         }
                     }
                 }
@@ -3308,8 +3327,8 @@ if (!window.appInitialized) {
                 if (window.calendarManager) {
                     window.calendarManager.refresh();
                 }
-            }
-        };
+            };
+        }
 
         // Sobrescrever addTask para atualizar calendário
         const originalAddTask = window.todoApp.addTask.bind(window.todoApp);
@@ -3619,6 +3638,3 @@ class CalendarManager {
         this.render();
     }
 }
-
-// Inicializar o app
-initApp();
