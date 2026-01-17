@@ -126,22 +126,34 @@ class PomodoroTimer {
         this.isFocusMode = true; // Se está em modo foco ou pausa
         this.originalTitle = document.title; // Guarda o título original
 
+        // Contadores de tempo acumulado (em minutos)
+        this.totalFocusMinutes = parseInt(localStorage.getItem('pomodoroTotalFocus')) || 0;
+        this.totalBreakMinutes = parseInt(localStorage.getItem('pomodoroTotalBreak')) || 0;
+
         // Pega os elementos do HTML
         this.display = document.getElementById('pomodoroTimer');
         this.statusDisplay = document.getElementById('pomodoroStatus');
         this.startBtn = document.getElementById('pomodoroStart');
         this.pauseBtn = document.getElementById('pomodoroPause');
         this.resetBtn = document.getElementById('pomodoroReset');
+        this.totalFocusDisplay = document.getElementById('totalFocusTime');
+        this.totalBreakDisplay = document.getElementById('totalBreakTime');
+        this.resetStatsBtn = document.getElementById('resetStatsBtn');
 
         // Configura os botões
         this.startBtn.addEventListener('click', () => this.start());
         this.pauseBtn.addEventListener('click', () => this.pause());
         this.resetBtn.addEventListener('click', () => this.reset());
 
+        if (this.resetStatsBtn) {
+            this.resetStatsBtn.addEventListener('click', () => this.resetStats());
+        }
+
         // Pede permissão para notificações
         this.requestNotificationPermission();
 
         this.updateDisplay();
+        this.updateStatsDisplay();
     }
 
     // Pede permissão para mostrar notificações
@@ -199,6 +211,41 @@ class PomodoroTimer {
         this.updateTabTitle();
     }
 
+    // Atualiza o display das estatísticas
+    updateStatsDisplay() {
+        if (this.totalFocusDisplay) {
+            const hours = Math.floor(this.totalFocusMinutes / 60);
+            const mins = this.totalFocusMinutes % 60;
+
+            if (hours > 0) {
+                this.totalFocusDisplay.textContent = `${hours}h ${mins}min`;
+            } else {
+                this.totalFocusDisplay.textContent = `${mins} min`;
+            }
+        }
+
+        if (this.totalBreakDisplay) {
+            const hours = Math.floor(this.totalBreakMinutes / 60);
+            const mins = this.totalBreakMinutes % 60;
+
+            if (hours > 0) {
+                this.totalBreakDisplay.textContent = `${hours}h ${mins}min`;
+            } else {
+                this.totalBreakDisplay.textContent = `${mins} min`;
+            }
+        }
+    }
+
+    // Anima a atualização de uma estatística
+    animateStat(element) {
+        if (element) {
+            element.classList.add('updated');
+            setTimeout(() => {
+                element.classList.remove('updated');
+            }, 600);
+        }
+    }
+
     // Inicia o cronômetro
     start() {
         if (this.isRunning) return;
@@ -232,9 +279,72 @@ class PomodoroTimer {
         this.updateDisplay();
     }
 
+    // Reseta as estatísticas de tempo acumulado
+    resetStats() {
+        this.showConfirmResetModal();
+    }
+
+    // Modal de confirmação para resetar estatísticas
+    showConfirmResetModal() {
+        const modal = document.getElementById('confirmDeleteModal');
+        const modalTitle = document.getElementById('confirmDeleteTitle');
+        const modalMessage = document.getElementById('confirmDeleteMessage');
+        const cancelBtn = document.getElementById('confirmDeleteCancel');
+        const confirmBtn = document.getElementById('confirmDeleteConfirm');
+
+        modalTitle.textContent = 'Resetar Estatísticas do Pomodoro';
+        modalMessage.textContent = 'Tem certeza que deseja resetar todas as estatísticas de tempo acumulado?';
+
+        modal.style.display = 'flex';
+
+        // Remove event listeners antigos
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        cancelBtn.replaceWith(newCancelBtn);
+        confirmBtn.replaceWith(newConfirmBtn);
+
+        // Adiciona novos event listeners
+        newCancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        newConfirmBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            this.totalFocusMinutes = 0;
+            this.totalBreakMinutes = 0;
+            localStorage.setItem('pomodoroTotalFocus', 0);
+            localStorage.setItem('pomodoroTotalBreak', 0);
+            this.updateStatsDisplay();
+        });
+
+        // Fecha ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+
     // Troca entre modo foco e pausa
     switchMode() {
         this.pause();
+
+        // Incrementa o contador do modo que acabou de completar
+        if (this.isFocusMode) {
+            // Acabou de completar um período de foco
+            this.totalFocusMinutes += 25;
+            localStorage.setItem('pomodoroTotalFocus', this.totalFocusMinutes);
+            this.animateStat(this.totalFocusDisplay);
+        } else {
+            // Acabou de completar um período de descanso
+            this.totalBreakMinutes += 5;
+            localStorage.setItem('pomodoroTotalBreak', this.totalBreakMinutes);
+            this.animateStat(this.totalBreakDisplay);
+        }
+
+        // Atualiza o display das estatísticas
+        this.updateStatsDisplay();
+
         this.isFocusMode = !this.isFocusMode;
         this.timeLeft = this.isFocusMode ? this.focusTime : this.breakTime;
         this.updateDisplay();
@@ -376,6 +486,10 @@ class TodoApp {
         // Sistema de timers para tarefas
         this.taskTimers = {};
         this.timerIntervals = {};
+
+        // Botões de apagar todas as tarefas
+        this.clearPendingBtn = document.getElementById('clearPendingBtn');
+        this.clearCompletedBtn = document.getElementById('clearCompletedBtn');
 
         this.initEventListeners();
         this.displayGreeting();
@@ -759,6 +873,10 @@ class TodoApp {
 
         // Alternar tema
         this.themeToggle.addEventListener('click', () => this.toggleTheme());
+
+        // Botões de apagar todas as tarefas
+        this.clearPendingBtn.addEventListener('click', () => this.clearPendingTasks());
+        this.clearCompletedBtn.addEventListener('click', () => this.clearCompletedTasks());
     }
 
     addTask() {
@@ -826,6 +944,95 @@ class TodoApp {
 
         // Notificação interativa
         this.showToast('Tarefa removida com sucesso', 'delete');
+    }
+
+    // Apagar todas as tarefas pendentes
+    clearPendingTasks() {
+        const pendingTasks = this.tasks.filter(task => !task.completed);
+
+        if (pendingTasks.length === 0) {
+            this.showToast('Não há tarefas pendentes para apagar', 'warning', '⚠️');
+            return;
+        }
+
+        // Mostra modal de confirmação
+        this.showConfirmDeleteModal(
+            'Apagar Tarefas Pendentes',
+            `Tem certeza que deseja apagar todas as ${pendingTasks.length} tarefas pendentes?`,
+            () => {
+                this.tasks = this.tasks.filter(task => task.completed);
+                this.saveToStorage();
+                this.renderTasks();
+
+                // Toca som de deletar
+                this.playDeleteSound();
+
+                this.showToast(`${pendingTasks.length} tarefas pendentes foram apagadas`, 'delete');
+            }
+        );
+    }
+
+    // Apagar todas as tarefas concluídas
+    clearCompletedTasks() {
+        const completedTasks = this.tasks.filter(task => task.completed);
+
+        if (completedTasks.length === 0) {
+            this.showToast('Não há tarefas concluídas para apagar', 'warning', '⚠️');
+            return;
+        }
+
+        // Mostra modal de confirmação
+        this.showConfirmDeleteModal(
+            'Apagar Tarefas Concluídas',
+            `Tem certeza que deseja apagar todas as ${completedTasks.length} tarefas concluídas?`,
+            () => {
+                this.tasks = this.tasks.filter(task => !task.completed);
+                this.saveToStorage();
+                this.renderTasks();
+
+                // Toca som de deletar
+                this.playDeleteSound();
+
+                this.showToast(`${completedTasks.length} tarefas concluídas foram apagadas`, 'delete');
+            }
+        );
+    }
+
+    // Mostra modal de confirmação customizado
+    showConfirmDeleteModal(title, message, onConfirm) {
+        const modal = document.getElementById('confirmDeleteModal');
+        const modalTitle = document.getElementById('confirmDeleteTitle');
+        const modalMessage = document.getElementById('confirmDeleteMessage');
+        const cancelBtn = document.getElementById('confirmDeleteCancel');
+        const confirmBtn = document.getElementById('confirmDeleteConfirm');
+
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+
+        modal.style.display = 'flex';
+
+        // Remove event listeners antigos
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        cancelBtn.replaceWith(newCancelBtn);
+        confirmBtn.replaceWith(newConfirmBtn);
+
+        // Adiciona novos event listeners
+        newCancelBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        newConfirmBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            onConfirm();
+        });
+
+        // Fecha ao clicar fora
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
     }
 
     // NOVIDADE: Animação de confete MELHORADA ao concluir
@@ -1328,8 +1535,28 @@ class TodoApp {
             });
         }
 
+        // Mostrar/ocultar botões de apagar todas baseado no número de tarefas
+        this.updateClearButtons(pendingTasksList.length, completedTasksList.length);
+
         // Atualizar barra de progresso
         this.updateProgress();
+    }
+
+    // Atualizar visibilidade dos botões de apagar todas
+    updateClearButtons(pendingCount, completedCount) {
+        // Mostrar botão de apagar pendentes apenas se houver mais de 1 tarefa
+        if (pendingCount > 1) {
+            this.clearPendingBtn.classList.remove('hidden');
+        } else {
+            this.clearPendingBtn.classList.add('hidden');
+        }
+
+        // Mostrar botão de apagar concluídas apenas se houver mais de 1 tarefa
+        if (completedCount > 1) {
+            this.clearCompletedBtn.classList.remove('hidden');
+        } else {
+            this.clearCompletedBtn.classList.add('hidden');
+        }
     }
 
     // Atualizar barra de progresso

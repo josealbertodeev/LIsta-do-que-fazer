@@ -74,6 +74,24 @@
             </div>
         </div>
 
+        <!-- Modal de Confirmação para Apagar Todas -->
+        <div class="modal-overlay" id="confirmDeleteModal">
+            <div class="modal-content confirm-modal">
+                <div class="modal-header warning">
+                    <span class="warning-icon">⚠️</span>
+                    <h3 id="confirmDeleteTitle">Confirmar Exclusão</h3>
+                </div>
+                <div class="modal-body">
+                    <p id="confirmDeleteMessage">Tem certeza que deseja apagar todas as tarefas?</p>
+                    <p class="warning-text">Esta ação não pode ser desfeita!</p>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn cancel" id="confirmDeleteCancel">Cancelar</button>
+                    <button class="modal-btn delete" id="confirmDeleteConfirm">Apagar Todas</button>
+                </div>
+            </div>
+        </div>
+
         <!-- NOVIDADE: Cronômetro Pomodoro -->
         <div class="timers-container">
             <div class="timer-card">
@@ -85,6 +103,26 @@
                     <button class="timer-btn pause" id="pomodoroPause">⏸ Pausar</button>
                     <button class="timer-btn reset" id="pomodoroReset">⟲ Zerar</button>
                 </div>
+                <!-- Contadores de tempo acumulado -->
+                <div class="pomodoro-stats">
+                    <div class="stat-item focus-stat">
+                        <span class="stat-icon">🎯</span>
+                        <div class="stat-info">
+                            <div class="stat-label">Tempo de Foco</div>
+                            <div class="stat-value" id="totalFocusTime">0 min</div>
+                        </div>
+                    </div>
+                    <div class="stat-item break-stat">
+                        <span class="stat-icon">☕</span>
+                        <div class="stat-info">
+                            <div class="stat-label">Tempo de Descanso</div>
+                            <div class="stat-value" id="totalBreakTime">0 min</div>
+                        </div>
+                    </div>
+                </div>
+                <button class="reset-stats-btn" id="resetStatsBtn" title="Resetar estatísticas do Pomodoro">
+                    🔄 Resetar Estatísticas
+                </button>
             </div>
         </div>
 
@@ -141,14 +179,26 @@
 
         <div class="tasks-container">
             <div class="tasks-section pending">
-                <h2><span class="icon">≡</span> Tarefas Pendentes</h2>
+                <div class="section-header-with-action">
+                    <h2><span class="icon">≡</span> Tarefas Pendentes</h2>
+                    <button class="clear-all-btn" id="clearPendingBtn" title="Apagar todas as tarefas pendentes">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Apagar Todas</span>
+                    </button>
+                </div>
                 <div class="tasks-list" id="pendingTasks">
                     <div class="empty-state">Nenhuma tarefa pendente</div>
                 </div>
             </div>
 
             <div class="tasks-section completed">
-                <h2><span class="icon">✓</span> Tarefas Concluídas</h2>
+                <div class="section-header-with-action">
+                    <h2><span class="icon">✓</span> Tarefas Concluídas</h2>
+                    <button class="clear-all-btn" id="clearCompletedBtn" title="Apagar todas as tarefas concluídas">
+                        <span class="btn-icon">🗑️</span>
+                        <span class="btn-text">Apagar Todas</span>
+                    </button>
+                </div>
                 <div class="tasks-list" id="completedTasks">
                     <div class="empty-state">Nenhuma tarefa concluída</div>
                 </div>

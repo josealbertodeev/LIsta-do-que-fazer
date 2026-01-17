@@ -13,22 +13,34 @@ export class PomodoroTimer {
         this.isFocusMode = true; // Se está em modo foco ou pausa
         this.originalTitle = document.title; // Guarda o título original
 
+        // Contadores de tempo acumulado (em minutos)
+        this.totalFocusMinutes = parseInt(localStorage.getItem('pomodoroTotalFocus')) || 0;
+        this.totalBreakMinutes = parseInt(localStorage.getItem('pomodoroTotalBreak')) || 0;
+
         // Pega os elementos do HTML
         this.display = document.getElementById('pomodoroTimer');
         this.statusDisplay = document.getElementById('pomodoroStatus');
         this.startBtn = document.getElementById('pomodoroStart');
         this.pauseBtn = document.getElementById('pomodoroPause');
         this.resetBtn = document.getElementById('pomodoroReset');
+        this.totalFocusDisplay = document.getElementById('totalFocusTime');
+        this.totalBreakDisplay = document.getElementById('totalBreakTime');
+        this.resetStatsBtn = document.getElementById('resetStatsBtn');
 
         // Configura os botões
         this.startBtn.addEventListener('click', () => this.start());
         this.pauseBtn.addEventListener('click', () => this.pause());
         this.resetBtn.addEventListener('click', () => this.reset());
 
+        if (this.resetStatsBtn) {
+            this.resetStatsBtn.addEventListener('click', () => this.resetStats());
+        }
+
         // Pede permissão para notificações
         this.requestNotificationPermission();
 
         this.updateDisplay();
+        this.updateStatsDisplay();
     }
 
     // Pede permissão para mostrar notificações
@@ -86,6 +98,41 @@ export class PomodoroTimer {
         this.updateTabTitle();
     }
 
+    // Atualiza o display das estatísticas
+    updateStatsDisplay() {
+        if (this.totalFocusDisplay) {
+            const hours = Math.floor(this.totalFocusMinutes / 60);
+            const mins = this.totalFocusMinutes % 60;
+
+            if (hours > 0) {
+                this.totalFocusDisplay.textContent = `${hours}h ${mins}min`;
+            } else {
+                this.totalFocusDisplay.textContent = `${mins} min`;
+            }
+        }
+
+        if (this.totalBreakDisplay) {
+            const hours = Math.floor(this.totalBreakMinutes / 60);
+            const mins = this.totalBreakMinutes % 60;
+
+            if (hours > 0) {
+                this.totalBreakDisplay.textContent = `${hours}h ${mins}min`;
+            } else {
+                this.totalBreakDisplay.textContent = `${mins} min`;
+            }
+        }
+    }
+
+    // Anima a atualização de uma estatística
+    animateStat(element) {
+        if (element) {
+            element.classList.add('updated');
+            setTimeout(() => {
+                element.classList.remove('updated');
+            }, 600);
+        }
+    }
+
     // Inicia o cronômetro
     start() {
         if (this.isRunning) return;
@@ -119,9 +166,37 @@ export class PomodoroTimer {
         this.updateDisplay();
     }
 
+    // Reseta as estatísticas de tempo acumulado
+    resetStats() {
+        if (confirm('Tem certeza que deseja resetar todas as estatísticas do Pomodoro?')) {
+            this.totalFocusMinutes = 0;
+            this.totalBreakMinutes = 0;
+            localStorage.setItem('pomodoroTotalFocus', 0);
+            localStorage.setItem('pomodoroTotalBreak', 0);
+            this.updateStatsDisplay();
+        }
+    }
+
     // Troca entre modo foco e pausa
     switchMode() {
         this.pause();
+
+        // Incrementa o contador do modo que acabou de completar
+        if (this.isFocusMode) {
+            // Acabou de completar um período de foco
+            this.totalFocusMinutes += 25;
+            localStorage.setItem('pomodoroTotalFocus', this.totalFocusMinutes);
+            this.animateStat(this.totalFocusDisplay);
+        } else {
+            // Acabou de completar um período de descanso
+            this.totalBreakMinutes += 5;
+            localStorage.setItem('pomodoroTotalBreak', this.totalBreakMinutes);
+            this.animateStat(this.totalBreakDisplay);
+        }
+
+        // Atualiza o display das estatísticas
+        this.updateStatsDisplay();
+
         this.isFocusMode = !this.isFocusMode;
         this.timeLeft = this.isFocusMode ? this.focusTime : this.breakTime;
         this.updateDisplay();
