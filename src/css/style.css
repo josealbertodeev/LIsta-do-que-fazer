@@ -1043,6 +1043,27 @@ header p {
     transform: translateY(-2px);
 }
 
+/* Estados ativos dos botões do timer */
+.timer-btn.active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.timer-btn.start.active {
+    background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.timer-btn.pause.active {
+    background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
+}
+
+.timer-btn.reset.active {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
 .pomodoro-status {
     text-align: center;
     margin-top: 10px;

@@ -141,9 +141,18 @@ class PomodoroTimer {
         this.resetStatsBtn = document.getElementById('resetStatsBtn');
 
         // Configura os botões
-        this.startBtn.addEventListener('click', () => this.start());
-        this.pauseBtn.addEventListener('click', () => this.pause());
-        this.resetBtn.addEventListener('click', () => this.reset());
+        this.startBtn.addEventListener('click', () => {
+            this.setActiveButton('start');
+            this.start();
+        });
+        this.pauseBtn.addEventListener('click', () => {
+            this.setActiveButton('pause');
+            this.pause();
+        });
+        this.resetBtn.addEventListener('click', () => {
+            this.setActiveButton('reset');
+            this.reset();
+        });
 
         if (this.resetStatsBtn) {
             this.resetStatsBtn.addEventListener('click', () => this.resetStats());
@@ -163,6 +172,40 @@ class PomodoroTimer {
                 Notification.requestPermission();
             }
         }
+    }
+
+    // Define qual botão está ativo
+    setActiveButton(buttonType) {
+        // Verifica se os elementos existem
+        if (!this.startBtn || !this.pauseBtn || !this.resetBtn) {
+            console.error('Elementos dos botões não encontrados');
+            return;
+        }
+
+        // Remove active de todos os botões
+        this.startBtn.classList.remove('active');
+        this.pauseBtn.classList.remove('active');
+        this.resetBtn.classList.remove('active');
+
+        // Adiciona active no botão clicado
+        switch (buttonType) {
+            case 'start':
+                this.startBtn.classList.add('active');
+                break;
+            case 'pause':
+                this.pauseBtn.classList.add('active');
+                break;
+            case 'reset':
+                this.resetBtn.classList.add('active');
+                break;
+        }
+
+        // Remove o active após 200ms para simular o clique
+        setTimeout(() => {
+            this.startBtn.classList.remove('active');
+            this.pauseBtn.classList.remove('active');
+            this.resetBtn.classList.remove('active');
+        }, 200);
     }
 
     // Mostra uma notificação no navegador
