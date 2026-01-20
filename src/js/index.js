@@ -1332,24 +1332,26 @@ class TodoApp {
         const category = this.categories[task.category] || this.categories.pessoal;
 
         taskItem.innerHTML = `
-                    <div class="task-number">${task.order || 1}</div>
-                    <div class="task-content">
-                        <div class="task-text">${task.text}</div>
-                        <div class="task-meta">
-                            ${task.category ? `<span class="task-category" style="background: ${category.color}20; color: ${category.color}; border-color: ${category.color}">${category.icon} ${category.name}</span>` : ''}
-                            ${this.getGoalBadge(task)}
-                            ${task.dueDate ? `<span class="task-date ${isOverdue ? 'overdue-badge' : isToday ? 'today-badge' : ''}">${isOverdue ? '⚠️ ATRASADA - ' + formattedDate : '📅 ' + formattedDate}</span>` : ''}
-                            ${task.timeEstimate ? `
-                                <span class="task-time-wrapper">
-                                    <span class="task-time" id="time-display-${task.id}">⏱️ ${task.timerRunning ? this.formatTimer(task.timeRemaining || task.timeEstimate * 60) : task.timeEstimate + 'min'}</span>
-                                    ${!task.completed ? `<button class="timer-control-btn ${task.timerRunning ? 'running' : ''}" onclick="todoApp.toggleTimer(${task.id})" title="${task.timerRunning ? 'Pausar' : 'Iniciar'}">${task.timerRunning ? '⏸' : '▶'}</button>` : ''}
-                                </span>
-                            ` : ''}
-                            ${task.priority ? '<span class="task-priority">⭐ Prioridade</span>' : ''}
-                        </div>
-                        <div class="task-extra-actions">
-                            ${task.notes ? `<button class="view-notes-btn" onclick="todoApp.showNotes(${task.id})" title="Ver notas">📝 Ver notas</button>` : ''}
-                            ${!task.completed ? `<button class="view-subtasks-btn" onclick="todoApp.showSubtasks(${task.id})" title="Subtarefas">☑️ Subtarefas ${task.subtasks && task.subtasks.length > 0 ? `(${task.subtasks.filter(st => st.completed).length}/${task.subtasks.length})` : ''}</button>` : ''}
+                    <div class="task-main">
+                        <div class="task-number">${task.order || 1}</div>
+                        <div class="task-content">
+                            <div class="task-text">${task.text}</div>
+                            <div class="task-meta">
+                                ${task.category ? `<span class="task-category" style="background: ${category.color}20; color: ${category.color}; border-color: ${category.color}">${category.icon} ${category.name}</span>` : ''}
+                                ${this.getGoalBadge(task)}
+                                ${task.dueDate ? `<span class="task-date ${isOverdue ? 'overdue-badge' : isToday ? 'today-badge' : ''}">${isOverdue ? '⚠️ ATRASADA - ' + formattedDate : '📅 ' + formattedDate}</span>` : ''}
+                                ${task.timeEstimate ? `
+                                    <span class="task-time-wrapper">
+                                        <span class="task-time" id="time-display-${task.id}">⏱️ ${task.timerRunning ? this.formatTimer(task.timeRemaining || task.timeEstimate * 60) : task.timeEstimate + 'min'}</span>
+                                        ${!task.completed ? `<button class="timer-control-btn ${task.timerRunning ? 'running' : ''}" onclick="todoApp.toggleTimer(${task.id})" title="${task.timerRunning ? 'Pausar' : 'Iniciar'}">${task.timerRunning ? '⏸' : '▶'}</button>` : ''}
+                                    </span>
+                                ` : ''}
+                                ${task.priority ? '<span class="task-priority">⭐ Prioridade</span>' : ''}
+                            </div>
+                            <div class="task-extra-actions">
+                                ${task.notes ? `<button class="view-notes-btn" onclick="todoApp.showNotes(${task.id})" title="Ver notas">📝 Ver notas</button>` : ''}
+                                ${!task.completed ? `<button class="view-subtasks-btn" onclick="todoApp.showSubtasks(${task.id})" title="Subtarefas">☑️ Subtarefas ${task.subtasks && task.subtasks.length > 0 ? `(${task.subtasks.filter(st => st.completed).length}/${task.subtasks.length})` : ''}</button>` : ''}
+                            </div>
                         </div>
                     </div>
                     <div class="task-actions">

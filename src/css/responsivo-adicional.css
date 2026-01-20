@@ -1,5 +1,52 @@
 /* Melhorias de responsivo para calendário e metas */
 
+/* Estilos responsivos para o novo layout das tarefas */
+@media (max-width: 768px) {
+    .task-main {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .task-number {
+        align-self: center;
+    }
+
+    .task-content {
+        text-align: center;
+    }
+
+    .task-meta {
+        justify-content: center;
+    }
+
+    .task-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .task-btn {
+        min-width: 44px;
+    }
+}
+
+@media (max-width: 480px) {
+    .task-item {
+        padding: 14px;
+    }
+
+    .task-main {
+        gap: 8px;
+    }
+
+    .task-text {
+        font-size: 1rem;
+    }
+
+    .task-actions {
+        gap: 8px;
+    }
+}
+
 /* Telas médias/grandes (1024px - 1400px) */
 @media (max-width: 1400px) {
     .calendar-container {
