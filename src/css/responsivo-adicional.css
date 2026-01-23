@@ -558,3 +558,136 @@
         max-width: 220px;
     }
 }
+
+/* Responsivo específico para telas muito pequenas (393px e menores) */
+@media (max-width: 393px) {
+
+    /* Timer Pomodoro responsivo */
+    .timer-card {
+        padding: 20px 15px;
+        margin: 0 5px;
+    }
+
+    .timer-card h3 {
+        font-size: 1.2rem;
+        gap: 5px;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .timer-icon {
+        font-size: 1.5rem;
+    }
+
+    .timer-display {
+        font-size: 2.5rem;
+        margin: 15px 0;
+    }
+
+    .timer-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .timer-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        min-width: 80px;
+    }
+
+    /* Estatísticas do Pomodoro - Layout empilhado para telas muito pequenas */
+    .pomodoro-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .stat-item {
+        padding: 10px 12px;
+        gap: 8px;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .stat-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .stat-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        margin-bottom: 2px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .stat-value {
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    /* Reduzir o botão de resetar estatísticas */
+    .reset-stats-btn {
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        margin-top: 10px;
+    }
+
+    /* Ajustar pomodoro-status */
+    .pomodoro-status {
+        font-size: 0.8rem;
+        margin: 8px 0;
+    }
+}
+
+/* Responsivo específico para resolução 393x852 e similares */
+@media (max-width: 393px) and (max-height: 852px) {
+
+    /* Ajustes específicos para essa resolução */
+    .container {
+        padding: 10px;
+        max-width: 100%;
+    }
+
+    .stat-item {
+        padding: 8px 10px;
+        border-radius: 8px;
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+        line-height: 1.1;
+    }
+
+    .stat-value {
+        font-size: 0.85rem;
+        line-height: 1.1;
+    }
+
+    .stat-icon {
+        font-size: 1rem;
+    }
+
+    /* Compactar mais o timer em resoluções menores */
+    .timer-display {
+        font-size: 2.2rem;
+        margin: 10px 0;
+    }
+
+    .timer-card {
+        padding: 15px 10px;
+    }
+
+    .timer-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        min-width: 70px;
+    }
+}
