@@ -521,6 +521,13 @@ class TodoApp {
         this.themeToggle = document.getElementById('themeToggle');
         this.progressFill = document.getElementById('progressFill');
         this.progressText = document.getElementById('progressText');
+        this.progressDetails = document.getElementById('progressDetails');
+        this.totalEstimatedTime = document.getElementById('totalEstimatedTime');
+        this.productivityScore = document.getElementById('productivityScore');
+
+        // Sistema de debounce para otimização
+        this.progressUpdateTimeout = null;
+        this.lastProgressUpdate = 0;
         this.weatherDisplay = document.getElementById('weatherDisplay');
         this.motivationalQuote = document.getElementById('motivationalQuote');
         this.bibleVerse = document.getElementById('bibleVerse');
@@ -681,10 +688,10 @@ class TodoApp {
                 <div class="notification-title">Tempo Esgotado!</div>
                 <div class="notification-message">${task.text}</div>
                 <div class="timer-end-actions">
-                    <button class="timer-action-btn complete" onclick="todoApp.completeTaskFromTimer(${task.id})">✓ Concluir</button>
+                    <button class="timer-action-btn complete" onclick="todoApp.completeTaskFromTimer(${task.id})">✓</button>
                     <button class="timer-action-btn extend" onclick="todoApp.extendTimer(${task.id}, 5)">+5 min</button>
                     <button class="timer-action-btn extend" onclick="todoApp.extendTimer(${task.id}, 10)">+10 min</button>
-                    <button class="timer-action-btn cancel" onclick="todoApp.cancelTimerModal()">Cancelar</button>
+                    <button class="timer-action-btn cancel" onclick="todoApp.cancelTimerModal()">✕</button>
                 </div>
             </div>
         `;
@@ -1308,62 +1315,291 @@ class TodoApp {
         taskItem.className = 'task-item';
         taskItem.setAttribute('data-task-id', task.id);
 
-        // Verifica se a tarefa está atrasada ou é para hoje
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        // Calcular informações de prazo e status
+        const deadlineInfo = this.calculateTaskDeadlineInfo(task);
+        const statusInfo = this.getTaskStatusInfo(task, deadlineInfo);
 
-        let taskDate = null;
-        if (task.dueDate) {
-            const [year, month, day] = task.dueDate.split('-').map(Number);
-            taskDate = new Date(year, month - 1, day);
-            taskDate.setHours(0, 0, 0, 0);
-        }
+        // Aplicar classes baseadas no status
+        if (task.priority) taskItem.classList.add('priority');
+        if (task.completed) taskItem.classList.add('completed');
+        if (deadlineInfo.isOverdue) taskItem.classList.add('overdue');
+        if (deadlineInfo.isDueToday) taskItem.classList.add('due-today');
 
-        const isOverdue = taskDate && taskDate < today && !task.completed;
-        const isToday = taskDate && taskDate.getTime() === today.getTime() && !task.completed;
-
-        if (isOverdue) taskItem.classList.add('overdue');
-        if (isToday) taskItem.classList.add('today');
-
-        // Formata a data
-        const formattedDate = task.dueDate ? this.formatDate(task.dueDate) : '';
-
-        // Pega informações da categoria
-        const category = this.categories[task.category] || this.categories.pessoal;
+        // CSS dinâmico baseado na categoria
+        const dynamicCSS = this.getTaskDynamicCSS(task);
 
         taskItem.innerHTML = `
-                    <div class="task-main">
-                        <div class="task-number">${task.order || 1}</div>
-                        <div class="task-content">
-                            <div class="task-text">${task.text}</div>
-                            <div class="task-meta">
-                                ${task.category ? `<span class="task-category" style="background: ${category.color}20; color: ${category.color}; border-color: ${category.color}">${category.icon} ${category.name}</span>` : ''}
-                                ${this.getGoalBadge(task)}
-                                ${task.dueDate ? `<span class="task-date ${isOverdue ? 'overdue-badge' : isToday ? 'today-badge' : ''}">${isOverdue ? '⚠️ ATRASADA - ' + formattedDate : '📅 ' + formattedDate}</span>` : ''}
-                                ${task.timeEstimate ? `
-                                    <span class="task-time-wrapper">
-                                        <span class="task-time" id="time-display-${task.id}">⏱️ ${task.timerRunning ? this.formatTimer(task.timeRemaining || task.timeEstimate * 60) : task.timeEstimate + 'min'}</span>
-                                        ${!task.completed ? `<button class="timer-control-btn ${task.timerRunning ? 'running' : ''}" onclick="todoApp.toggleTimer(${task.id})" title="${task.timerRunning ? 'Pausar' : 'Iniciar'}">${task.timerRunning ? '⏸' : '▶'}</button>` : ''}
-                                    </span>
-                                ` : ''}
-                                ${task.priority ? '<span class="task-priority">⭐ Prioridade</span>' : ''}
-                            </div>
-                            <div class="task-extra-actions">
-                                ${task.notes ? `<button class="view-notes-btn" onclick="todoApp.showNotes(${task.id})" title="Ver notas">📝 Ver notas</button>` : ''}
-                                ${!task.completed ? `<button class="view-subtasks-btn" onclick="todoApp.showSubtasks(${task.id})" title="Subtarefas">☑️ Subtarefas ${task.subtasks && task.subtasks.length > 0 ? `(${task.subtasks.filter(st => st.completed).length}/${task.subtasks.length})` : ''}</button>` : ''}
-                            </div>
+            <div class="task-header">
+                <div class="task-header-left">
+                    <div class="task-number">${task.order || 1}</div>
+                    <div class="task-content-main">
+                        <div class="task-text">${task.text}</div>
+                        <div class="task-category-tag" style="${dynamicCSS}">
+                            ${this.getCategoryEmoji(task.category)} ${this.getCategoryName(task.category)}
                         </div>
                     </div>
-                    <div class="task-actions">
-                        ${task.completed
+                </div>
+                <div class="task-header-right">
+                    <div class="task-status-badge ${statusInfo.status}">
+                        ${statusInfo.label}
+                    </div>
+                    <div class="task-quick-actions">
+                        <button class="task-quick-btn" onclick="todoApp.togglePriority(${task.id})" title="Prioridade">
+                            ${task.priority ? '⭐' : '☆'}
+                        </button>
+                        <button class="task-quick-btn" onclick="todoApp.duplicateTask(${task.id})" title="Duplicar">
+                            📋
+                        </button>
+                        <button class="task-quick-btn" onclick="todoApp.postponeTask(${task.id})" title="Adiar">
+                            ⏰
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            ${task.notes ? `
+                <div class="task-notes-preview">
+                    📝 ${task.notes.substring(0, 50)}${task.notes.length > 50 ? '...' : ''}
+                </div>
+            ` : ''}
+            
+            ${deadlineInfo.hasDeadline ? `
+                <div class="task-deadline-info">
+                    <span>📅 ${deadlineInfo.text}</span>
+                    <div class="task-deadline-countdown ${deadlineInfo.urgency}">
+                        ${deadlineInfo.countdownText}
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="task-actions-enhanced">
+                <div class="task-actions-left">
+                    ${!task.completed ? `
+                        <button class="task-btn-enhanced priority-toggle" onclick="todoApp.togglePriority(${task.id})">
+                            ${task.priority ? '🌟' : '⭐'}
+                        </button>
+                    ` : ''}
+                    ${task.notes ? `
+                        <button class="task-btn-enhanced view-notes" onclick="todoApp.showNotes(${task.id})">
+                            📝
+                        </button>
+                    ` : ''}
+                </div>
+                <div class="task-actions-right">
+                    ${task.completed
                 ? `<button class="task-btn undo-btn" onclick="todoApp.toggleTask(${task.id})" title="Desfazer">↶</button>`
                 : `<button class="task-btn complete-btn" onclick="todoApp.toggleTask(${task.id})" title="Concluir">✓</button>
                                <button class="task-btn edit-btn" onclick="todoApp.editTask(${task.id})" title="Editar">✎</button>`
             }
-                        <button class="task-btn delete-btn" onclick="todoApp.deleteTask(${task.id})" title="Excluir">🗑</button>
-                    </div>
-                `;
+                    <button class="task-btn delete-btn" onclick="todoApp.deleteTask(${task.id})" title="Excluir">🗑</button>
+                </div>
+            </div>
+        `;
+
         return taskItem;
+    }
+
+    // Funções auxiliares para melhorias das tarefas
+    calculateTaskDeadlineInfo(task) {
+        if (!task.dueDate) {
+            return { hasDeadline: false, text: '', countdownText: '', urgency: 'normal' };
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const [year, month, day] = task.dueDate.split('-').map(Number);
+        const dueDate = new Date(year, month - 1, day);
+        dueDate.setHours(0, 0, 0, 0);
+
+        const diffTime = dueDate - today;
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        let urgency = 'normal';
+        let countdownText = '';
+
+        if (daysLeft < 0) {
+            urgency = 'urgent';
+            countdownText = `${Math.abs(daysLeft)} dia(s) atrasada`;
+        } else if (daysLeft === 0) {
+            urgency = 'urgent';
+            countdownText = 'Vence hoje!';
+        } else if (daysLeft <= 2) {
+            urgency = 'soon';
+            countdownText = `${daysLeft} dia(s) restante(s)`;
+        } else {
+            urgency = 'normal';
+            countdownText = `${daysLeft} dia(s) restante(s)`;
+        }
+
+        const text = this.formatDate(task.dueDate);
+
+        return {
+            hasDeadline: true,
+            text,
+            countdownText,
+            urgency,
+            daysLeft,
+            isOverdue: daysLeft < 0,
+            isDueToday: daysLeft === 0
+        };
+    }
+
+    getTaskStatusInfo(task, deadlineInfo) {
+        if (task.completed) {
+            return { status: 'completed', label: '✅ Concluída' };
+        }
+
+        if (deadlineInfo.isOverdue) {
+            return { status: 'urgent', label: '⚠️ Atrasada' };
+        }
+
+        if (deadlineInfo.isDueToday) {
+            return { status: 'urgent', label: '🔥 Vence Hoje' };
+        }
+
+        if (task.priority) {
+            return { status: 'priority', label: '⭐ Prioritária' };
+        }
+
+        return { status: 'normal', label: '📋 Normal' };
+    }
+
+    getTaskDynamicCSS(task) {
+        const categoryColors = {
+            'pessoal': { bg: 'rgba(76, 175, 80, 0.2)', text: '#4caf50', border: 'rgba(76, 175, 80, 0.3)' },
+            'trabalho': { bg: 'rgba(102, 126, 234, 0.2)', text: '#667eea', border: 'rgba(102, 126, 234, 0.3)' },
+            'estudo': { bg: 'rgba(255, 167, 38, 0.2)', text: '#ffa726', border: 'rgba(255, 167, 38, 0.3)' },
+            'saude': { bg: 'rgba(255, 107, 107, 0.2)', text: '#ff6b6b', border: 'rgba(255, 107, 107, 0.3)' },
+            'compras': { bg: 'rgba(156, 39, 176, 0.2)', text: '#9c27b0', border: 'rgba(156, 39, 176, 0.3)' },
+            'outros': { bg: 'rgba(121, 134, 203, 0.2)', text: '#7986cb', border: 'rgba(121, 134, 203, 0.3)' }
+        };
+
+        const colors = categoryColors[task.category] || categoryColors['outros'];
+        return `--category-gradient: ${colors.bg}; --category-text: ${colors.text}; --category-border: ${colors.border};`;
+    }
+
+    getCategoryName(category) {
+        const names = {
+            'pessoal': 'Pessoal',
+            'trabalho': 'Trabalho',
+            'estudo': 'Estudo',
+            'saude': 'Saúde',
+            'compras': 'Compras',
+            'outros': 'Outros'
+        };
+        return names[category] || 'Outros';
+    }
+
+    getCategoryEmoji(category) {
+        const emojis = {
+            'pessoal': '🏠',
+            'trabalho': '💼',
+            'estudo': '📚',
+            'saude': '❤️',
+            'compras': '🛒',
+            'outros': '📌'
+        };
+        return emojis[category] || '📌';
+    }
+
+    // Novas funcionalidades dos quick actions
+    togglePriority(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        task.priority = !task.priority;
+
+        // Animação e feedback
+        const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+        if (taskElement) {
+            taskElement.classList.add('celebrating');
+            setTimeout(() => taskElement.classList.remove('celebrating'), 600);
+        }
+
+        // Som de feedback
+        this.playPrioritySound(task.priority);
+
+        // Notificação
+        const action = task.priority ? 'marcada como prioritária' : 'prioridade removida';
+        this.showToast(`Tarefa ${action}!`, task.priority ? 'warning' : 'info');
+
+        this.saveToStorage();
+        this.renderTasks();
+    }
+
+    duplicateTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const duplicatedTask = {
+            ...task,
+            id: this.taskIdCounter++,
+            text: `${task.text} (cópia)`,
+            completed: false,
+            order: this.tasks.length + 1
+        };
+
+        this.tasks.push(duplicatedTask);
+        this.playSuccessSound();
+        this.showToast('Tarefa duplicada com sucesso!', 'success');
+
+        this.saveToStorage();
+        this.renderTasks();
+    }
+
+    postponeTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        // Se não tem data, definir para amanhã
+        if (!task.dueDate) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            task.dueDate = tomorrow.toISOString().split('T')[0];
+            this.showToast('Data de vencimento definida para amanhã!', 'success');
+        } else {
+            // Adiar por 1 dia
+            const currentDate = new Date(task.dueDate);
+            currentDate.setDate(currentDate.getDate() + 1);
+            task.dueDate = currentDate.toISOString().split('T')[0];
+            this.showToast('Tarefa adiada para amanhã!', 'info');
+        }
+
+        // Animação no card
+        const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+        if (taskElement) {
+            taskElement.classList.add('celebrating');
+            setTimeout(() => taskElement.classList.remove('celebrating'), 600);
+        }
+
+        this.playUndoSound();
+        this.saveToStorage();
+        this.renderTasks();
+    }
+
+    playPrioritySound(isPriority) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const frequency = isPriority ? 659 : 523; // E ou C
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (e) {
+            console.log('Som não suportado');
+        }
     }
 
     // Retorna badge da meta vinculada
@@ -1604,14 +1840,509 @@ class TodoApp {
         }
     }
 
-    // Atualizar barra de progresso
+    // Atualizar barra de progresso (versão melhorada)
     updateProgress() {
+        // Otimização: debounce para evitar recálculos desnecessários
+        clearTimeout(this.progressUpdateTimeout);
+        this.progressUpdateTimeout = setTimeout(() => {
+            this.updateProgressInternal();
+        }, 100);
+    }
+
+    updateProgressInternal() {
         const total = this.tasks.length;
         const completed = this.tasks.filter(t => t.completed).length;
         const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
+        // Aplicar cores dinâmicas baseadas no progresso
+        this.applyProgressColors(percentage);
+
+        // Animação suave da barra
+        this.progressFill.style.transition = 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s ease';
         this.progressFill.style.width = percentage + '%';
-        this.progressText.textContent = `${percentage}% Concluído (${completed}/${total})`;
+
+        // Atualizar texto principal
+        this.progressText.textContent = `${percentage}% Concluído`;
+
+        // Atualizar estatísticas
+        this.updateProgressStats(completed, total);
+
+        // Atualizar detalhes
+        this.updateProgressDetails();
+
+        // Atualizar progresso por categoria
+        this.updateCategoryProgress();
+
+        // Micro-interações para marcos importantes
+        this.handleProgressMilestones(percentage, completed);
+    }
+
+    updateProgressStats(completed, total) {
+        const progressStats = document.getElementById('progressStats');
+        if (progressStats) {
+            progressStats.textContent = `${completed} de ${total} tarefas`;
+        }
+    }
+
+    updateProgressDetails() {
+        // Tempo restante estimado
+        const pendingTasks = this.tasks.filter(t => !t.completed);
+        const totalEstimatedTime = pendingTasks.reduce((sum, task) => {
+            return sum + (task.timeEstimate || 15); // Default 15 min se não especificado
+        }, 0);
+
+        const timeElement = document.getElementById('totalEstimatedTime');
+        if (timeElement) {
+            timeElement.textContent = totalEstimatedTime > 0
+                ? `${totalEstimatedTime} min`
+                : '0 min';
+        }
+
+        // Taxa de produtividade
+        const productivityRate = this.calculateProductivityScore();
+
+        const productivityElement = document.getElementById('productivityRate');
+        if (productivityElement) {
+            productivityElement.textContent = productivityRate;
+        }
+
+        // Meta do dia
+        const dailyGoalElement = document.getElementById('dailyGoal');
+        if (dailyGoalElement) {
+            const goalProgress = this.calculateDailyGoalProgress();
+            dailyGoalElement.textContent = goalProgress;
+        }
+    }
+
+    updateCategoryProgress() {
+        const categoryProgressList = document.getElementById('categoryProgressList');
+        if (!categoryProgressList) return;
+
+        const categories = ['pessoal', 'trabalho', 'estudo', 'saude', 'compras', 'outros'];
+        const categoryEmojis = {
+            'pessoal': '🏠',
+            'trabalho': '💼',
+            'estudo': '📚',
+            'saude': '❤️',
+            'compras': '🛒',
+            'outros': '📌'
+        };
+
+        const categoryStats = categories.map(category => {
+            const categoryTasks = this.tasks.filter(t => t.category === category);
+            const completed = categoryTasks.filter(t => t.completed).length;
+            const total = categoryTasks.length;
+            const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            return {
+                name: category,
+                emoji: categoryEmojis[category],
+                completed,
+                total,
+                percentage
+            };
+        }).filter(cat => cat.total > 0);
+
+        if (categoryStats.length === 0) {
+            categoryProgressList.innerHTML = '<div class="category-progress-item">Nenhuma categoria encontrada</div>';
+            return;
+        }
+
+        categoryProgressList.innerHTML = categoryStats.map(cat => {
+            const color = this.getCategoryColor(cat.percentage);
+            return `
+                <div class="category-progress-item">
+                    <span style="min-width: 80px; text-transform: capitalize;">${cat.emoji} ${cat.name}</span>
+                    <div class="category-progress-bar">
+                        <div class="category-progress-fill" 
+                             style="width: ${cat.percentage}%; background: ${color};">
+                        </div>
+                    </div>
+                    <span class="category-progress-text">${cat.percentage}%</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getCategoryColor(percentage) {
+        if (percentage < 25) return '#ff6b6b';
+        if (percentage < 50) return '#ffa726';
+        if (percentage < 75) return '#66bb6a';
+        return '#4caf50';
+    }
+
+    // Calcular score de produtividade
+    calculateProductivityScore() {
+        const total = this.tasks.length;
+        const completed = this.tasks.filter(t => t.completed).length;
+
+        if (total === 0) {
+            return '--';
+        }
+
+        const completionRate = (completed / total) * 100;
+        const tasksDueToday = this.getTasksDueToday();
+        const tasksDueTodayCompleted = tasksDueToday.filter(t => t.completed).length;
+
+        // Score base na taxa de conclusão
+        let score = Math.round(completionRate);
+
+        // Bônus para tarefas urgentes concluídas
+        if (tasksDueToday.length > 0) {
+            const urgencyBonus = Math.round((tasksDueTodayCompleted / tasksDueToday.length) * 20);
+            score += urgencyBonus;
+        }
+
+        // Limitar entre 0 e 100
+        score = Math.min(100, Math.max(0, score));
+
+        // Retornar com emoji baseado no score
+        if (score >= 90) return `${score}% 🔥`;
+        if (score >= 70) return `${score}% 💪`;
+        if (score >= 50) return `${score}% 👍`;
+        return `${score}% 📈`;
+    }
+
+    // Calcular progresso da meta diária
+    calculateDailyGoalProgress() {
+        const targetPercentage = 80; // Meta: completar 80% das tarefas
+        const completed = this.tasks.filter(t => t.completed).length;
+        const total = this.tasks.length;
+
+        if (total === 0) return '-';
+
+        const currentPercentage = Math.round((completed / total) * 100);
+        const goalProgress = Math.min(Math.round((currentPercentage / targetPercentage) * 100), 100);
+
+        return `${goalProgress}%`;
+    }
+
+    // Obter tarefas que vencem hoje
+    getTasksDueToday() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        return this.tasks.filter(task => {
+            if (!task.dueDate) return false;
+            const dueDate = new Date(task.dueDate);
+            dueDate.setHours(0, 0, 0, 0);
+            return dueDate.getTime() === today.getTime();
+        });
+    }
+
+    // Micro-interações para marcos importantes
+    handleProgressMilestones(percentage, completed) {
+        const progressContainer = document.getElementById('progressContainer');
+
+        // Celebração ao atingir 100%
+        if (percentage === 100 && completed > 0) {
+            this.celebrateCompletion(progressContainer);
+        }
+
+        // Animação em marcos importantes (25%, 50%, 75%)
+        if (percentage === 25 || percentage === 50 || percentage === 75) {
+            this.addMilestoneEffect(progressContainer, percentage);
+        }
+    }
+
+    // Celebração ao completar todas as tarefas
+    celebrateCompletion(container) {
+        container.classList.add('celebrating');
+
+        // Som de celebração
+        this.playCompletionSound();
+
+        // Confetti
+        this.createProgressConfetti(container);
+
+        // Notificação
+        this.showToast('🎉 Parabéns! Todas as tarefas concluídas!', 'success');
+
+        // Remove efeito depois de 2 segundos
+        setTimeout(() => {
+            container.classList.remove('celebrating');
+        }, 2000);
+    }
+
+    // Efeito para marcos intermediários
+    addMilestoneEffect(container, percentage) {
+        const milestone = document.createElement('div');
+        milestone.className = 'milestone-popup';
+        milestone.textContent = `${percentage}% ✨`;
+        milestone.style.cssText = `
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: bold;
+            animation: milestone-popup 1.5s ease-out forwards;
+            z-index: 100;
+        `;
+
+        container.appendChild(milestone);
+
+        setTimeout(() => {
+            milestone.remove();
+        }, 1500);
+    }
+
+    // Som de celebração
+    playCompletionSound() {
+        if (window.soundSystem && window.soundSystem.playCompletionSound) {
+            window.soundSystem.playCompletionSound();
+        } else {
+            // Fallback: criar som simples
+            this.createSimpleSound([523, 659, 784], 200); // Acorde C maior
+        }
+    }
+
+    // Criar som simples
+    createSimpleSound(frequencies, duration) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration / 1000);
+
+                oscillator.start(audioContext.currentTime + index * 0.1);
+                oscillator.stop(audioContext.currentTime + (index * 0.1) + duration / 1000);
+            });
+        } catch (e) {
+            console.log('Som não suportado neste navegador');
+        }
+    }
+
+    // Criar confetti para progresso
+    createProgressConfetti(container) {
+        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#f093fb'];
+
+        for (let i = 0; i < 15; i++) {
+            const confetti = document.createElement('div');
+            confetti.style.cssText = `
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background: ${colors[Math.floor(Math.random() * colors.length)]};
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 1000;
+                left: ${Math.random() * 100}%;
+                top: ${Math.random() * 50}%;
+                animation: confetti-fall 2s ease-out forwards;
+            `;
+
+            container.appendChild(confetti);
+
+            setTimeout(() => {
+                confetti.remove();
+            }, 2000);
+        }
+    }
+
+    // Aplicar cores dinâmicas baseadas no progresso
+    applyProgressColors(percentage) {
+        // Remover todas as classes de cor anteriores
+        this.progressFill.classList.remove('progress-low', 'progress-medium', 'progress-high', 'progress-complete');
+
+        // Aplicar cor baseada na porcentagem
+        if (percentage === 100) {
+            this.progressFill.classList.add('progress-complete');
+        } else if (percentage >= 75) {
+            this.progressFill.classList.add('progress-high');
+        } else if (percentage >= 50) {
+            this.progressFill.classList.add('progress-medium');
+        } else if (percentage > 0) {
+            this.progressFill.classList.add('progress-low');
+        }
+    }
+
+    // Calcular score de produtividade
+    calculateProductivityScore() {
+        const total = this.tasks.length;
+        const completed = this.tasks.filter(t => t.completed).length;
+
+        if (total === 0) return '--';
+
+        const completionRate = (completed / total) * 100;
+        const tasksDueToday = this.getTasksDueToday();
+        const tasksDueTodayCompleted = tasksDueToday.filter(t => t.completed).length;
+
+        // Score base na taxa de conclusão
+        let score = Math.round(completionRate);
+
+        // Bônus para tarefas urgentes concluídas
+        if (tasksDueToday.length > 0) {
+            const urgencyBonus = Math.round((tasksDueTodayCompleted / tasksDueToday.length) * 20);
+            score += urgencyBonus;
+        }
+
+        // Limitar entre 0 e 100
+        score = Math.min(100, Math.max(0, score));
+
+        // Retornar com emoji baseado no score
+        if (score >= 90) return `${score}% 🔥`;
+        if (score >= 70) return `${score}% 💪`;
+        if (score >= 50) return `${score}% 👍`;
+        return `${score}% 📈`;
+    }
+
+    // Obter tarefas que vencem hoje
+    getTasksDueToday() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        return this.tasks.filter(task => {
+            if (!task.dueDate) return false;
+            const taskDate = new Date(task.dueDate);
+            taskDate.setHours(0, 0, 0, 0);
+            return taskDate.getTime() === today.getTime();
+        });
+    }
+
+    // Lidar com marcos de progresso (celebrações)
+    handleProgressMilestones(percentage) {
+        const previousPercentage = this.lastProgressUpdate;
+        this.lastProgressUpdate = percentage;
+
+        // Celebração ao atingir 100%
+        if (percentage === 100 && previousPercentage < 100) {
+            this.celebrateCompletion();
+        }
+
+        // Celebrar marcos de 25%
+        const milestones = [25, 50, 75];
+        milestones.forEach(milestone => {
+            if (percentage >= milestone && previousPercentage < milestone) {
+                this.celebrateMilestone(milestone);
+            }
+        });
+    }
+
+    // Celebração ao completar 100%
+    celebrateCompletion() {
+        // Animação de celebração
+        this.progressText.classList.add('progress-complete');
+
+        // Confetti effect (simulado com emoji)
+        this.createProgressConfetti();
+
+        // Notificação especial
+        this.showToast('🎉 Todas as tarefas concluídas! Parabéns! 🎉', 'celebration');
+
+        // Som de celebração
+        this.playCelebrationSound();
+
+        // Remover classes após animação
+        setTimeout(() => {
+            this.progressText.classList.remove('progress-complete');
+        }, 2000);
+    }
+
+    // Celebração de marcos
+    celebrateMilestone(milestone) {
+        // Animação sutil
+        this.progressFill.parentElement.classList.add('progress-celebration');
+
+        // Notificação
+        this.showToast(`🎯 ${milestone}% concluído! Continue assim!`, 'milestone');
+
+        // Remover animação
+        setTimeout(() => {
+            this.progressFill.parentElement.classList.remove('progress-celebration');
+        }, 600);
+    }
+
+    // Criar efeito confetti para progresso
+    createProgressConfetti() {
+        const container = this.progressFill.parentElement;
+        const emojis = ['🎉', '🎊', '⭐', '✨', '🌟'];
+
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => {
+                const confetti = document.createElement('div');
+                confetti.style.position = 'absolute';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.fontSize = '1.2rem';
+                confetti.style.animation = 'confettiFall 1s ease-out forwards';
+                confetti.style.pointerEvents = 'none';
+                confetti.style.zIndex = '1000';
+                confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+                container.style.position = 'relative';
+                container.appendChild(confetti);
+
+                setTimeout(() => {
+                    if (confetti.parentNode) {
+                        confetti.parentNode.removeChild(confetti);
+                    }
+                }, 1000);
+            }, i * 100);
+        }
+
+        // Adicionar CSS para animação do confetti se não existir
+        if (!document.querySelector('#confetti-animation-style')) {
+            const style = document.createElement('style');
+            style.id = 'confetti-animation-style';
+            style.textContent = `
+                @keyframes confettiFall {
+                    0% {
+                        transform: translateY(-20px) rotate(0deg);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(30px) rotate(360deg);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    }
+
+    // Som de celebração melhorado
+    playCelebrationSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Sequência de notas para celebração
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+
+            notes.forEach((frequency, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
+                    oscillator.type = 'sine';
+
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+
+                    oscillator.start();
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, index * 150);
+            });
+        } catch (error) {
+            console.log('Audio context not available');
+        }
     }
 
     // Alternar tema
@@ -2272,8 +3003,8 @@ class GoalsManager {
                 </p>
                 <p class="confirmation-warning">Esta ação não pode ser desfeita.</p>
                 <div class="confirmation-buttons">
-                    <button class="confirmation-btn cancel">Cancelar</button>
-                    <button class="confirmation-btn confirm">Excluir</button>
+                    <button class="confirmation-btn cancel">✕</button>
+                    <button class="confirmation-btn confirm">🗑️</button>
                 </div>
             </div>
         `;
@@ -2327,54 +3058,401 @@ class GoalsManager {
             const progressPercentage = goal.target ?
                 Math.round((goal.progress / goal.target) * 100) : goal.progress;
 
-            // Corrigir exibição da data para evitar mostrar dia anterior
-            const deadlineText = goal.deadline ?
-                new Date(goal.deadline).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'Sem prazo';
+            // Calcular informações de prazo
+            const deadlineInfo = this.calculateDeadlineInfo(goal.deadline);
+            const statusInfo = this.getGoalStatusInfo(progressPercentage, deadlineInfo);
 
-            // Comparar datas considerando apenas o dia (sem horário)
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const deadlineDate = goal.deadline ? new Date(goal.deadline) : null;
-            if (deadlineDate) deadlineDate.setHours(0, 0, 0, 0);
-            const isOverdue = deadlineDate && deadlineDate < today;
+            // CSS dinâmico baseado no progresso
+            const dynamicCSS = this.getGoalDynamicCSS(progressPercentage, statusInfo.isOverdue);
 
             return `
-                <div class="goal-card" data-goal-id="${goal.id}">
+                <div class="goal-card ${statusInfo.className}" data-goal-id="${goal.id}" style="${dynamicCSS}">
                     <div class="goal-header">
-                        <div>
+                        <div class="goal-header-left">
                             <div class="goal-title">${goal.title}</div>
-                            <div class="goal-category">${this.getCategoryEmoji(goal.category)} ${goal.category}</div>
+                            <div class="goal-category" style="${this.getCategoryStyle(goal.category)}">
+                                ${this.getCategoryEmoji(goal.category)} ${goal.category}
+                            </div>
+                        </div>
+                        <div class="goal-header-right">
+                            <div class="goal-status-badge ${statusInfo.status}">
+                                ${statusInfo.label}
+                            </div>
+                            <div class="goal-quick-actions">
+                                <button class="goal-quick-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 1)" title="+ 1">
+                                    +1
+                                </button>
+                                <button class="goal-quick-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 5)" title="+ 5">
+                                    +5
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
                     ${goal.description ? `<div class="goal-description">${goal.description}</div>` : ''}
                     
                     <div class="goal-progress">
-                        <div class="goal-progress-bar">
-                            <div class="goal-progress-fill" style="width: ${progressPercentage}%"></div>
+                        <div class="goal-progress-info">
+                            <div class="goal-progress-percentage">${progressPercentage}%</div>
+                            <div class="goal-progress-stats">
+                                ${goal.target ? `
+                                    <div class="goal-progress-stat">
+                                        <span>🎯</span>
+                                        <span>${goal.progress} / ${goal.target}</span>
+                                    </div>
+                                ` : ''}
+                                <div class="goal-progress-stat">
+                                    <span>⚡</span>
+                                    <span>${this.getProgressStreak(goal)}</span>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <div class="goal-progress-bar" style="${this.getProgressBarStyle(progressPercentage)}">
+                            <div class="goal-progress-fill" style="width: ${Math.min(progressPercentage, 100)}%"></div>
+                        </div>
+                        
                         <div class="goal-progress-text">
-                            <span>${progressPercentage}% concluído</span>
-                            ${goal.target ? `<span>${goal.progress} / ${goal.target}</span>` : ''}
+                            <span>${progressPercentage >= 100 ? '🎉 Meta Concluída!' : 'Em progresso...'}</span>
+                            ${goal.target && progressPercentage < 100 ? `<span>Faltam: ${goal.target - goal.progress}</span>` : ''}
                         </div>
+                        
+                        ${goal.target && progressPercentage < 100 ? `
+                            <div class="goal-progress-increment">
+                                <button class="goal-increment-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 1)">
+                                    +1
+                                </button>
+                                <button class="goal-increment-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 5)">
+                                    +5
+                                </button>
+                                <button class="goal-increment-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 10)">
+                                    +10
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                     
-                    <div class="goal-deadline" style="color: ${isOverdue ? '#ff6b6b' : 'var(--text-secondary)'}">
-                        📅 ${deadlineText}
-                        ${isOverdue ? ' (Vencida)' : ''}
+                    <div class="goal-deadline">
+                        <div class="goal-deadline-info">
+                            <span>📅</span>
+                            <span>${deadlineInfo.text}</span>
+                        </div>
+                        ${deadlineInfo.daysLeft !== null ? `
+                            <div class="goal-days-left ${deadlineInfo.urgency}">
+                                ${deadlineInfo.daysLeft > 0 ? `${deadlineInfo.daysLeft}d restantes` :
+                        deadlineInfo.daysLeft === 0 ? 'Hoje!' : 'Vencida'}
+                            </div>
+                        ` : ''}
                     </div>
                     
                     <div class="goal-actions">
                         <button class="goal-btn edit" onclick="window.goalsManager.openModal(${goal.id})">
-                            ✏️ Editar
+                            ✏️
                         </button>
+                        ${progressPercentage < 100 ? `
+                            <button class="goal-btn complete" onclick="window.goalsManager.completeGoal(${goal.id})" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);">
+                                ✅
+                            </button>
+                        ` : ''}
                         <button class="goal-btn delete" onclick="window.goalsManager.deleteGoal(${goal.id})">
-                            🗑️ Excluir
+                            🗑️
                         </button>
                     </div>
                 </div>
             `;
         }).join('');
+
+        // Adicionar event listeners para micro-interações
+        this.addGoalMicroInteractions();
+    }
+
+    // Funções auxiliares para melhorias dos goals
+    calculateDeadlineInfo(deadline) {
+        if (!deadline) {
+            return { text: 'Sem prazo', daysLeft: null, urgency: 'normal' };
+        }
+
+        const deadlineDate = new Date(deadline);
+        const today = new Date();
+        deadlineDate.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+
+        const diffTime = deadlineDate - today;
+        const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        let urgency = 'normal';
+        if (daysLeft < 0) urgency = 'urgent';
+        else if (daysLeft <= 3) urgency = 'urgent';
+        else if (daysLeft <= 7) urgency = 'soon';
+
+        const text = deadlineDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+
+        return { text, daysLeft, urgency };
+    }
+
+    getGoalStatusInfo(percentage, deadlineInfo) {
+        let status, label, className = '';
+
+        if (percentage >= 100) {
+            status = 'completed';
+            label = '✅ Completa';
+            className = 'completed';
+        } else if (deadlineInfo.daysLeft !== null && deadlineInfo.daysLeft < 0) {
+            status = 'overdue';
+            label = '⚠️ Atrasada';
+            className = 'overdue';
+        } else {
+            status = 'in-progress';
+            label = '🚀 Ativa';
+            className = '';
+        }
+
+        return {
+            status,
+            label,
+            className,
+            isOverdue: deadlineInfo.daysLeft !== null && deadlineInfo.daysLeft < 0
+        };
+    }
+
+    getGoalDynamicCSS(percentage, isOverdue) {
+        let gradient, glowColor;
+
+        if (percentage >= 100) {
+            gradient = 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)';
+            glowColor = 'rgba(76, 175, 80, 0.4)';
+        } else if (isOverdue) {
+            gradient = 'linear-gradient(135deg, #ff6b6b 0%, #ff8a80 100%)';
+            glowColor = 'rgba(255, 107, 107, 0.4)';
+        } else if (percentage >= 75) {
+            gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            glowColor = 'rgba(102, 126, 234, 0.4)';
+        } else if (percentage >= 50) {
+            gradient = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
+            glowColor = 'rgba(79, 172, 254, 0.4)';
+        } else {
+            gradient = 'linear-gradient(135deg, #ffa726 0%, #ffcc02 100%)';
+            glowColor = 'rgba(255, 167, 38, 0.4)';
+        }
+
+        return `--goal-progress-gradient: ${gradient}; --goal-glow-color: ${glowColor};`;
+    }
+
+    getCategoryStyle(category) {
+        const categoryColors = {
+            'pessoal': { bg: 'rgba(76, 175, 80, 0.2)', text: '#4caf50', border: 'rgba(76, 175, 80, 0.3)' },
+            'trabalho': { bg: 'rgba(102, 126, 234, 0.2)', text: '#667eea', border: 'rgba(102, 126, 234, 0.3)' },
+            'estudo': { bg: 'rgba(255, 167, 38, 0.2)', text: '#ffa726', border: 'rgba(255, 167, 38, 0.3)' },
+            'saude': { bg: 'rgba(255, 107, 107, 0.2)', text: '#ff6b6b', border: 'rgba(255, 107, 107, 0.3)' },
+            'compras': { bg: 'rgba(156, 39, 176, 0.2)', text: '#9c27b0', border: 'rgba(156, 39, 176, 0.3)' },
+            'outros': { bg: 'rgba(121, 134, 203, 0.2)', text: '#7986cb', border: 'rgba(121, 134, 203, 0.3)' }
+        };
+
+        const colors = categoryColors[category] || categoryColors['outros'];
+        return `--category-gradient: ${colors.bg}; --category-text: ${colors.text}; --category-border: ${colors.border};`;
+    }
+
+    getProgressStreak(goal) {
+        // Simular streak baseado no progresso
+        const streak = Math.floor((goal.progress || 0) / 5);
+        return streak > 0 ? `${streak} dias` : 'Iniciando';
+    }
+
+    getProgressBarStyle(percentage) {
+        const opacity = Math.min(percentage / 100 * 0.8 + 0.2, 1);
+        return `--goal-glow-opacity: ${opacity};`;
+    }
+
+    incrementProgress(goalId, amount) {
+        console.log('incrementProgress chamado:', { goalId, amount });
+
+        const goal = this.goals.find(g => g.id === goalId);
+        console.log('Goal encontrada:', goal);
+
+        if (!goal) {
+            console.error('Goal não encontrada com ID:', goalId);
+            return;
+        }
+
+        if (!goal.target) {
+            console.warn('Goal sem target definida:', goal);
+            return;
+        }
+
+        const oldProgress = goal.progress;
+        goal.progress = Math.min(goal.progress + amount, goal.target);
+
+        console.log('Progresso atualizado:', { oldProgress, newProgress: goal.progress, target: goal.target });
+
+        // Animação de incremento
+        const goalCard = document.querySelector(`[data-goal-id="${goalId}"]`);
+        if (goalCard) {
+            goalCard.classList.add('celebrating');
+            setTimeout(() => goalCard.classList.remove('celebrating'), 600);
+
+            // Som de progresso
+            this.playProgressSound(amount);
+
+            // Notificação de progresso
+            const percentage = Math.round((goal.progress / goal.target) * 100);
+            this.showProgressNotification(goal.title, oldProgress, goal.progress, goal.target, percentage);
+        }
+
+        this.saveGoals();
+        this.renderGoals();
+    }
+
+    completeGoal(goalId) {
+        console.log('completeGoal chamado:', goalId);
+
+        const goal = this.goals.find(g => g.id === goalId);
+        if (!goal) {
+            console.error('Goal não encontrada:', goalId);
+            return;
+        }
+
+        // Completar a meta
+        if (goal.target) {
+            goal.progress = goal.target;
+        } else {
+            // Para metas sem target específico, marcar como 100%
+            goal.progress = 100;
+        }
+
+        // Animação de conclusão
+        const goalCard = document.querySelector(`[data-goal-id="${goalId}"]`);
+        if (goalCard) {
+            goalCard.classList.add('celebrating');
+            setTimeout(() => goalCard.classList.remove('celebrating'), 1000);
+        }
+
+        // Som de conclusão
+        this.playCompletionSound();
+
+        // Notificação de conclusão
+        this.showCompletionNotification(goal.title);
+
+        this.saveGoals();
+        this.renderGoals();
+    }
+
+    playCompletionSound() {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            // Acorde de conclusão: C-E-G
+            const frequencies = [523, 659, 784];
+
+            frequencies.forEach((freq, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.frequency.value = freq;
+                oscillator.type = 'sine';
+
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime + index * 0.1);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + index * 0.1 + 0.5);
+
+                oscillator.start(audioContext.currentTime + index * 0.1);
+                oscillator.stop(audioContext.currentTime + index * 0.1 + 0.5);
+            });
+        } catch (e) {
+            console.log('Som de conclusão não suportado');
+        }
+    }
+
+    showCompletionNotification(title) {
+        const message = `🎉 Parabéns! Meta "${title}" concluída!`;
+
+        // Usar o sistema de toast se existir
+        if (window.todoApp && window.todoApp.showToast) {
+            window.todoApp.showToast(message, 'success');
+        } else {
+            // Fallback: alerta simples
+            alert(message);
+        }
+    }
+
+    playProgressSound(amount) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const frequency = amount === 1 ? 523 : amount === 5 ? 659 : 784;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (e) {
+            console.log('Som não suportado');
+        }
+    }
+
+    showProgressNotification(title, oldProgress, newProgress, target, percentage) {
+        const increment = newProgress - oldProgress;
+        let message = `+${increment} em "${title}"`;
+
+        if (percentage >= 100) {
+            message = `🎉 Meta "${title}" concluída!`;
+        } else if (percentage >= 75) {
+            message += ` (${percentage}% - Quase lá!)`;
+        } else if (percentage >= 50) {
+            message += ` (${percentage}% - Na metade!)`;
+        } else if (percentage >= 25) {
+            message += ` (${percentage}% - Bom progresso!)`;
+        }
+
+        // Usar o sistema de toast se existir
+        if (window.todoApp && window.todoApp.showToast) {
+            const type = percentage >= 100 ? 'success' : 'info';
+            window.todoApp.showToast(message, type);
+        }
+    }
+
+    addGoalMicroInteractions() {
+        // Adicionar efeitos hover e click personalizados
+        document.querySelectorAll('.goal-card').forEach(card => {
+            card.addEventListener('mouseenter', (e) => {
+                this.handleGoalHover(e.target, true);
+            });
+
+            card.addEventListener('mouseleave', (e) => {
+                this.handleGoalHover(e.target, false);
+            });
+        });
+    }
+
+    handleGoalHover(card, isEntering) {
+        const progressBar = card.querySelector('.goal-progress-bar');
+        const quickActions = card.querySelector('.goal-quick-actions');
+
+        if (isEntering) {
+            if (progressBar) {
+                progressBar.style.transform = 'scaleY(1.1)';
+                progressBar.style.transition = 'transform 0.2s ease';
+            }
+            if (quickActions) {
+                quickActions.style.opacity = '1';
+            }
+        } else {
+            if (progressBar) {
+                progressBar.style.transform = 'scaleY(1)';
+            }
+            if (quickActions) {
+                quickActions.style.opacity = '0';
+            }
+        }
     }
 }
 
@@ -2398,11 +3476,32 @@ class AppointmentsManager {
         this.appointmentDescription = document.getElementById('appointmentDescription');
         this.appointmentReminder = document.getElementById('appointmentReminder');
         this.appointmentCategory = document.getElementById('appointmentCategory');
+        this.appointmentRecurrence = document.getElementById('appointmentRecurrence');
+        this.recurrenceEnd = document.getElementById('recurrenceEnd');
+        this.appointmentPriority = document.getElementById('appointmentPriority');
+        this.appointmentDuration = document.getElementById('appointmentDuration');
+        this.appointmentParticipants = document.getElementById('appointmentParticipants');
         this.appointmentsList = document.getElementById('appointmentsList');
+        this.todayAppointments = document.getElementById('todayAppointments');
+        this.nextCountdown = document.getElementById('nextCountdown');
+        this.countdownTime = document.getElementById('countdownTime');
+
+        // Novos elementos do calendário
+        this.monthViewBtn = document.getElementById('monthView');
+        this.weekViewBtn = document.getElementById('weekView');
+        this.goToTodayBtn = document.getElementById('goToToday');
+        this.monthViewContainer = document.getElementById('monthViewContainer');
+        this.weekViewContainer = document.getElementById('weekViewContainer');
+
+        this.currentView = 'month';
+        this.currentDate = new Date();
 
         this.initEventListeners();
         this.renderAppointments();
         this.startNotificationChecker();
+        this.updateTodayView();
+        this.startCountdownTimer();
+        this.initCalendarView();
 
         // Solicitar permissão para notificações
         this.requestNotificationPermission();
@@ -2432,11 +3531,593 @@ class AppointmentsManager {
                 this.closeModal();
             }
         });
+
+        // Event listener para mostrar/ocultar campo de fim de recorrência
+        this.appointmentRecurrence?.addEventListener('change', (e) => {
+            this.toggleRecurrenceEndField(e.target.value);
+        });
+
+        // Event listeners para detecção de conflitos
+        this.appointmentDate?.addEventListener('change', () => this.checkTimeConflicts());
+        this.appointmentTime?.addEventListener('change', () => this.checkTimeConflicts());
+
+        // Event listeners para novos controles do calendário
+        this.monthViewBtn?.addEventListener('click', () => this.switchCalendarView('month'));
+        this.weekViewBtn?.addEventListener('click', () => this.switchCalendarView('week'));
+        this.goToTodayBtn?.addEventListener('click', () => this.goToToday());
+
+        // Event listener para preview em tempo real
+        ['appointmentTitle', 'appointmentDate', 'appointmentTime', 'appointmentLocation', 'appointmentCategory', 'appointmentPriority'].forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', () => this.updateAppointmentPreview());
+                field.addEventListener('change', () => this.updateAppointmentPreview());
+            }
+        });
     }
 
     requestNotificationPermission() {
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
+        }
+    }
+
+    // Métodos para novas funcionalidades
+    toggleRecurrenceEndField(recurrenceValue) {
+        const endGroup = document.getElementById('recurrenceEndGroup');
+        if (endGroup) {
+            if (recurrenceValue && recurrenceValue !== 'none') {
+                endGroup.style.display = 'flex';
+            } else {
+                endGroup.style.display = 'none';
+            }
+        }
+    }
+
+    checkTimeConflicts() {
+        const date = this.appointmentDate?.value;
+        const time = this.appointmentTime?.value;
+
+        if (!date || !time) return;
+
+        const appointmentDateTime = new Date(`${date}T${time}`);
+        const conflicts = this.appointments.filter(apt => {
+            if (this.currentAppointmentId && apt.id === this.currentAppointmentId) {
+                return false;
+            }
+
+            const aptDateTime = new Date(apt.dateTime);
+            const timeDiff = Math.abs(appointmentDateTime - aptDateTime);
+            return timeDiff < 60 * 60 * 1000;
+        });
+
+        this.displayConflictWarning(conflicts, appointmentDateTime);
+    }
+
+    displayConflictWarning(conflicts, selectedTime) {
+        const existingWarning = document.querySelector('.conflict-warning');
+        if (existingWarning) {
+            existingWarning.remove();
+        }
+
+        if (conflicts.length === 0) return;
+
+        const warningDiv = document.createElement('div');
+        warningDiv.className = 'conflict-warning';
+
+        const conflictList = conflicts.map(c => `${c.title} às ${new Date(c.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`).join(', ');
+
+        warningDiv.innerHTML = `
+            <div>
+                <span class="conflict-icon">⚠️</span>
+                <p>Conflito detectado com: ${conflictList}</p>
+            </div>
+        `;
+
+        if (this.appointmentTime?.parentNode) {
+            this.appointmentTime.parentNode.appendChild(warningDiv);
+        }
+    }
+
+    updateTodayView() {
+        if (!this.todayAppointments) return;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const todayAppts = this.appointments.filter(apt => {
+            const aptDate = new Date(apt.dateTime);
+            return aptDate >= today && aptDate < tomorrow;
+        }).sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+
+        if (todayAppts.length === 0) {
+            this.todayAppointments.innerHTML = `
+                <div class="no-appointments">
+                    <span class="no-appointments-icon">✨</span>
+                    <p>Nenhum compromisso para hoje</p>
+                </div>
+            `;
+            return;
+        }
+
+        this.todayAppointments.innerHTML = todayAppts.slice(0, 3).map(apt => {
+            const aptDate = new Date(apt.dateTime);
+            const timeStr = aptDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            return `
+                <div class="appointment-preview ${apt.category}">
+                    <div class="appointment-info">
+                        <h4>${apt.title}</h4>
+                        <p>⏰ ${timeStr} ${apt.location ? `📍 ${apt.location}` : ''}</p>
+                    </div>
+                    <div class="appointment-status">
+                        <span class="appointment-time">${timeStr}</span>
+                        <span class="appointment-priority ${apt.priority || 'medium'}">${this.getPriorityLabel(apt.priority)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    startCountdownTimer() {
+        setInterval(() => {
+            this.updateNextAppointmentCountdown();
+        }, 1000);
+    }
+
+    updateNextAppointmentCountdown() {
+        const now = new Date();
+        const nextAppt = this.appointments
+            .filter(apt => new Date(apt.dateTime) > now)
+            .sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime))[0];
+
+        if (!nextAppt || !this.nextCountdown || !this.countdownTime) {
+            if (this.nextCountdown) this.nextCountdown.style.display = 'none';
+            return;
+        }
+
+        const timeDiff = new Date(nextAppt.dateTime) - now;
+        const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+        if (hours < 4) {
+            this.nextCountdown.style.display = 'block';
+            this.countdownTime.textContent = `${hours}h ${minutes}m`;
+        } else {
+            this.nextCountdown.style.display = 'none';
+        }
+    }
+
+    getPriorityLabel(priority) {
+        const labels = {
+            low: 'Baixa',
+            medium: 'Média',
+            high: 'Alta',
+            urgent: 'Urgente'
+        };
+        return labels[priority] || labels.medium;
+    }
+
+    generateRecurrentAppointments(appointment, recurrence, endDate) {
+        const appointments = [];
+        const startDate = new Date(appointment.dateTime);
+        const finalDate = endDate ? new Date(endDate) : new Date(startDate.getTime() + (365 * 24 * 60 * 60 * 1000));
+
+        let currentDate = new Date(startDate);
+
+        while (currentDate <= finalDate && appointments.length < 50) {
+            switch (recurrence) {
+                case 'daily':
+                    currentDate.setDate(currentDate.getDate() + 1);
+                    break;
+                case 'weekly':
+                    currentDate.setDate(currentDate.getDate() + 7);
+                    break;
+                case 'monthly':
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                    break;
+                case 'yearly':
+                    currentDate.setFullYear(currentDate.getFullYear() + 1);
+                    break;
+                default:
+                    return appointments;
+            }
+
+            if (currentDate <= finalDate) {
+                const newAppointment = {
+                    ...appointment,
+                    id: Date.now() + Math.random() + appointments.length,
+                    dateTime: currentDate.toISOString(),
+                    recurrenceParent: appointment.id
+                };
+                appointments.push(newAppointment);
+            }
+        }
+
+        return appointments;
+    }
+
+    // Inicializar visualização do calendário
+    initCalendarView() {
+        this.currentDate = new Date(); // Garantir que inicia no mês atual
+        this.switchCalendarView('month');
+
+        // Fazer scroll para o dia atual após inicializar
+        setTimeout(() => {
+            this.scrollToToday();
+        }, 200);
+    }
+
+    // Alternar entre vista mensal e semanal
+    switchCalendarView(view) {
+        this.currentView = view;
+
+        // Atualizar botões
+        this.monthViewBtn?.classList.toggle('active', view === 'month');
+        this.weekViewBtn?.classList.toggle('active', view === 'week');
+
+        // Mostrar/ocultar containers
+        if (this.monthViewContainer && this.weekViewContainer) {
+            this.monthViewContainer.style.display = view === 'month' ? 'block' : 'none';
+            this.weekViewContainer.style.display = view === 'week' ? 'block' : 'none';
+        }
+
+        if (view === 'month') {
+            this.renderMonthView();
+        } else {
+            this.renderWeekView();
+        }
+    }
+
+    // Ir para hoje
+    goToToday() {
+        this.currentDate = new Date();
+        if (this.currentView === 'month') {
+            this.renderMonthView();
+        } else {
+            this.renderWeekView();
+        }
+        this.updateCalendarHeader();
+
+        // Scroll suave para o dia atual após renderizar
+        setTimeout(() => {
+            this.scrollToToday();
+        }, 100);
+    }
+
+    // Fazer scroll suave para o dia atual
+    scrollToToday() {
+        const todayElement = document.querySelector('.calendar-day.today');
+        if (todayElement) {
+            todayElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+            // Adicionar um efeito de destaque temporário
+            todayElement.style.animation = 'none';
+            setTimeout(() => {
+                todayElement.style.animation = 'todayPulse 2s infinite';
+            }, 10);
+        }
+    }
+
+    // Renderizar vista mensal aprimorada
+    renderMonthView() {
+        const calendarGrid = document.getElementById('calendarGrid');
+        if (!calendarGrid) return;
+
+        const today = new Date();
+        const year = this.currentDate.getFullYear();
+        const month = this.currentDate.getMonth();
+
+        // Primeiro dia do mês
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+        let html = '';
+        let currentDate = new Date(startDate);
+
+        // Gerar 6 semanas (42 dias)
+        for (let i = 0; i < 42; i++) {
+            const isToday = currentDate.toDateString() === today.toDateString();
+            const isCurrentMonth = currentDate.getMonth() === month;
+            const dayAppointments = this.getAppointmentsForDate(currentDate);
+
+            html += `
+                <div class="calendar-day ${isToday ? 'today' : ''} ${!isCurrentMonth ? 'other-month' : ''}" 
+                     data-date="${currentDate.toISOString().split('T')[0]}"
+                     onclick="appointmentsManager.openDayModal('${currentDate.toISOString().split('T')[0]}')">
+                    <div class="day-number">${currentDate.getDate()}</div>
+                    <div class="day-appointments">
+                        ${dayAppointments.slice(0, 3).map(apt => `
+                            <div class="day-appointment-indicator ${apt.category}" 
+                                 title="${apt.title} - ${new Date(apt.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
+                            </div>
+                        `).join('')}
+                        ${dayAppointments.length > 3 ? `<div class="day-more-appointments">+${dayAppointments.length - 3} mais</div>` : ''}
+                    </div>
+                </div>
+            `;
+
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        calendarGrid.innerHTML = html;
+        this.updateCalendarHeader();
+    }
+
+    // Renderizar vista semanal
+    renderWeekView() {
+        const weekContainer = this.weekViewContainer;
+        if (!weekContainer) return;
+
+        // Obter primeira data da semana (domingo)
+        const startOfWeek = new Date(this.currentDate);
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+
+        // Gerar cabeçalho da semana
+        this.renderWeekHeader(startOfWeek);
+        this.renderWeekTimeLabels();
+        this.renderWeekGrid(startOfWeek);
+
+        // Atualizar linha de tempo atual
+        setTimeout(() => this.updateCurrentTimeLine(), 100);
+    }
+
+    // Renderizar cabeçalho da semana
+    renderWeekHeader(startOfWeek) {
+        const weekHeader = document.getElementById('weekHeader');
+        if (!weekHeader) return;
+
+        const today = new Date();
+        const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+        let html = '<div class="week-time-slot"></div>'; // Coluna vazia para alinhamento
+
+        for (let i = 0; i < 7; i++) {
+            const currentDay = new Date(startOfWeek);
+            currentDay.setDate(currentDay.getDate() + i);
+            const isToday = currentDay.toDateString() === today.toDateString();
+
+            html += `
+                <div class="week-day-header ${isToday ? 'today' : ''}">
+                    <div class="day-name">${days[i]}</div>
+                    <div class="day-date">${currentDay.getDate()}</div>
+                </div>
+            `;
+        }
+
+        weekHeader.innerHTML = html;
+    }
+
+    // Renderizar labels de horário
+    renderWeekTimeLabels() {
+        const timeLabels = document.getElementById('timeLabels');
+        if (!timeLabels) return;
+
+        let html = '';
+        for (let hour = 0; hour < 24; hour++) {
+            const timeString = `${hour.toString().padStart(2, '0')}:00`;
+            html += `<div class="time-slot">${timeString}</div>`;
+        }
+
+        timeLabels.innerHTML = html;
+    }
+
+    // Renderizar grid semanal
+    renderWeekGrid(startOfWeek) {
+        const weekGrid = document.getElementById('weekGrid');
+        if (!weekGrid) return;
+
+        let html = '';
+
+        // Criar colunas para cada dia da semana
+        for (let day = 0; day < 7; day++) {
+            const currentDate = new Date(startOfWeek);
+            currentDate.setDate(currentDate.getDate() + day);
+
+            html += '<div class="week-day-column">';
+
+            // Criar slots de hora para cada dia
+            for (let hour = 0; hour < 24; hour++) {
+                html += `
+                    <div class="week-hour-slot" 
+                         data-date="${currentDate.toISOString().split('T')[0]}" 
+                         data-hour="${hour}"
+                         onclick="appointmentsManager.createQuickAppointment('${currentDate.toISOString().split('T')[0]}', ${hour})">
+                    </div>
+                `;
+            }
+
+            // Adicionar compromissos do dia
+            const dayAppointments = this.getAppointmentsForDate(currentDate);
+            dayAppointments.forEach(apt => {
+                const aptDate = new Date(apt.dateTime);
+                const startHour = aptDate.getHours();
+                const minutes = aptDate.getMinutes();
+                const duration = apt.duration || 60; // duração padrão 1 hora
+
+                const topPosition = (startHour * 60 + minutes) / 60 * 60; // 60px por hora
+                const height = (duration / 60) * 60; // altura baseada na duração
+
+                html += `
+                    <div class="week-appointment ${apt.category}" 
+                         style="top: ${topPosition}px; height: ${height}px;"
+                         onclick="appointmentsManager.openModal(${apt.id})"
+                         title="${apt.title}">
+                        <div class="apt-time">${aptDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div class="apt-title">${apt.title}</div>
+                        ${apt.location ? `<div class="apt-location">📍 ${apt.location}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+        }
+
+        weekGrid.innerHTML = html;
+    }
+
+    // Criar compromisso rápido na vista semanal
+    createQuickAppointment(dateStr, hour) {
+        this.appointmentDate.value = dateStr;
+        this.appointmentTime.value = `${hour.toString().padStart(2, '0')}:00`;
+        this.openModal();
+    }
+
+    // Atualizar linha de tempo atual na vista semanal
+    updateCurrentTimeLine() {
+        if (this.currentView !== 'week') return;
+
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinutes = now.getMinutes();
+        const topPosition = (currentHour * 60 + currentMinutes) / 60 * 60; // 60px por hora
+
+        // Remover linha anterior se existir
+        const existingLine = document.querySelector('.current-time-line');
+        if (existingLine) existingLine.remove();
+
+        // Verificar se é hoje na semana atual
+        const weekGrid = document.getElementById('weekGrid');
+        if (!weekGrid) return;
+
+        const currentDayColumn = this.getCurrentDayColumnIndex();
+        if (currentDayColumn >= 0) {
+            const timeLine = document.createElement('div');
+            timeLine.className = 'current-time-line';
+            timeLine.style.top = `${topPosition}px`;
+            timeLine.style.left = `${currentDayColumn * (100 / 7)}%`;
+            timeLine.style.width = `${100 / 7}%`;
+            weekGrid.appendChild(timeLine);
+        }
+    }
+
+    // Obter índice da coluna do dia atual
+    getCurrentDayColumnIndex() {
+        const today = new Date();
+        const startOfWeek = this.getStartOfWeek(this.currentDate);
+
+        for (let i = 0; i < 7; i++) {
+            const dayCheck = new Date(startOfWeek);
+            dayCheck.setDate(dayCheck.getDate() + i);
+            if (dayCheck.toDateString() === today.toDateString()) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Obter compromissos para uma data específica
+    getAppointmentsForDate(date) {
+        const dateStr = date.toISOString().split('T')[0];
+        return this.appointments.filter(apt => {
+            const aptDate = new Date(apt.dateTime).toISOString().split('T')[0];
+            return aptDate === dateStr;
+        }).sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime));
+    }
+
+    // Atualizar preview do compromisso em tempo real
+    updateAppointmentPreview() {
+        const previewCard = document.getElementById('appointmentPreviewCard');
+        if (!previewCard) return;
+
+        const title = this.appointmentTitle?.value || 'Novo Compromisso';
+        const date = this.appointmentDate?.value;
+        const time = this.appointmentTime?.value;
+        const location = this.appointmentLocation?.value || '';
+        const category = this.appointmentCategory?.value || 'outros';
+        const priority = this.appointmentPriority?.value || 'medium';
+
+        if (!date || !time) {
+            previewCard.innerHTML = '<p style="color: #888; text-align: center;">Preencha data e horário para ver o preview</p>';
+            return;
+        }
+
+        const dateTime = new Date(`${date}T${time}`);
+        const categoryIcons = {
+            trabalho: '💼',
+            pessoal: '🏠',
+            estudo: '📚',
+            saude: '❤️',
+            outros: '📌'
+        };
+
+        const priorityColors = {
+            low: '#22c55e',
+            medium: '#fbbf24',
+            high: '#f97316',
+            urgent: '#ef4444'
+        };
+
+        previewCard.innerHTML = `
+            <div class="preview-title">${categoryIcons[category]} ${title}</div>
+            <div class="preview-details">
+                <div class="preview-item">
+                    <span>📅</span>
+                    <span>${dateTime.toLocaleDateString('pt-BR')}</span>
+                </div>
+                <div class="preview-item">
+                    <span>⏰</span>
+                    <span>${dateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                </div>
+                ${location ? `
+                <div class="preview-item">
+                    <span>📍</span>
+                    <span>${location}</span>
+                </div>` : ''}
+                <div class="preview-item">
+                    <span>⭐</span>
+                    <span style="color: ${priorityColors[priority]}">${this.getPriorityLabel(priority)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Atualizar cabeçalho do calendário
+    updateCalendarHeader() {
+        const monthYearElement = document.getElementById('calendarMonthYear');
+        if (!monthYearElement) return;
+
+        const months = [
+            'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+
+        if (this.currentView === 'month') {
+            monthYearElement.textContent = `${months[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
+        } else {
+            const startOfWeek = new Date(this.currentDate);
+            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(endOfWeek.getDate() + 6);
+
+            monthYearElement.textContent = `${startOfWeek.getDate()} - ${endOfWeek.getDate()} de ${months[startOfWeek.getMonth()]} ${startOfWeek.getFullYear()}`;
+        }
+    }
+
+    // Abrir modal de tarefas do dia
+    openDayModal(dateStr) {
+        const appointments = this.getAppointmentsForDate(new Date(dateStr + 'T00:00:00'));
+        const date = new Date(dateStr + 'T00:00:00');
+
+        // Aqui você pode implementar um modal específico para mostrar os compromissos do dia
+        // Por enquanto, vou apenas mostrar um alert
+        if (appointments.length > 0) {
+            const appointmentsList = appointments.map(apt =>
+                `• ${apt.title} às ${new Date(apt.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+            ).join('\n');
+
+            alert(`Compromissos de ${date.toLocaleDateString('pt-BR')}:\n\n${appointmentsList}`);
+        } else {
+            // Abrir modal para criar novo compromisso nesta data
+            this.appointmentDate.value = dateStr;
+            this.openModal();
         }
     }
 
@@ -2474,6 +4155,14 @@ class AppointmentsManager {
                 this.appointmentDescription.value = appointment.description || '';
                 this.appointmentReminder.value = appointment.reminder || '1hour';
                 this.appointmentCategory.value = appointment.category || 'pessoal';
+                if (this.appointmentRecurrence) this.appointmentRecurrence.value = appointment.recurrence || 'none';
+                if (this.appointmentPriority) this.appointmentPriority.value = appointment.priority || 'medium';
+                if (this.recurrenceEnd) this.recurrenceEnd.value = appointment.recurrenceEnd || '';
+                if (this.appointmentDuration) this.appointmentDuration.value = appointment.duration || '60';
+                if (this.appointmentParticipants) this.appointmentParticipants.value = appointment.participants || '';
+
+                // Mostrar/ocultar campo de fim de recorrência
+                this.toggleRecurrenceEndField(appointment.recurrence || 'none');
             }
         } else {
             this.appointmentModalTitle.textContent = 'Novo Compromisso';
@@ -2483,10 +4172,23 @@ class AppointmentsManager {
             this.appointmentLocation.value = '';
             this.appointmentDescription.value = '';
             this.appointmentReminder.value = '1hour';
-            this.appointmentCategory.value = 'pessoal';
+            this.appointmentCategory.value = 'trabalho';
+            if (this.appointmentRecurrence) this.appointmentRecurrence.value = 'none';
+            if (this.appointmentPriority) this.appointmentPriority.value = 'medium';
+            if (this.recurrenceEnd) this.recurrenceEnd.value = '';
+            if (this.appointmentDuration) this.appointmentDuration.value = '60';
+            if (this.appointmentParticipants) this.appointmentParticipants.value = '';
+
+            // Ocultar campo de fim de recorrência
+            this.toggleRecurrenceEndField('none');
         }
 
         this.appointmentModal.classList.add('active');
+
+        // Atualizar preview após pequeno delay para garantir que os campos estejam carregados
+        setTimeout(() => {
+            this.updateAppointmentPreview();
+        }, 100);
     }
 
     closeModal() {
@@ -2539,6 +4241,11 @@ class AppointmentsManager {
             description: this.appointmentDescription.value.trim(),
             reminder: this.appointmentReminder.value,
             category: this.appointmentCategory.value,
+            recurrence: this.appointmentRecurrence ? this.appointmentRecurrence.value : 'none',
+            recurrenceEnd: this.recurrenceEnd ? this.recurrenceEnd.value : '',
+            priority: this.appointmentPriority ? this.appointmentPriority.value : 'medium',
+            duration: this.appointmentDuration ? parseInt(this.appointmentDuration.value) : 60,
+            participants: this.appointmentParticipants ? this.appointmentParticipants.value.trim() : '',
             notified: false,
             createdAt: new Date().toISOString()
         };
@@ -2554,7 +4261,20 @@ class AppointmentsManager {
             // Novo compromisso
             appointmentData.id = Date.now();
             this.appointments.push(appointmentData);
-            this.showAppointmentMessage('📅 Compromisso agendado com sucesso!', 'success');
+
+            // Gerar compromissos recorrentes se necessário
+            if (appointmentData.recurrence && appointmentData.recurrence !== 'none') {
+                const recurrentAppointments = this.generateRecurrentAppointments(
+                    appointmentData,
+                    appointmentData.recurrence,
+                    appointmentData.recurrenceEnd
+                );
+                this.appointments.push(...recurrentAppointments);
+
+                this.showAppointmentMessage(`📅 Compromisso recorrente agendado! ${recurrentAppointments.length + 1} ocorrências criadas.`, 'success');
+            } else {
+                this.showAppointmentMessage('📅 Compromisso agendado com sucesso!', 'success');
+            }
 
             // Tocar som de sucesso (verificar se existe o método)
             if (window.soundSystem && typeof window.soundSystem.playSound === 'function') {
@@ -2564,6 +4284,7 @@ class AppointmentsManager {
 
         this.saveToStorage();
         this.renderAppointments();
+        this.updateTodayView(); // Atualizar vista de hoje
 
         // Fechar modal usando método closeModal para garantir
         this.closeModal();

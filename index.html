@@ -57,6 +57,24 @@
                 <p class="verse-text">Carregando versículo...</p>
                 <p class="verse-reference"></p>
             </div>
+
+            <!-- Vista de Hoje - Próximos Compromissos -->
+            <div class="today-view" id="todayView">
+                <div class="today-header">
+                    <span class="today-icon">📅</span>
+                    <span class="today-title">Próximos Compromissos</span>
+                </div>
+                <div class="today-appointments" id="todayAppointments">
+                    <div class="no-appointments">
+                        <span class="no-appointments-icon">✨</span>
+                        <p>Nenhum compromisso nas próximas horas</p>
+                    </div>
+                </div>
+                <div class="next-appointment-countdown" id="nextCountdown" style="display: none;">
+                    <div class="countdown-text">Próximo em:</div>
+                    <div class="countdown-time" id="countdownTime">--:--</div>
+                </div>
+            </div>
         </header>
 
         <!-- NOVIDADE: Modal de Edição -->
@@ -68,8 +86,8 @@
                 </div>
                 <input type="text" class="modal-input" id="modalInput" placeholder="Digite o novo texto...">
                 <div class="modal-buttons">
-                    <button class="modal-btn cancel" id="modalCancel">Cancelar</button>
-                    <button class="modal-btn save" id="modalSave">Salvar</button>
+                    <button class="modal-btn cancel" id="modalCancel">✕</button>
+                    <button class="modal-btn save" id="modalSave">💾</button>
                 </div>
             </div>
         </div>
@@ -86,8 +104,8 @@
                     <p class="warning-text">Esta ação não pode ser desfeita!</p>
                 </div>
                 <div class="modal-buttons">
-                    <button class="modal-btn cancel" id="confirmDeleteCancel">Cancelar</button>
-                    <button class="modal-btn delete" id="confirmDeleteConfirm">Apagar Todas</button>
+                    <button class="modal-btn cancel" id="confirmDeleteCancel">✕</button>
+                    <button class="modal-btn delete" id="confirmDeleteConfirm">🗑️</button>
                 </div>
             </div>
         </div>
@@ -99,9 +117,9 @@
                 <div class="timer-display" id="pomodoroTimer">25:00</div>
                 <div class="pomodoro-status" id="pomodoroStatus">Foco (25 min)</div>
                 <div class="timer-controls">
-                    <button class="timer-btn start" id="pomodoroStart">▶ Iniciar</button>
-                    <button class="timer-btn pause" id="pomodoroPause">⏸ Pausar</button>
-                    <button class="timer-btn reset" id="pomodoroReset">⟲ Zerar</button>
+                    <button class="timer-btn start" id="pomodoroStart">▶️</button>
+                    <button class="timer-btn pause" id="pomodoroPause">⏸️</button>
+                    <button class="timer-btn reset" id="pomodoroReset">🔄</button>
                 </div>
                 <!-- Contadores de tempo acumulado -->
                 <div class="pomodoro-stats">
@@ -147,18 +165,6 @@
                         <label for="dueDateInput">📅 Vencimento</label>
                         <input type="date" id="dueDateInput" class="date-input">
                     </div>
-
-                    <div class="input-group">
-                        <label for="timeEstimate">⏱️ Tempo Estimado</label>
-                        <input type="number" id="timeEstimate" class="time-input" placeholder="Min" min="5" step="5">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="goalSelect">🎯 Meta (opcional)</label>
-                        <select id="goalSelect" class="goal-select">
-                            <option value="">Nenhuma meta</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="input-group full-width">
@@ -173,7 +179,7 @@
                     <input type="checkbox" id="priorityCheckbox">
                     <span>⭐ Prioridade</span>
                 </label>
-                <button id="addBtn">+ Adicionar Tarefa</button>
+                <button id="addBtn">➕</button>
             </div>
         </div>
 
@@ -183,7 +189,6 @@
                     <h2><span class="icon">≡</span> Tarefas Pendentes</h2>
                     <button class="clear-all-btn" id="clearPendingBtn" title="Apagar todas as tarefas pendentes">
                         <span class="btn-icon">🗑️</span>
-                        <span class="btn-text">Apagar Todas</span>
                     </button>
                 </div>
                 <div class="tasks-list" id="pendingTasks">
@@ -196,7 +201,6 @@
                     <h2><span class="icon">✓</span> Tarefas Concluídas</h2>
                     <button class="clear-all-btn" id="clearCompletedBtn" title="Apagar todas as tarefas concluídas">
                         <span class="btn-icon">🗑️</span>
-                        <span class="btn-text">Apagar Todas</span>
                     </button>
                 </div>
                 <div class="tasks-list" id="completedTasks">
@@ -206,42 +210,99 @@
         </div>
 
         <!-- Barra de Progresso -->
-        <div class="progress-container">
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-header">
+                <div class="progress-title">📊 Progresso Geral</div>
+                <div class="progress-stats">
+                    <span id="progressStats">0 de 0 tarefas</span>
+                </div>
+            </div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
             <div class="progress-text" id="progressText">0% Concluído</div>
-        </div>
-
-        <!-- Metas e Objetivos -->
-        <div class="goals-section">
-            <div class="section-header">
-                <h2>🎯 Metas e Objetivos</h2>
-                <div class="goals-buttons">
-                    <button class="add-goal-btn" id="addGoalBtn">+ Nova Meta</button>
-                    <button class="add-appointment-btn" id="addAppointmentBtn">📅 Agendar Compromisso</button>
+            <div class="progress-details" id="progressDetails">
+                <div class="progress-detail-item">
+                    <span class="progress-detail-label">⏱️ Tempo Restante</span>
+                    <span class="progress-detail-value" id="totalEstimatedTime">0 min</span>
+                </div>
+                <div class="progress-detail-item">
+                    <span class="progress-detail-label">📈 Produtividade</span>
+                    <span class="progress-detail-value" id="productivityRate">0%</span>
+                </div>
+                <div class="progress-detail-item">
+                    <span class="progress-detail-label">🎯 Meta do Dia</span>
+                    <span class="progress-detail-value" id="dailyGoal">-</span>
                 </div>
             </div>
-            <div id="goalsList" class="goals-list">
-                <div class="empty-state-goals">Nenhuma meta criada. Comece adicionando uma meta!</div>
+            <div class="category-progress" id="categoryProgress">
+                <div class="category-progress-title">📁 Progresso por Categoria</div>
+                <div class="category-progress-list" id="categoryProgressList">
+                    <!-- Progresso por categoria será inserido aqui -->
+                </div>
             </div>
-            <div id="appointmentsList" class="appointments-list">
-                <!-- Compromissos serão inseridos aqui -->
+            <span id="productivityScore">Produtividade: --</span>
+        </div>
+    </div>
+    </div>
+
+    <!-- Metas e Objetivos -->
+    <div class="goals-section">
+        <div class="section-header">
+            <h2>🎯 Metas e Objetivos</h2>
+            <div class="goals-buttons">
+                <button class="add-goal-btn" id="addGoalBtn">+ Nova Meta</button>
+                <button class="add-appointment-btn" id="addAppointmentBtn">📅 Agendar Compromisso</button>
             </div>
         </div>
+        <div id="goalsList" class="goals-list">
+            <div class="empty-state-goals">Nenhuma meta criada. Comece adicionando uma meta!</div>
+        </div>
+        <div id="appointmentsList" class="appointments-list">
+            <!-- Compromissos serão inseridos aqui -->
+        </div>
+    </div>
 
-        <!-- Calendário de Tarefas -->
-        <div class="calendar-section">
-            <div class="section-header">
-                <h2>📅 Calendário de Tarefas</h2>
-                <div class="calendar-controls">
+    <!-- Calendário de Tarefas -->
+    <div class="calendar-section">
+        <div class="section-header">
+            <h2>📅 Calendário de Tarefas</h2>
+            <div class="calendar-controls">
+                <div class="calendar-view-toggle">
+                    <button class="view-btn active" id="monthView">📅 Mês</button>
+                    <button class="view-btn" id="weekView">📊 Semana</button>
+                </div>
+                <div class="calendar-navigation">
                     <button class="calendar-nav-btn" id="prevMonth">◀</button>
-                    <span class="calendar-month-year" id="calendarMonthYear">Novembro 2025</span>
+                    <span class="calendar-month-year" id="calendarMonthYear">Janeiro 2026</span>
                     <button class="calendar-nav-btn" id="nextMonth">▶</button>
                 </div>
+                <button class="today-btn" id="goToToday">🎯 Hoje</button>
             </div>
+        </div>
 
-            <div class="calendar-container">
+        <div class="calendar-legends">
+            <div class="legend-item">
+                <span class="legend-dot work"></span>
+                <span>Trabalho</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot personal"></span>
+                <span>Pessoal</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot health"></span>
+                <span>Saúde</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-dot study"></span>
+                <span>Estudo</span>
+            </div>
+        </div>
+
+        <div class="calendar-container" id="calendarContainer">
+            <!-- Vista Mensal -->
+            <div class="month-view" id="monthViewContainer">
                 <div class="calendar-weekdays">
                     <div class="weekday">Dom</div>
                     <div class="weekday">Seg</div>
@@ -256,207 +317,303 @@
                 </div>
             </div>
 
-            <!-- Modal de Tarefas do Dia -->
-            <div class="day-tasks-modal" id="dayTasksModal">
-                <div class="day-tasks-content">
-                    <div class="day-tasks-header">
-                        <h3 id="dayTasksTitle">Tarefas de 07/11/2025</h3>
-                        <button class="modal-close" id="dayTasksClose">&times;</button>
-                    </div>
-                    <div class="day-tasks-list" id="dayTasksList">
-                        <!-- Tarefas do dia serão listadas aqui -->
-                    </div>
+            <!-- Vista Semanal -->
+            <div class="week-view hidden" id="weekViewContainer">
+                <div class="week-header" id="weekHeader">
+                    <!-- Cabeçalho da semana -->
                 </div>
-            </div>
-
-            <!-- Modal de Detalhes do Compromisso -->
-            <div class="appointment-detail-modal" id="appointmentDetailModal">
-                <div class="appointment-detail-content">
-                    <div class="appointment-detail-header">
-                        <h3>📅 Detalhes do Compromisso</h3>
-                        <button class="modal-close" id="appointmentDetailClose">&times;</button>
+                <div class="week-timeline">
+                    <div class="time-labels" id="timeLabels">
+                        <!-- Labels de horário -->
                     </div>
-                    <div class="appointment-detail-body" id="appointmentDetailBody">
-                        <!-- Detalhes serão inseridos aqui -->
-                    </div>
-                    <div class="appointment-detail-actions">
-                        <button class="appointment-detail-btn edit" id="appointmentDetailEdit">✏️ Editar</button>
-                        <button class="appointment-detail-btn delete" id="appointmentDetailDelete">🗑️ Excluir</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Modal de Confirmação de Exclusão -->
-            <div class="delete-confirmation-modal" id="deleteAppointmentModal">
-                <div class="delete-confirmation-content">
-                    <div class="delete-confirmation-icon">⚠️</div>
-                    <h3>Excluir Compromisso?</h3>
-                    <p id="deleteAppointmentMessage">Tem certeza que deseja excluir este compromisso?</p>
-                    <div class="delete-confirmation-buttons">
-                        <button class="delete-confirm-btn cancel" id="deleteAppointmentCancel">Cancelar</button>
-                        <button class="delete-confirm-btn delete" id="deleteAppointmentConfirm">Excluir</button>
+                    <div class="week-grid" id="weekGrid">
+                        <!-- Grid semanal -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Conquistas e Gamificação -->
-        <div class="achievements-section">
-            <div class="section-header">
-                <h2>🏆 Conquistas e Estatísticas</h2>
-            </div>
-
-            <!-- Título do Usuário -->
-            <div class="user-title-card">
-                <div class="title-icon" id="titleIcon">🌱</div>
-                <div class="title-content">
-                    <div class="title-label">Seu Título</div>
-                    <div class="title-name" id="titleName">Novato</div>
+        <!-- Modal de Tarefas do Dia -->
+        <div class="day-tasks-modal" id="dayTasksModal">
+            <div class="day-tasks-content">
+                <div class="day-tasks-header">
+                    <h3 id="dayTasksTitle">Tarefas de 07/11/2025</h3>
+                    <button class="modal-close" id="dayTasksClose">&times;</button>
+                </div>
+                <div class="day-tasks-list" id="dayTasksList">
+                    <!-- Tarefas do dia serão listadas aqui -->
                 </div>
             </div>
+        </div>
 
-            <!-- Estatísticas de Usuário -->
-            <div class="user-stats">
-                <div class="stat-card level">
-                    <div class="stat-icon">⭐</div>
-                    <div class="stat-info">
-                        <div class="stat-label">Nível</div>
-                        <div class="stat-value" id="userLevel">1</div>
-                    </div>
+        <!-- Modal de Detalhes do Compromisso -->
+        <div class="appointment-detail-modal" id="appointmentDetailModal">
+            <div class="appointment-detail-content">
+                <div class="appointment-detail-header">
+                    <h3>📅 Detalhes do Compromisso</h3>
+                    <button class="modal-close" id="appointmentDetailClose">&times;</button>
                 </div>
-
-                <div class="stat-card points">
-                    <div class="stat-icon">💎</div>
-                    <div class="stat-info">
-                        <div class="stat-label">Pontos</div>
-                        <div class="stat-value" id="userPoints">0</div>
-                    </div>
+                <div class="appointment-detail-body" id="appointmentDetailBody">
+                    <!-- Detalhes serão inseridos aqui -->
                 </div>
-
-                <div class="stat-card streak">
-                    <div class="stat-icon">🔥</div>
-                    <div class="stat-info">
-                        <div class="stat-label">Sequência</div>
-                        <div class="stat-value" id="userStreak">0 dias</div>
-                    </div>
-                </div>
-
-                <div class="stat-card completed">
-                    <div class="stat-icon">✅</div>
-                    <div class="stat-info">
-                        <div class="stat-label">Concluídas</div>
-                        <div class="stat-value" id="totalCompleted">0</div>
-                    </div>
+                <div class="appointment-detail-actions">
+                    <button class="appointment-detail-btn edit" id="appointmentDetailEdit">✏️ Editar</button>
+                    <button class="appointment-detail-btn delete" id="appointmentDetailDelete">🗑️ Excluir</button>
                 </div>
             </div>
+        </div>
 
-            <!-- Desafio Diário -->
-            <div class="daily-challenge" id="dailyChallengeCard">
-                <div class="challenge-header">
-                    <div class="challenge-icon">🎯</div>
-                    <div class="challenge-title-text">Desafio Diário</div>
+        <!-- Modal de Confirmação de Exclusão -->
+        <div class="delete-confirmation-modal" id="deleteAppointmentModal">
+            <div class="delete-confirmation-content">
+                <div class="delete-confirmation-icon">⚠️</div>
+                <h3>Excluir Compromisso?</h3>
+                <p id="deleteAppointmentMessage">Tem certeza que deseja excluir este compromisso?</p>
+                <div class="delete-confirmation-buttons">
+                    <button class="delete-confirm-btn cancel" id="deleteAppointmentCancel">✕</button>
+                    <button class="delete-confirm-btn delete" id="deleteAppointmentConfirm">Excluir</button>
                 </div>
-                <div class="challenge-description" id="challengeDescription">
-                    Complete 3 tarefas hoje
-                </div>
-                <div class="challenge-progress">
-                    <div class="challenge-progress-bar">
-                        <div class="challenge-progress-fill" id="challengeProgressFill"></div>
-                    </div>
-                    <div class="challenge-progress-text">
-                        <span id="challengeProgressText">0 / 3</span>
-                        <span class="challenge-reward">+100 XP 💎</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Barra de Progresso de Nível -->
-            <div class="level-progress">
-                <div class="level-info">
-                    <span>Nível <span id="currentLevel">1</span></span>
-                    <span><span id="currentXP">0</span> / <span id="nextLevelXP">100</span> XP</span>
-                </div>
-                <div class="level-bar">
-                    <div class="level-fill" id="levelFill"></div>
-                </div>
-            </div>
-
-            <!-- Grid de Conquistas -->
-            <div class="achievements-grid" id="achievementsGrid">
-                <!-- Conquistas serão inseridas aqui -->
             </div>
         </div>
     </div>
 
-    <!-- Modal de Compromisso -->
+    <!-- Conquistas e Gamificação -->
+    <div class="achievements-section">
+        <div class="section-header">
+            <h2>🏆 Conquistas e Estatísticas</h2>
+        </div>
+
+        <!-- Título do Usuário -->
+        <div class="user-title-card">
+            <div class="title-icon" id="titleIcon">🌱</div>
+            <div class="title-content">
+                <div class="title-label">Seu Título</div>
+                <div class="title-name" id="titleName">Novato</div>
+            </div>
+        </div>
+
+        <!-- Estatísticas de Usuário -->
+        <div class="user-stats">
+            <div class="stat-card level">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-info">
+                    <div class="stat-label">Nível</div>
+                    <div class="stat-value" id="userLevel">1</div>
+                </div>
+            </div>
+
+            <div class="stat-card points">
+                <div class="stat-icon">💎</div>
+                <div class="stat-info">
+                    <div class="stat-label">Pontos</div>
+                    <div class="stat-value" id="userPoints">0</div>
+                </div>
+            </div>
+
+            <div class="stat-card streak">
+                <div class="stat-icon">🔥</div>
+                <div class="stat-info">
+                    <div class="stat-label">Sequência</div>
+                    <div class="stat-value" id="userStreak">0 dias</div>
+                </div>
+            </div>
+
+            <div class="stat-card completed">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <div class="stat-label">Concluídas</div>
+                    <div class="stat-value" id="totalCompleted">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desafio Diário -->
+        <div class="daily-challenge" id="dailyChallengeCard">
+            <div class="challenge-header">
+                <div class="challenge-icon">🎯</div>
+                <div class="challenge-title-text">Desafio Diário</div>
+            </div>
+            <div class="challenge-description" id="challengeDescription">
+                Complete 3 tarefas hoje
+            </div>
+            <div class="challenge-progress">
+                <div class="challenge-progress-bar">
+                    <div class="challenge-progress-fill" id="challengeProgressFill"></div>
+                </div>
+                <div class="challenge-progress-text">
+                    <span id="challengeProgressText">0 / 3</span>
+                    <span class="challenge-reward">+100 XP 💎</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Progresso de Nível -->
+        <div class="level-progress">
+            <div class="level-info">
+                <span>Nível <span id="currentLevel">1</span></span>
+                <span><span id="currentXP">0</span> / <span id="nextLevelXP">100</span> XP</span>
+            </div>
+            <div class="level-bar">
+                <div class="level-fill" id="levelFill"></div>
+            </div>
+        </div>
+
+        <!-- Grid de Conquistas -->
+        <div class="achievements-grid" id="achievementsGrid">
+            <!-- Conquistas serão inseridas aqui -->
+        </div>
+    </div>
+    </div>
+
+    <!-- Modal de Compromisso Aprimorado -->
     <div class="modal-overlay" id="appointmentModal">
-        <div class="modal-content modal-appointment">
-            <div class="modal-header">
-                <h3><span class="appointment-icon">📅</span><span id="appointmentModalTitle">Novo Compromisso</span>
-                </h3>
-                <button class="modal-close" id="appointmentModalClose">&times;</button>
+        <div class="modal-content modal-appointment enhanced">
+            <div class="modal-header gradient-header">
+                <div class="modal-title-container">
+                    <span class="appointment-icon">📅</span>
+                    <h3 id="appointmentModalTitle">Novo Compromisso</h3>
+                </div>
+                <button class="modal-close modern" id="appointmentModalClose">×</button>
             </div>
 
-            <div class="modal-body">
-                <div class="input-group">
-                    <label for="appointmentTitle">📝 Título do Compromisso <span
-                            style="color: #ff6b6b;">*</span></label>
-                    <input type="text" id="appointmentTitle" class="modal-input" placeholder="Ex: Reunião com cliente"
-                        required>
-                </div>
+            <div class="modal-body enhanced-body">
+                <div class="form-section">
+                    <div class="input-group featured">
+                        <label for="appointmentTitle">📝 Título do Compromisso <span class="required">*</span></label>
+                        <input type="text" id="appointmentTitle" class="modal-input featured"
+                            placeholder="Ex: Reunião com cliente" required>
+                        <div class="input-hint">Digite um título descritivo para seu compromisso</div>
+                    </div>
 
-                <div class="input-row">
-                    <div class="input-group">
-                        <label for="appointmentDate">📅 Data <span style="color: #ff6b6b;">*</span></label>
-                        <input type="date" id="appointmentDate" class="date-input" required>
+                    <div class="input-row modern">
+                        <div class="input-group">
+                            <label for="appointmentDate">📅 Data <span class="required">*</span></label>
+                            <input type="date" id="appointmentDate" class="date-input enhanced" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="appointmentTime">⏰ Horário <span class="required">*</span></label>
+                            <input type="time" id="appointmentTime" class="time-input enhanced" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="appointmentDuration">⏱️ Duração</label>
+                            <select id="appointmentDuration" class="category-select">
+                                <option value="30">30 minutos</option>
+                                <option value="60" selected>1 hora</option>
+                                <option value="90">1h 30min</option>
+                                <option value="120">2 horas</option>
+                                <option value="180">3 horas</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="input-group">
-                        <label for="appointmentTime">⏰ Horário <span style="color: #ff6b6b;">*</span></label>
-                        <input type="time" id="appointmentTime" class="time-input" required>
+                        <label for="appointmentLocation">📍 Local</label>
+                        <input type="text" id="appointmentLocation" class="modal-input"
+                            placeholder="Ex: Sala de reuniões, endereço, link do meet...">
+                        <div class="location-suggestions" id="locationSuggestions"></div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="appointmentDescription">📄 Descrição</label>
+                        <textarea id="appointmentDescription" class="modal-textarea enhanced"
+                            placeholder="Detalhes do compromisso, agenda, participantes..." rows="3"></textarea>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="appointmentCategory">📁 Categoria</label>
+                            <select id="appointmentCategory" class="category-select enhanced">
+                                <option value="trabalho">💼 Trabalho</option>
+                                <option value="pessoal">🏠 Pessoal</option>
+                                <option value="estudo">📚 Estudo</option>
+                                <option value="saude">❤️ Saúde</option>
+                                <option value="outros">📌 Outros</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="appointmentPriority">⭐ Prioridade</label>
+                            <select id="appointmentPriority" class="category-select enhanced">
+                                <option value="low">🟢 Baixa</option>
+                                <option value="medium" selected>🟡 Média</option>
+                                <option value="high">🟠 Alta</option>
+                                <option value="urgent">🔴 Urgente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="appointmentReminder">🔔 Lembrete</label>
+                            <select id="appointmentReminder" class="category-select enhanced">
+                                <option value="none">Sem lembrete</option>
+                                <option value="moment">No momento</option>
+                                <option value="5min">5 minutos antes</option>
+                                <option value="15min">15 minutos antes</option>
+                                <option value="30min">30 minutos antes</option>
+                                <option value="1hour" selected>1 hora antes</option>
+                                <option value="2hours">2 horas antes</option>
+                                <option value="1day">1 dia antes</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label for="appointmentRecurrence">🔄 Repetir</label>
+                            <select id="appointmentRecurrence" class="category-select enhanced">
+                                <option value="none">Não repetir</option>
+                                <option value="daily">📅 Diariamente</option>
+                                <option value="weekly">📊 Semanalmente</option>
+                                <option value="monthly">📆 Mensalmente</option>
+                                <option value="yearly">🗓️ Anualmente</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="input-group recurrence-end" id="recurrenceEndGroup" style="display: none;">
+                        <label for="recurrenceEnd">🏁 Terminar recorrência em</label>
+                        <input type="date" id="recurrenceEnd" class="date-input enhanced">
+                        <div class="input-hint">Deixe vazio para repetir indefinidamente</div>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="appointmentLocation">📍 Local</label>
-                    <input type="text" id="appointmentLocation" class="modal-input"
-                        placeholder="Ex: Sala de reuniões, endereço...">
+                <!-- Seção de participantes (novo) -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <span class="section-icon">👥</span>
+                        <span>Participantes (Opcional)</span>
+                    </div>
+                    <div class="input-group">
+                        <label for="appointmentParticipants">✉️ Participantes</label>
+                        <input type="text" id="appointmentParticipants" class="modal-input"
+                            placeholder="Ex: João Silva, Maria Santos...">
+                        <div class="input-hint">Separe os nomes por vírgula</div>
+                    </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="appointmentDescription">📄 Descrição</label>
-                    <textarea id="appointmentDescription" class="modal-textarea"
-                        placeholder="Detalhes do compromisso..." rows="3"></textarea>
-                </div>
-
-                <div class="input-group">
-                    <label for="appointmentReminder">🔔 Lembrete</label>
-                    <select id="appointmentReminder" class="category-select">
-                        <option value="none">Sem lembrete</option>
-                        <option value="moment">No momento do compromisso</option>
-                        <option value="15min">15 minutos antes</option>
-                        <option value="30min">30 minutos antes</option>
-                        <option value="1hour" selected>1 hora antes</option>
-                        <option value="2hours">2 horas antes</option>
-                        <option value="1day">1 dia antes</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label for="appointmentCategory">📁 Categoria</label>
-                    <select id="appointmentCategory" class="category-select">
-                        <option value="pessoal">🏠 Pessoal</option>
-                        <option value="trabalho">💼 Trabalho</option>
-                        <option value="estudo">📚 Estudo</option>
-                        <option value="saude">❤️ Saúde</option>
-                        <option value="outros">📌 Outros</option>
-                    </select>
+                <!-- Preview do compromisso -->
+                <div class="appointment-preview-section" id="appointmentPreviewSection">
+                    <div class="section-title">
+                        <span class="section-icon">👁️</span>
+                        <span>Preview</span>
+                    </div>
+                    <div class="appointment-preview-card" id="appointmentPreviewCard">
+                        <!-- Preview será inserido aqui -->
+                    </div>
                 </div>
             </div>
 
-            <div class="modal-buttons">
-                <button type="button" class="modal-btn cancel" id="appointmentModalCancel">Cancelar</button>
-                <button type="button" class="modal-btn save" id="appointmentModalSave">Salvar Compromisso</button>
+            <div class="modal-buttons enhanced">
+                <button type="button" class="modal-btn cancel modern" id="appointmentModalCancel">
+                    <span class="btn-icon">✕</span>
+                    <span>Cancelar</span>
+                </button>
+                <button type="button" class="modal-btn save modern" id="appointmentModalSave">
+                    <span class="btn-icon">💾</span>
+                    <span>Salvar Compromisso</span>
+                </button>
             </div>
         </div>
     </div>
@@ -507,8 +664,8 @@
             </div>
 
             <div class="modal-buttons">
-                <button class="modal-btn cancel" id="goalModalCancel">Cancelar</button>
-                <button class="modal-btn save" id="goalModalSave">Salvar Meta</button>
+                <button class="modal-btn cancel" id="goalModalCancel">✕</button>
+                <button class="modal-btn save" id="goalModalSave">💾</button>
             </div>
         </div>
     </div>
