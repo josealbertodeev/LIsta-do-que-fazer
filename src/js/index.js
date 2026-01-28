@@ -3901,7 +3901,7 @@ class AppointmentsManager {
         if (!timeLabels) return;
 
         let html = '';
-        for (let hour = 0; hour < 24; hour++) {
+        for (let hour = 8; hour <= 17; hour++) {
             const timeString = `${hour.toString().padStart(2, '0')}:00`;
             html += `<div class="time-slot">${timeString}</div>`;
         }
@@ -3924,7 +3924,7 @@ class AppointmentsManager {
             html += '<div class="week-day-column">';
 
             // Criar slots de hora para cada dia
-            for (let hour = 0; hour < 24; hour++) {
+            for (let hour = 8; hour <= 17; hour++) {
                 html += `
                     <div class="week-hour-slot" 
                          data-date="${currentDate.toISOString().split('T')[0]}" 
@@ -3942,7 +3942,7 @@ class AppointmentsManager {
                 const minutes = aptDate.getMinutes();
                 const duration = apt.duration || 60; // duração padrão 1 hora
 
-                const topPosition = (startHour * 60 + minutes) / 60 * 60; // 60px por hora
+                const topPosition = ((startHour - 8) * 60 + minutes) / 60 * 60; // 60px por hora, ajustado para início às 8h
                 const height = (duration / 60) * 60; // altura baseada na duração
 
                 html += `
