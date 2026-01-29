@@ -3744,10 +3744,8 @@ class AppointmentsManager {
         this.currentDate = new Date(); // Garantir que inicia no mês atual
         this.switchCalendarView('month');
 
-        // Fazer scroll para o dia atual após inicializar
-        setTimeout(() => {
-            this.scrollToToday();
-        }, 200);
+        // Não fazer scroll automático na inicialização
+        // O usuário pode usar o botão "Ir para Hoje" se quiser ir para o dia atual
     }
 
     // Alternar entre vista mensal e semanal
@@ -3781,7 +3779,7 @@ class AppointmentsManager {
         }
         this.updateCalendarHeader();
 
-        // Scroll suave para o dia atual após renderizar
+        // Scroll suave para o dia atual após renderizar (mantido pois é ação intencional do usuário)
         setTimeout(() => {
             this.scrollToToday();
         }, 100);
@@ -3826,10 +3824,12 @@ class AppointmentsManager {
         for (let i = 0; i < 42; i++) {
             const isToday = currentDate.toDateString() === today.toDateString();
             const isCurrentMonth = currentDate.getMonth() === month;
+            const dayOfWeek = currentDate.getDay(); // 0 = domingo, 6 = sábado
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
             const dayAppointments = this.getAppointmentsForDate(currentDate);
 
             html += `
-                <div class="calendar-day ${isToday ? 'today' : ''} ${!isCurrentMonth ? 'other-month' : ''}" 
+                <div class="calendar-day ${isToday ? 'today' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isWeekend ? 'weekend' : ''}" 
                      data-date="${currentDate.toISOString().split('T')[0]}"
                      onclick="appointmentsManager.openDayModal('${currentDate.toISOString().split('T')[0]}')">
                     <div class="day-number">${currentDate.getDate()}</div>

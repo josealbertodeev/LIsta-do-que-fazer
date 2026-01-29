@@ -4661,6 +4661,13 @@ body.light-mode .calendar-day.other-month {
     color: #94a3b8;
 }
 
+/* Fins de semana em vermelho nos cabeçalhos dos dias - modo claro */
+body.light-mode .weekday:first-child,
+body.light-mode .weekday:last-child {
+    color: #dc2626 !important;
+    font-weight: 800;
+}
+
 /* Modal - Light Mode */
 body.light-mode .modal-content.enhanced {
     background: linear-gradient(145deg, #ffffff, #f8fafc);
@@ -7322,6 +7329,13 @@ body.light-mode .day-task-count {
     padding: 10px;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Fins de semana em vermelho nos cabeçalhos dos dias */
+.weekday:first-child,
+.weekday:last-child {
+    color: #ff6b6b !important;
+    font-weight: 800;
 }
 
 .calendar-grid {
