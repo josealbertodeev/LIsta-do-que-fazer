@@ -45,6 +45,16 @@
     .task-actions {
         gap: 8px;
     }
+
+    .weekly-chart {
+        height: 90px;
+    }
+
+    .weekly-summary {
+        flex-direction: column;
+        gap: 4px;
+        text-align: center;
+    }
 }
 
 /* Telas médias/grandes (1024px - 1400px) */

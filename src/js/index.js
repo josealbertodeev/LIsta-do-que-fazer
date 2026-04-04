@@ -549,6 +549,7 @@ class TodoApp {
         this.loadTheme();
         this.requestNotificationPermission();
         this.getWeather();
+        this.migrateCompletionHistory();
         this.renderTasks();
     }
 
@@ -1172,6 +1173,12 @@ class TodoApp {
             }
 
             task.completed = !task.completed;
+            if (task.completed) {
+                task.completedAt = new Date().toISOString();
+                this.recordDailyCompletion();
+            } else {
+                task.completedAt = null;
+            }
             this.saveToStorage();
 
             // Aguarda a animação completar antes de renderizar
@@ -1873,6 +1880,9 @@ class TodoApp {
         // Atualizar progresso por categoria
         this.updateCategoryProgress();
 
+        // Atualizar gráfico semanal
+        this.renderWeeklyStats();
+
         // Micro-interações para marcos importantes
         this.handleProgressMilestones(percentage, completed);
     }
@@ -1969,6 +1979,83 @@ class TodoApp {
         if (percentage < 50) return '#ffa726';
         if (percentage < 75) return '#66bb6a';
         return '#4caf50';
+    }
+
+    // ===== Estatísticas Semanais =====
+
+    migrateCompletionHistory() {
+        if (localStorage.getItem('dailyCompletionMigrated')) return;
+        const history = JSON.parse(localStorage.getItem('dailyCompletionHistory')) || {};
+        this.tasks.forEach(task => {
+            if (task.completed && task.completedAt) {
+                const date = task.completedAt.split('T')[0];
+                history[date] = (history[date] || 0) + 1;
+            }
+        });
+        // Conta tarefas completadas sem completedAt como sendo de hoje
+        const today = new Date().toISOString().split('T')[0];
+        const noDateCount = this.tasks.filter(t => t.completed && !t.completedAt).length;
+        if (noDateCount > 0) {
+            history[today] = (history[today] || 0) + noDateCount;
+        }
+        localStorage.setItem('dailyCompletionHistory', JSON.stringify(history));
+        localStorage.setItem('dailyCompletionMigrated', 'true');
+    }
+
+    recordDailyCompletion() {
+        const today = new Date().toISOString().split('T')[0];
+        const history = JSON.parse(localStorage.getItem('dailyCompletionHistory')) || {};
+        history[today] = (history[today] || 0) + 1;
+        localStorage.setItem('dailyCompletionHistory', JSON.stringify(history));
+    }
+
+    getWeeklyData() {
+        const history = JSON.parse(localStorage.getItem('dailyCompletionHistory')) || {};
+        const days = [];
+        const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+        const today = new Date();
+
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            days.push({
+                label: dayNames[date.getDay()],
+                date: dateStr,
+                count: history[dateStr] || 0,
+                isToday: i === 0
+            });
+        }
+        return days;
+    }
+
+    renderWeeklyStats() {
+        const chartEl = document.getElementById('weeklyChart');
+        const totalEl = document.getElementById('weeklyTotal');
+        const bestEl = document.getElementById('weeklyBest');
+        if (!chartEl) return;
+
+        const weekData = this.getWeeklyData();
+        const maxCount = Math.max(...weekData.map(d => d.count), 1);
+        const totalWeek = weekData.reduce((sum, d) => sum + d.count, 0);
+
+        const bestDay = weekData.reduce((best, d) => d.count > best.count ? d : best, weekData[0]);
+
+        chartEl.innerHTML = weekData.map(day => {
+            const barHeight = day.count > 0 ? Math.max((day.count / maxCount) * 90, 8) : 4;
+            const todayClass = day.isToday ? ' today' : '';
+            const emptyClass = day.count === 0 ? ' empty' : '';
+            return `
+                <div class="weekly-bar-wrapper">
+                    <span class="weekly-bar-count">${day.count > 0 ? day.count : ''}</span>
+                    <div class="weekly-bar${todayClass}${emptyClass}" style="height: ${barHeight}px;" title="${day.date}: ${day.count} tarefas"></div>
+                    <span class="weekly-bar-day${todayClass}">${day.label}</span>
+                </div>
+            `;
+        }).join('');
+
+        if (totalEl) totalEl.textContent = totalWeek;
+        if (bestEl) bestEl.textContent = bestDay.count > 0 ? `${bestDay.label} (${bestDay.count})` : '-';
     }
 
     // Calcular score de produtividade
@@ -2704,14 +2791,15 @@ class TodoApp {
     async fetchWeatherByCoords(lat, lon) {
         try {
             // Usando wttr.in - API gratuita sem necessidade de chave
-            const response = await fetch(`https://wttr.in/?format=j1`);
+            const response = await fetch(`https://wttr.in/${lat},${lon}?format=j1`);
             const data = await response.json();
 
             const temp = data.current_condition[0].temp_C;
             const weatherDesc = data.current_condition[0].lang_pt ?
                 data.current_condition[0].lang_pt[0].value :
                 data.current_condition[0].weatherDesc[0].value;
-            const location = data.nearest_area[0].areaName[0].value;
+            const area = data.nearest_area[0];
+            const location = area.region && area.region[0].value ? area.region[0].value : area.areaName[0].value;
 
             const weatherIcon = this.getWeatherIcon(data.current_condition[0].weatherCode);
 
@@ -2725,14 +2813,15 @@ class TodoApp {
     // Buscar clima por cidade
     async fetchWeatherByCity(city) {
         try {
-            const response = await fetch(`https://wttr.in/${city}?format=j1&lang=pt`);
+            const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=pt`);
             const data = await response.json();
 
             const temp = data.current_condition[0].temp_C;
             const weatherDesc = data.current_condition[0].lang_pt ?
                 data.current_condition[0].lang_pt[0].value :
                 data.current_condition[0].weatherDesc[0].value;
-            const location = data.nearest_area[0].areaName[0].value;
+            const area = data.nearest_area[0];
+            const location = area.region && area.region[0].value ? area.region[0].value : area.areaName[0].value;
 
             const weatherIcon = this.getWeatherIcon(data.current_condition[0].weatherCode);
 
@@ -4964,8 +5053,6 @@ class GamificationSystem {
 
         const progressPercent = Math.min((challenge.progress / challenge.target) * 100, 100);
         const isComplete = this.userStats.dailyChallengeCompleted;
-
-        console.log('🎨 Renderizando desafio:', progressPercent.toFixed(1) + '%', `(${challenge.progress}/${challenge.target})`);
 
         challengeDescription.textContent = challenge.description;
         challengeProgressFill.style.width = `${progressPercent}%`;
