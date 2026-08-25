@@ -1,4 +1,41 @@
 // ============================================
+// HELPERS GLOBAIS
+// ============================================
+
+// Formata uma data como YYYY-MM-DD usando o fuso horário local
+// (evita o bug de toISOString() jogar tarefas concluídas à noite para o dia seguinte em UTC)
+function formatLocalDateStr(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Lê e faz parse de um valor JSON do localStorage sem derrubar a aplicação
+// caso o dado esteja corrompido ou tenha sido editado manualmente
+function safeParseJSON(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (raw === null) return fallback;
+        return JSON.parse(raw);
+    } catch (error) {
+        console.error(`Falha ao ler "${key}" do localStorage:`, error);
+        return fallback;
+    }
+}
+
+// Escapa caracteres HTML de textos vindos do usuário antes de inserir via innerHTML
+function escapeHTML(text) {
+    if (text === null || text === undefined) return '';
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+// ============================================
 // SISTEMA DE SONS E NOTIFICAÇÕES
 // ============================================
 class SoundSystem {
@@ -378,6 +415,10 @@ class PomodoroTimer {
             this.totalFocusMinutes += 25;
             localStorage.setItem('pomodoroTotalFocus', this.totalFocusMinutes);
             this.animateStat(this.totalFocusDisplay);
+
+            if (window.gamificationSystem) {
+                window.gamificationSystem.onPomodoroCompleted();
+            }
         } else {
             // Acabou de completar um período de descanso
             this.totalBreakMinutes += 5;
@@ -489,7 +530,7 @@ class PomodoroTimer {
 // ============================================
 class TodoApp {
     constructor() {
-        this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        this.tasks = safeParseJSON('tasks', []);
         this.taskIdCounter = parseInt(localStorage.getItem('taskIdCounter')) || 1;
         this.editingTaskId = null; // ID da tarefa sendo editada
 
@@ -529,8 +570,6 @@ class TodoApp {
         this.progressUpdateTimeout = null;
         this.lastProgressUpdate = 0;
         this.weatherDisplay = document.getElementById('weatherDisplay');
-        this.motivationalQuote = document.getElementById('motivationalQuote');
-        this.bibleVerse = document.getElementById('bibleVerse');
         this.greeting = document.getElementById('greeting');
 
         // Sistema de timers para tarefas
@@ -544,8 +583,6 @@ class TodoApp {
         this.initEventListeners();
         this.displayGreeting();
         this.displayCurrentDate();
-        this.displayMotivationalQuote();
-        this.displayBibleVerse();
         this.loadTheme();
         this.requestNotificationPermission();
         this.getWeather();
@@ -657,8 +694,8 @@ class TodoApp {
                 </div>
             </div>
             <div class="notification-content">
-                <div class="notification-title">${message}</div>
-                <div class="notification-message">${task.text}</div>
+                <div class="notification-title">${escapeHTML(message)}</div>
+                <div class="notification-message">${escapeHTML(task.text)}</div>
             </div>
         `;
 
@@ -687,12 +724,12 @@ class TodoApp {
             </div>
             <div class="notification-content">
                 <div class="notification-title">Tempo Esgotado!</div>
-                <div class="notification-message">${task.text}</div>
+                <div class="notification-message">${escapeHTML(task.text)}</div>
                 <div class="timer-end-actions">
-                    <button class="timer-action-btn complete" onclick="todoApp.completeTaskFromTimer(${task.id})">✓</button>
-                    <button class="timer-action-btn extend" onclick="todoApp.extendTimer(${task.id}, 5)">+5 min</button>
-                    <button class="timer-action-btn extend" onclick="todoApp.extendTimer(${task.id}, 10)">+10 min</button>
-                    <button class="timer-action-btn cancel" onclick="todoApp.cancelTimerModal()">✕</button>
+                    <button class="timer-action-btn complete" data-action="completeTaskFromTimer" data-id="${task.id}">✓</button>
+                    <button class="timer-action-btn extend" data-action="extendTimer" data-id="${task.id}" data-minutes="5">+5 min</button>
+                    <button class="timer-action-btn extend" data-action="extendTimer" data-id="${task.id}" data-minutes="10">+10 min</button>
+                    <button class="timer-action-btn cancel" data-action="cancelTimerModal">✕</button>
                 </div>
             </div>
         `;
@@ -796,111 +833,6 @@ class TodoApp {
         this.currentDate.textContent = dateStr;
     }
 
-    displayMotivationalQuote() {
-        const quotes = [
-            "A persistência é o caminho do êxito. 💪",
-            "Pequenos passos todos os dias levam a grandes conquistas. 🚀",
-            "Acredite em você e tudo será possível. ✨",
-            "O sucesso é a soma de pequenos esforços repetidos dia após dia. 🌟",
-            "Não espere por oportunidades, crie-as! 🎯",
-            "Hoje é um ótimo dia para começar algo novo. 🌅",
-            "Você é mais forte do que pensa. 💎",
-            "O único lugar onde o sucesso vem antes do trabalho é no dicionário. 📚",
-            "Grandes coisas nunca vêm de zonas de conforto. 🔥",
-            "A disciplina é a ponte entre metas e conquistas. 🌉",
-            "Foque no progresso, não na perfeição. 📈",
-            "Cada dia é uma nova chance de melhorar. 🌈",
-            "Transforme seus sonhos em planos e seus planos em realidade. 🎨",
-            "O momento perfeito é agora. ⏰",
-            "Seja a mudança que você quer ver no mundo. 🌍",
-            "A jornada de mil milhas começa com um único passo. 👣",
-            "Desafios são oportunidades disfarçadas. 🎭",
-            "Você não precisa ser perfeito para começar. 🌱",
-            "O fracasso é apenas um degrau para o sucesso. 🪜",
-            "Sua única limitação é você mesmo. 🦅",
-            "Faça hoje o que outros não querem, e amanhã terá o que outros não têm. 💫",
-            "Sucesso é fazer o extraordinário de forma extraordinária. 👑",
-            "Não conte os dias, faça os dias contarem. 📅",
-            "A motivação te faz começar, o hábito te faz continuar. 🔄",
-            "Seja grato pelo que você tem enquanto trabalha pelo que deseja. 🙏",
-            "Comece de onde você está, use o que você tem, faça o que você pode. 🛠️",
-            "O melhor momento para plantar uma árvore foi há 20 anos. O segundo melhor momento é agora. 🌳",
-            "Você é capaz de coisas incríveis! 🌠",
-            "A determinação de hoje é o sucesso de amanhã. 🏆",
-            "Nunca desista de um sonho por causa do tempo. ⌛"
-        ];
-
-        // Usar o dia do ano para garantir que a mesma frase apareça o dia todo
-        const now = new Date();
-        const startOfYear = new Date(now.getFullYear(), 0, 0);
-        const diff = now - startOfYear;
-        const oneDay = 1000 * 60 * 60 * 24;
-        const dayOfYear = Math.floor(diff / oneDay);
-
-        const quoteIndex = dayOfYear % quotes.length;
-        const todayQuote = quotes[quoteIndex];
-
-        const quoteText = this.motivationalQuote.querySelector('.quote-text');
-        if (quoteText) {
-            quoteText.textContent = todayQuote;
-        }
-    }
-
-    displayBibleVerse() {
-        const verses = [
-            { text: "Tudo posso naquele que me fortalece.", ref: "Filipenses 4:13" },
-            { text: "O Senhor é o meu pastor, nada me faltará.", ref: "Salmos 23:1" },
-            { text: "Confie no Senhor de todo o seu coração e não se apoie em seu próprio entendimento.", ref: "Provérbios 3:5" },
-            { text: "Porque para Deus nada é impossível.", ref: "Lucas 1:37" },
-            { text: "O Senhor é a minha luz e a minha salvação; de quem terei temor?", ref: "Salmos 27:1" },
-            { text: "Alegrem-se sempre no Senhor. Novamente direi: alegrem-se!", ref: "Filipenses 4:4" },
-            { text: "Entregue o seu caminho ao Senhor; confie nele, e ele agirá.", ref: "Salmos 37:5" },
-            { text: "Venham a mim, todos os que estão cansados e sobrecarregados, e eu lhes darei descanso.", ref: "Mateus 11:28" },
-            { text: "Não temas, porque eu estou contigo; não te assombres, porque eu sou o teu Deus.", ref: "Isaías 41:10" },
-            { text: "Posso todas as coisas em Cristo que me fortalece.", ref: "Filipenses 4:13" },
-            { text: "O Senhor é bom, um refúgio em tempos de angústia. Ele protege os que nele confiam.", ref: "Naum 1:7" },
-            { text: "E sabemos que Deus age em todas as coisas para o bem daqueles que o amam.", ref: "Romanos 8:28" },
-            { text: "Seja forte e corajoso! Não se apavore, nem se desanime, pois o Senhor, o seu Deus, estará com você.", ref: "Josué 1:9" },
-            { text: "Mas os que esperam no Senhor renovam as suas forças.", ref: "Isaías 40:31" },
-            { text: "Buscai primeiro o Reino de Deus e a sua justiça, e todas as outras coisas vos serão acrescentadas.", ref: "Mateus 6:33" },
-            { text: "Porque, se Deus é por nós, quem será contra nós?", ref: "Romanos 8:31" },
-            { text: "Portanto, não se preocupem com o amanhã, pois o amanhã trará suas próprias preocupações.", ref: "Mateus 6:34" },
-            { text: "A paz eu vos deixo, a minha paz vos dou; não vo-la dou como o mundo a dá.", ref: "João 14:27" },
-            { text: "Lancem sobre ele toda a sua ansiedade, porque ele tem cuidado de vocês.", ref: "1 Pedro 5:7" },
-            { text: "O Senhor abençoe você e o guarde; o Senhor faça resplandecer o seu rosto sobre você.", ref: "Números 6:24-25" },
-            { text: "Aquietai-vos e sabei que eu sou Deus.", ref: "Salmos 46:10" },
-            { text: "O amor é paciente, o amor é bondoso. Não inveja, não se vangloria, não se orgulha.", ref: "1 Coríntios 13:4" },
-            { text: "Porque Deus amou o mundo de tal maneira que deu o seu Filho unigênito.", ref: "João 3:16" },
-            { text: "Eu lhes disse essas coisas para que em mim vocês tenham paz.", ref: "João 16:33" },
-            { text: "O Senhor cumprirá o seu propósito para a minha vida.", ref: "Salmos 138:8" },
-            { text: "Tudo tem o seu tempo determinado, e há tempo para todo propósito debaixo do céu.", ref: "Eclesiastes 3:1" },
-            { text: "Pois onde estiver o seu tesouro, aí também estará o seu coração.", ref: "Mateus 6:21" },
-            { text: "Alegrem-se na esperança, sejam pacientes na tribulação, perseverem na oração.", ref: "Romanos 12:12" },
-            { text: "Guarda o meu coração, porque dele procedem as fontes da vida.", ref: "Provérbios 4:23" },
-            { text: "Eu sou o caminho, a verdade e a vida.", ref: "João 14:6" }
-        ];
-
-        // Usar o dia do ano para garantir que o mesmo versículo apareça o dia todo
-        const now = new Date();
-        const startOfYear = new Date(now.getFullYear(), 0, 0);
-        const diff = now - startOfYear;
-        const oneDay = 1000 * 60 * 60 * 24;
-        const dayOfYear = Math.floor(diff / oneDay);
-
-        const verseIndex = dayOfYear % verses.length;
-        const todayVerse = verses[verseIndex];
-
-        const verseText = this.bibleVerse.querySelector('.verse-text');
-        const verseReference = this.bibleVerse.querySelector('.verse-reference');
-
-        if (verseText) {
-            verseText.textContent = `"${todayVerse.text}"`;
-        }
-        if (verseReference) {
-            verseReference.textContent = todayVerse.ref;
-        }
-    }
-
     initEventListeners() {
         this.addBtn.addEventListener('click', () => this.addTask());
         this.taskInput.addEventListener('keypress', (e) => {
@@ -928,6 +860,62 @@ class TodoApp {
         // Botões de apagar todas as tarefas
         this.clearPendingBtn.addEventListener('click', () => this.clearPendingTasks());
         this.clearCompletedBtn.addEventListener('click', () => this.clearCompletedTasks());
+
+        // Delegação de eventos para ações de tarefa/timer/subtarefas renderizadas via innerHTML
+        document.body.addEventListener('click', (e) => this.handleDelegatedClick(e));
+        document.body.addEventListener('change', (e) => this.handleDelegatedChange(e));
+    }
+
+    // Despacha cliques em elementos com data-action pertencentes ao TodoApp
+    handleDelegatedClick(e) {
+        const closeBtn = e.target.closest('.modal-close-btn');
+        if (closeBtn) {
+            closeBtn.closest('.notification-toast')?.remove();
+            document.querySelector('.notification-overlay')?.remove();
+            return;
+        }
+
+        const tipClose = e.target.closest('.tip-close');
+        if (tipClose) {
+            tipClose.parentElement.remove();
+            return;
+        }
+
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        const id = target.dataset.id !== undefined ? parseInt(target.dataset.id) : undefined;
+        const index = target.dataset.index !== undefined ? parseInt(target.dataset.index) : undefined;
+
+        switch (action) {
+            case 'togglePriority': this.togglePriority(id); break;
+            case 'duplicateTask': this.duplicateTask(id); break;
+            case 'postponeTask': this.postponeTask(id); break;
+            case 'showNotes': this.showNotes(id); break;
+            case 'toggleTask': this.toggleTask(id); break;
+            case 'editTask': this.editTask(id); break;
+            case 'deleteTask': this.deleteTask(id); break;
+            case 'deleteSubtask': this.deleteSubtask(id, index); break;
+            case 'addSubtask': this.addSubtask(id); break;
+            case 'completeTaskFromTimer': this.completeTaskFromTimer(id); break;
+            case 'extendTimer': this.extendTimer(id, parseInt(target.dataset.minutes)); break;
+            case 'cancelTimerModal': this.cancelTimerModal(); break;
+        }
+    }
+
+    // Despacha eventos "change" (ex.: checkbox de subtarefa) para ações do TodoApp
+    handleDelegatedChange(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        const id = target.dataset.id !== undefined ? parseInt(target.dataset.id) : undefined;
+        const index = target.dataset.index !== undefined ? parseInt(target.dataset.index) : undefined;
+
+        if (action === 'toggleSubtask') {
+            this.toggleSubtask(id, index);
+        }
     }
 
     addTask() {
@@ -1088,7 +1076,7 @@ class TodoApp {
 
     // NOVIDADE: Animação de confete MELHORADA ao concluir
     createConfetti(element) {
-        const colors = ['#667eea', '#764ba2', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#8b5cf6'];
+        const colors = ['#0ea5e9', '#0284c7', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#06b6d4'];
         const shapes = ['circle', 'square', 'triangle'];
         const rect = element.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
@@ -1178,6 +1166,7 @@ class TodoApp {
                 this.recordDailyCompletion();
             } else {
                 task.completedAt = null;
+                this.unrecordDailyCompletion();
             }
             this.saveToStorage();
 
@@ -1340,7 +1329,7 @@ class TodoApp {
                 <div class="task-header-left">
                     <div class="task-number">${task.order || 1}</div>
                     <div class="task-content-main">
-                        <div class="task-text">${task.text}</div>
+                        <div class="task-text">${escapeHTML(task.text)}</div>
                         <div class="task-category-tag" style="${dynamicCSS}">
                             ${this.getCategoryEmoji(task.category)} ${this.getCategoryName(task.category)}
                         </div>
@@ -1351,22 +1340,22 @@ class TodoApp {
                         ${statusInfo.label}
                     </div>
                     <div class="task-quick-actions">
-                        <button class="task-quick-btn" onclick="todoApp.togglePriority(${task.id})" title="Prioridade">
+                        <button class="task-quick-btn" data-action="togglePriority" data-id="${task.id}" title="Prioridade" aria-label="${task.priority ? 'Remover prioridade' : 'Marcar como prioridade'}">
                             ${task.priority ? '⭐' : '☆'}
                         </button>
-                        <button class="task-quick-btn" onclick="todoApp.duplicateTask(${task.id})" title="Duplicar">
+                        <button class="task-quick-btn" data-action="duplicateTask" data-id="${task.id}" title="Duplicar" aria-label="Duplicar tarefa">
                             📋
                         </button>
-                        <button class="task-quick-btn" onclick="todoApp.postponeTask(${task.id})" title="Adiar">
+                        <button class="task-quick-btn" data-action="postponeTask" data-id="${task.id}" title="Adiar" aria-label="Adiar tarefa">
                             ⏰
                         </button>
                     </div>
                 </div>
             </div>
-            
+
             ${task.notes ? `
                 <div class="task-notes-preview">
-                    📝 ${task.notes.substring(0, 50)}${task.notes.length > 50 ? '...' : ''}
+                    📝 ${escapeHTML(task.notes.substring(0, 50))}${task.notes.length > 50 ? '...' : ''}
                 </div>
             ` : ''}
             
@@ -1382,23 +1371,23 @@ class TodoApp {
             <div class="task-actions-enhanced">
                 <div class="task-actions-left">
                     ${!task.completed ? `
-                        <button class="task-btn-enhanced priority-toggle" onclick="todoApp.togglePriority(${task.id})">
+                        <button class="task-btn-enhanced priority-toggle" data-action="togglePriority" data-id="${task.id}" aria-label="${task.priority ? 'Remover prioridade' : 'Marcar como prioridade'}">
                             ${task.priority ? '🌟' : '⭐'}
                         </button>
                     ` : ''}
                     ${task.notes ? `
-                        <button class="task-btn-enhanced view-notes" onclick="todoApp.showNotes(${task.id})">
+                        <button class="task-btn-enhanced view-notes" data-action="showNotes" data-id="${task.id}" aria-label="Ver notas da tarefa">
                             📝
                         </button>
                     ` : ''}
                 </div>
                 <div class="task-actions-right">
                     ${task.completed
-                ? `<button class="task-btn undo-btn" onclick="todoApp.toggleTask(${task.id})" title="Desfazer">↶</button>`
-                : `<button class="task-btn complete-btn" onclick="todoApp.toggleTask(${task.id})" title="Concluir">✓</button>
-                               <button class="task-btn edit-btn" onclick="todoApp.editTask(${task.id})" title="Editar">✎</button>`
+                ? `<button class="task-btn undo-btn" data-action="toggleTask" data-id="${task.id}" title="Desfazer" aria-label="Desfazer conclusão da tarefa">↶</button>`
+                : `<button class="task-btn complete-btn" data-action="toggleTask" data-id="${task.id}" title="Concluir" aria-label="Concluir tarefa">✓</button>
+                               <button class="task-btn edit-btn" data-action="editTask" data-id="${task.id}" title="Editar" aria-label="Editar tarefa">✎</button>`
             }
-                    <button class="task-btn delete-btn" onclick="todoApp.deleteTask(${task.id})" title="Excluir">🗑</button>
+                    <button class="task-btn delete-btn" data-action="deleteTask" data-id="${task.id}" title="Excluir" aria-label="Excluir tarefa">🗑</button>
                 </div>
             </div>
         `;
@@ -1475,7 +1464,7 @@ class TodoApp {
     getTaskDynamicCSS(task) {
         const categoryColors = {
             'pessoal': { bg: 'rgba(76, 175, 80, 0.2)', text: '#4caf50', border: 'rgba(76, 175, 80, 0.3)' },
-            'trabalho': { bg: 'rgba(102, 126, 234, 0.2)', text: '#667eea', border: 'rgba(102, 126, 234, 0.3)' },
+            'trabalho': { bg: 'rgba(100, 116, 139, 0.2)', text: '#64748b', border: 'rgba(100, 116, 139, 0.3)' },
             'estudo': { bg: 'rgba(255, 167, 38, 0.2)', text: '#ffa726', border: 'rgba(255, 167, 38, 0.3)' },
             'saude': { bg: 'rgba(255, 107, 107, 0.2)', text: '#ff6b6b', border: 'rgba(255, 107, 107, 0.3)' },
             'compras': { bg: 'rgba(156, 39, 176, 0.2)', text: '#9c27b0', border: 'rgba(156, 39, 176, 0.3)' },
@@ -1616,7 +1605,7 @@ class TodoApp {
         const goal = window.goalsManager.goals.find(g => g.id === parseInt(task.goalId));
         if (!goal) return '';
 
-        return `<span class="task-goal" title="Vinculada à meta: ${goal.title}">🎯 ${goal.title}</span>`;
+        return `<span class="task-goal" title="Vinculada à meta: ${escapeHTML(goal.title)}">🎯 ${escapeHTML(goal.title)}</span>`;
     }
 
     // Formata a data para exibição
@@ -1662,9 +1651,9 @@ class TodoApp {
                 </div>
                 <div class="notification-content">
                     <div class="notification-title">Notas da Tarefa</div>
-                    <div class="notification-message" style="text-align: left; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${task.notes}</div>
+                    <div class="notification-message" style="text-align: left; white-space: pre-wrap; max-height: 200px; overflow-y: auto;">${escapeHTML(task.notes)}</div>
                 </div>
-                <button class="modal-close-btn" onclick="this.closest('.notification-toast').remove(); document.querySelector('.notification-overlay').remove();">×</button>
+                <button class="modal-close-btn">×</button>
             `;
 
             document.body.appendChild(notification);
@@ -1694,9 +1683,9 @@ class TodoApp {
         const renderSubtasksList = () => {
             const subtasksList = task.subtasks.map((st, index) => `
                 <div class="subtask-item ${st.completed ? 'completed' : ''}">
-                    <input type="checkbox" ${st.completed ? 'checked' : ''} onchange="todoApp.toggleSubtask(${id}, ${index})">
-                    <span>${st.text}</span>
-                    <button class="delete-subtask-btn" onclick="todoApp.deleteSubtask(${id}, ${index})">×</button>
+                    <input type="checkbox" ${st.completed ? 'checked' : ''} data-action="toggleSubtask" data-id="${id}" data-index="${index}">
+                    <span>${escapeHTML(st.text)}</span>
+                    <button class="delete-subtask-btn" data-action="deleteSubtask" data-id="${id}" data-index="${index}">×</button>
                 </div>
             `).join('');
 
@@ -1723,10 +1712,10 @@ class TodoApp {
                     </div>
                     <div class="add-subtask-form">
                         <input type="text" id="newSubtaskInput" placeholder="Nova subtarefa..." class="subtask-input">
-                        <button onclick="todoApp.addSubtask(${id})" class="add-subtask-btn">+</button>
+                        <button data-action="addSubtask" data-id="${id}" class="add-subtask-btn">+</button>
                     </div>
                 </div>
-                <button class="modal-close-btn" onclick="this.closest('.notification-toast').remove(); document.querySelector('.notification-overlay').remove();">×</button>
+                <button class="modal-close-btn">×</button>
             `;
         };
 
@@ -1985,15 +1974,15 @@ class TodoApp {
 
     migrateCompletionHistory() {
         if (localStorage.getItem('dailyCompletionMigrated')) return;
-        const history = JSON.parse(localStorage.getItem('dailyCompletionHistory')) || {};
+        const history = safeParseJSON('dailyCompletionHistory', {});
         this.tasks.forEach(task => {
             if (task.completed && task.completedAt) {
-                const date = task.completedAt.split('T')[0];
+                const date = formatLocalDateStr(new Date(task.completedAt));
                 history[date] = (history[date] || 0) + 1;
             }
         });
         // Conta tarefas completadas sem completedAt como sendo de hoje
-        const today = new Date().toISOString().split('T')[0];
+        const today = formatLocalDateStr(new Date());
         const noDateCount = this.tasks.filter(t => t.completed && !t.completedAt).length;
         if (noDateCount > 0) {
             history[today] = (history[today] || 0) + noDateCount;
@@ -2003,14 +1992,24 @@ class TodoApp {
     }
 
     recordDailyCompletion() {
-        const today = new Date().toISOString().split('T')[0];
-        const history = JSON.parse(localStorage.getItem('dailyCompletionHistory')) || {};
+        const today = formatLocalDateStr(new Date());
+        const history = safeParseJSON('dailyCompletionHistory', {});
         history[today] = (history[today] || 0) + 1;
         localStorage.setItem('dailyCompletionHistory', JSON.stringify(history));
     }
 
+    // Desfaz um registro de conclusão do dia (usado ao reabrir uma tarefa)
+    unrecordDailyCompletion() {
+        const today = formatLocalDateStr(new Date());
+        const history = safeParseJSON('dailyCompletionHistory', {});
+        if (history[today]) {
+            history[today] = Math.max(0, history[today] - 1);
+            localStorage.setItem('dailyCompletionHistory', JSON.stringify(history));
+        }
+    }
+
     getWeeklyData() {
-        const history = JSON.parse(localStorage.getItem('dailyCompletionHistory')) || {};
+        const history = safeParseJSON('dailyCompletionHistory', {});
         const days = [];
         const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
         const today = new Date();
@@ -2018,7 +2017,7 @@ class TodoApp {
         for (let i = 6; i >= 0; i--) {
             const date = new Date(today);
             date.setDate(today.getDate() - i);
-            const dateStr = date.toISOString().split('T')[0];
+            const dateStr = formatLocalDateStr(date);
             days.push({
                 label: dayNames[date.getDay()],
                 date: dateStr,
@@ -2747,7 +2746,7 @@ class TodoApp {
         badge.innerHTML = `
             <span class="tip-icon">${tip.icon}</span>
             <span class="tip-message">${tip.message}</span>
-            <button class="tip-close" onclick="this.parentElement.remove()">✕</button>
+            <button class="tip-close">✕</button>
         `;
 
         document.body.appendChild(badge);
@@ -2936,10 +2935,32 @@ class GoalsManager {
         this.goalModal.addEventListener('click', (e) => {
             if (e.target === this.goalModal) this.closeModal();
         });
+
+        // Delegação de eventos para ações de meta renderizadas via innerHTML
+        document.body.addEventListener('click', (e) => this.handleDelegatedClick(e));
+    }
+
+    // Despacha cliques em elementos com data-action pertencentes ao GoalsManager
+    handleDelegatedClick(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        const goalActions = ['incrementProgress', 'openGoalModal', 'completeGoal', 'deleteGoal'];
+        if (!goalActions.includes(action)) return;
+
+        const id = parseInt(target.dataset.id);
+
+        switch (action) {
+            case 'incrementProgress': this.incrementProgress(id, parseInt(target.dataset.amount)); break;
+            case 'openGoalModal': this.openModal(id); break;
+            case 'completeGoal': this.completeGoal(id); break;
+            case 'deleteGoal': this.deleteGoal(id); break;
+        }
     }
 
     loadGoals() {
-        return JSON.parse(localStorage.getItem('goals')) || [];
+        return safeParseJSON('goals', []);
     }
 
     saveGoals() {
@@ -3088,7 +3109,7 @@ class GoalsManager {
                 </div>
                 <p class="confirmation-message">
                     Tem certeza que deseja excluir a meta<br>
-                    <strong>"${goalTitle}"</strong>?
+                    <strong>"${escapeHTML(goalTitle)}"</strong>?
                 </p>
                 <p class="confirmation-warning">Esta ação não pode ser desfeita.</p>
                 <div class="confirmation-buttons">
@@ -3158,7 +3179,7 @@ class GoalsManager {
                 <div class="goal-card ${statusInfo.className}" data-goal-id="${goal.id}" style="${dynamicCSS}">
                     <div class="goal-header">
                         <div class="goal-header-left">
-                            <div class="goal-title">${goal.title}</div>
+                            <div class="goal-title">${escapeHTML(goal.title)}</div>
                             <div class="goal-category" style="${this.getCategoryStyle(goal.category)}">
                                 ${this.getCategoryEmoji(goal.category)} ${goal.category}
                             </div>
@@ -3168,17 +3189,17 @@ class GoalsManager {
                                 ${statusInfo.label}
                             </div>
                             <div class="goal-quick-actions">
-                                <button class="goal-quick-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 1)" title="+ 1">
+                                <button class="goal-quick-btn" data-action="incrementProgress" data-id="${goal.id}" data-amount="1" title="+ 1">
                                     +1
                                 </button>
-                                <button class="goal-quick-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 5)" title="+ 5">
+                                <button class="goal-quick-btn" data-action="incrementProgress" data-id="${goal.id}" data-amount="5" title="+ 5">
                                     +5
                                 </button>
                             </div>
                         </div>
                     </div>
                     
-                    ${goal.description ? `<div class="goal-description">${goal.description}</div>` : ''}
+                    ${goal.description ? `<div class="goal-description">${escapeHTML(goal.description)}</div>` : ''}
                     
                     <div class="goal-progress">
                         <div class="goal-progress-info">
@@ -3208,13 +3229,13 @@ class GoalsManager {
                         
                         ${goal.target && progressPercentage < 100 ? `
                             <div class="goal-progress-increment">
-                                <button class="goal-increment-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 1)">
+                                <button class="goal-increment-btn" data-action="incrementProgress" data-id="${goal.id}" data-amount="1">
                                     +1
                                 </button>
-                                <button class="goal-increment-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 5)">
+                                <button class="goal-increment-btn" data-action="incrementProgress" data-id="${goal.id}" data-amount="5">
                                     +5
                                 </button>
-                                <button class="goal-increment-btn" onclick="window.goalsManager.incrementProgress(${goal.id}, 10)">
+                                <button class="goal-increment-btn" data-action="incrementProgress" data-id="${goal.id}" data-amount="10">
                                     +10
                                 </button>
                             </div>
@@ -3235,15 +3256,15 @@ class GoalsManager {
                     </div>
                     
                     <div class="goal-actions">
-                        <button class="goal-btn edit" onclick="window.goalsManager.openModal(${goal.id})">
+                        <button class="goal-btn edit" data-action="openGoalModal" data-id="${goal.id}">
                             ✏️
                         </button>
                         ${progressPercentage < 100 ? `
-                            <button class="goal-btn complete" onclick="window.goalsManager.completeGoal(${goal.id})" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);">
+                            <button class="goal-btn complete" data-action="completeGoal" data-id="${goal.id}" style="background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);">
                                 ✅
                             </button>
                         ` : ''}
-                        <button class="goal-btn delete" onclick="window.goalsManager.deleteGoal(${goal.id})">
+                        <button class="goal-btn delete" data-action="deleteGoal" data-id="${goal.id}">
                             🗑️
                         </button>
                     </div>
@@ -3314,8 +3335,8 @@ class GoalsManager {
             gradient = 'linear-gradient(135deg, #ff6b6b 0%, #ff8a80 100%)';
             glowColor = 'rgba(255, 107, 107, 0.4)';
         } else if (percentage >= 75) {
-            gradient = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-            glowColor = 'rgba(102, 126, 234, 0.4)';
+            gradient = 'linear-gradient(135deg, #3b82f6 0%, #0284c7 100%)';
+            glowColor = 'rgba(59, 130, 246, 0.4)';
         } else if (percentage >= 50) {
             gradient = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)';
             glowColor = 'rgba(79, 172, 254, 0.4)';
@@ -3330,7 +3351,7 @@ class GoalsManager {
     getCategoryStyle(category) {
         const categoryColors = {
             'pessoal': { bg: 'rgba(76, 175, 80, 0.2)', text: '#4caf50', border: 'rgba(76, 175, 80, 0.3)' },
-            'trabalho': { bg: 'rgba(102, 126, 234, 0.2)', text: '#667eea', border: 'rgba(102, 126, 234, 0.3)' },
+            'trabalho': { bg: 'rgba(100, 116, 139, 0.2)', text: '#64748b', border: 'rgba(100, 116, 139, 0.3)' },
             'estudo': { bg: 'rgba(255, 167, 38, 0.2)', text: '#ffa726', border: 'rgba(255, 167, 38, 0.3)' },
             'saude': { bg: 'rgba(255, 107, 107, 0.2)', text: '#ff6b6b', border: 'rgba(255, 107, 107, 0.3)' },
             'compras': { bg: 'rgba(156, 39, 176, 0.2)', text: '#9c27b0', border: 'rgba(156, 39, 176, 0.3)' },
@@ -3453,7 +3474,7 @@ class GoalsManager {
     }
 
     showCompletionNotification(title) {
-        const message = `🎉 Parabéns! Meta "${title}" concluída!`;
+        const message = `🎉 Parabéns! Meta "${escapeHTML(title)}" concluída!`;
 
         // Usar o sistema de toast se existir
         if (window.todoApp && window.todoApp.showToast) {
@@ -3489,11 +3510,12 @@ class GoalsManager {
     }
 
     showProgressNotification(title, oldProgress, newProgress, target, percentage) {
+        const safeTitle = escapeHTML(title);
         const increment = newProgress - oldProgress;
-        let message = `+${increment} em "${title}"`;
+        let message = `+${increment} em "${safeTitle}"`;
 
         if (percentage >= 100) {
-            message = `🎉 Meta "${title}" concluída!`;
+            message = `🎉 Meta "${safeTitle}" concluída!`;
         } else if (percentage >= 75) {
             message += ` (${percentage}% - Quase lá!)`;
         } else if (percentage >= 50) {
@@ -3643,6 +3665,26 @@ class AppointmentsManager {
                 field.addEventListener('change', () => this.updateAppointmentPreview());
             }
         });
+
+        // Delegação de eventos para ações de compromisso renderizadas via innerHTML
+        document.body.addEventListener('click', (e) => this.handleDelegatedClick(e));
+    }
+
+    // Despacha cliques em elementos com data-action pertencentes ao AppointmentsManager
+    handleDelegatedClick(e) {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+
+        const action = target.dataset.action;
+        const appointmentActions = ['openDayModal', 'createQuickAppointment', 'openAppointmentModal', 'showAppointmentDetail'];
+        if (!appointmentActions.includes(action)) return;
+
+        switch (action) {
+            case 'openDayModal': this.openDayModal(target.dataset.date); break;
+            case 'createQuickAppointment': this.createQuickAppointment(target.dataset.date, parseInt(target.dataset.hour)); break;
+            case 'openAppointmentModal': this.openModal(parseInt(target.dataset.id)); break;
+            case 'showAppointmentDetail': this.showAppointmentDetail(parseInt(target.dataset.id)); break;
+        }
     }
 
     requestNotificationPermission() {
@@ -3694,7 +3736,7 @@ class AppointmentsManager {
         const warningDiv = document.createElement('div');
         warningDiv.className = 'conflict-warning';
 
-        const conflictList = conflicts.map(c => `${c.title} às ${new Date(c.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`).join(', ');
+        const conflictList = conflicts.map(c => `${escapeHTML(c.title)} às ${new Date(c.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`).join(', ');
 
         warningDiv.innerHTML = `
             <div>
@@ -3738,8 +3780,8 @@ class AppointmentsManager {
             return `
                 <div class="appointment-preview ${apt.category}">
                     <div class="appointment-info">
-                        <h4>${apt.title}</h4>
-                        <p>⏰ ${timeStr} ${apt.location ? `📍 ${apt.location}` : ''}</p>
+                        <h4>${escapeHTML(apt.title)}</h4>
+                        <p>⏰ ${timeStr} ${apt.location ? `📍 ${escapeHTML(apt.location)}` : ''}</p>
                     </div>
                     <div class="appointment-status">
                         <span class="appointment-time">${timeStr}</span>
@@ -3920,12 +3962,12 @@ class AppointmentsManager {
             html += `
                 <div class="calendar-day ${isToday ? 'today' : ''} ${!isCurrentMonth ? 'other-month' : ''} ${isWeekend ? 'weekend' : ''}" 
                      data-date="${currentDate.toISOString().split('T')[0]}"
-                     onclick="appointmentsManager.openDayModal('${currentDate.toISOString().split('T')[0]}')">
+                     data-action="openDayModal">
                     <div class="day-number">${currentDate.getDate()}</div>
                     <div class="day-appointments">
                         ${dayAppointments.slice(0, 3).map(apt => `
                             <div class="day-appointment-indicator ${apt.category}" 
-                                 title="${apt.title} - ${new Date(apt.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
+                                 title="${escapeHTML(apt.title)} - ${new Date(apt.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}">
                             </div>
                         `).join('')}
                         ${dayAppointments.length > 3 ? `<div class="day-more-appointments">+${dayAppointments.length - 3} mais</div>` : ''}
@@ -3946,8 +3988,7 @@ class AppointmentsManager {
         if (!weekContainer) return;
 
         // Obter primeira data da semana (domingo)
-        const startOfWeek = new Date(this.currentDate);
-        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        const startOfWeek = this.getStartOfWeek(this.currentDate);
 
         // Gerar cabeçalho da semana
         this.renderWeekHeader(startOfWeek);
@@ -4015,10 +4056,10 @@ class AppointmentsManager {
             // Criar slots de hora para cada dia
             for (let hour = 8; hour <= 17; hour++) {
                 html += `
-                    <div class="week-hour-slot" 
-                         data-date="${currentDate.toISOString().split('T')[0]}" 
+                    <div class="week-hour-slot"
+                         data-date="${currentDate.toISOString().split('T')[0]}"
                          data-hour="${hour}"
-                         onclick="appointmentsManager.createQuickAppointment('${currentDate.toISOString().split('T')[0]}', ${hour})">
+                         data-action="createQuickAppointment">
                     </div>
                 `;
             }
@@ -4035,13 +4076,13 @@ class AppointmentsManager {
                 const height = (duration / 60) * 60; // altura baseada na duração
 
                 html += `
-                    <div class="week-appointment ${apt.category}" 
+                    <div class="week-appointment ${apt.category}"
                          style="top: ${topPosition}px; height: ${height}px;"
-                         onclick="appointmentsManager.openModal(${apt.id})"
-                         title="${apt.title}">
+                         data-action="openAppointmentModal" data-id="${apt.id}"
+                         title="${escapeHTML(apt.title)}">
                         <div class="apt-time">${aptDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                        <div class="apt-title">${apt.title}</div>
-                        ${apt.location ? `<div class="apt-location">📍 ${apt.location}</div>` : ''}
+                        <div class="apt-title">${escapeHTML(apt.title)}</div>
+                        ${apt.location ? `<div class="apt-location">📍 ${escapeHTML(apt.location)}</div>` : ''}
                     </div>
                 `;
             });
@@ -4085,6 +4126,13 @@ class AppointmentsManager {
             timeLine.style.width = `${100 / 7}%`;
             weekGrid.appendChild(timeLine);
         }
+    }
+
+    // Obter o domingo (início) da semana de uma data
+    getStartOfWeek(date) {
+        const startOfWeek = new Date(date);
+        startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+        return startOfWeek;
     }
 
     // Obter índice da coluna do dia atual
@@ -4145,7 +4193,7 @@ class AppointmentsManager {
         };
 
         previewCard.innerHTML = `
-            <div class="preview-title">${categoryIcons[category]} ${title}</div>
+            <div class="preview-title">${categoryIcons[category]} ${escapeHTML(title)}</div>
             <div class="preview-details">
                 <div class="preview-item">
                     <span>📅</span>
@@ -4158,7 +4206,7 @@ class AppointmentsManager {
                 ${location ? `
                 <div class="preview-item">
                     <span>📍</span>
-                    <span>${location}</span>
+                    <span>${escapeHTML(location)}</span>
                 </div>` : ''}
                 <div class="preview-item">
                     <span>⭐</span>
@@ -4181,8 +4229,7 @@ class AppointmentsManager {
         if (this.currentView === 'month') {
             monthYearElement.textContent = `${months[this.currentDate.getMonth()]} ${this.currentDate.getFullYear()}`;
         } else {
-            const startOfWeek = new Date(this.currentDate);
-            startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+            const startOfWeek = this.getStartOfWeek(this.currentDate);
             const endOfWeek = new Date(startOfWeek);
             endOfWeek.setDate(endOfWeek.getDate() + 6);
 
@@ -4211,8 +4258,7 @@ class AppointmentsManager {
     }
 
     loadAppointments() {
-        const stored = localStorage.getItem('appointments');
-        return stored ? JSON.parse(stored) : [];
+        return safeParseJSON('appointments', []);
     }
 
     saveToStorage() {
@@ -4623,7 +4669,7 @@ class AppointmentsManager {
 
         body.innerHTML = `
             <div class="appointment-detail-info">
-                <div class="appointment-detail-title">📅 ${appointment.title}</div>
+                <div class="appointment-detail-title">📅 ${escapeHTML(appointment.title)}</div>
                 <div class="appointment-detail-item">
                     <span class="detail-label">📅 Data:</span>
                     <span class="detail-value">${dateText}</span>
@@ -4635,7 +4681,7 @@ class AppointmentsManager {
                 ${appointment.location ? `
                     <div class="appointment-detail-item">
                         <span class="detail-label">📍 Local:</span>
-                        <span class="detail-value">${appointment.location}</span>
+                        <span class="detail-value">${escapeHTML(appointment.location)}</span>
                     </div>
                 ` : ''}
                 <div class="appointment-detail-item">
@@ -4649,7 +4695,7 @@ class AppointmentsManager {
                 ${appointment.description ? `
                     <div class="appointment-detail-item description">
                         <span class="detail-label">📄 Descrição:</span>
-                        <div class="detail-value-block">${appointment.description}</div>
+                        <div class="detail-value-block">${escapeHTML(appointment.description)}</div>
                     </div>
                 ` : ''}
             </div>
@@ -4780,7 +4826,7 @@ class GamificationSystem {
             dailyChallenge: null,
             dailyChallengeCompleted: false
         };
-        return JSON.parse(localStorage.getItem('userStats')) || defaultStats;
+        return safeParseJSON('userStats', defaultStats);
     }
 
     saveUserStats() {
@@ -4817,8 +4863,27 @@ class GamificationSystem {
     }
 
     showLevelUpNotification() {
-        // Pode adicionar notificação de level up aqui
         console.log(`🎉 Parabéns! Você subiu para o nível ${this.userStats.level}!`);
+
+        const notification = document.createElement('div');
+        notification.className = 'level-up-notification';
+        notification.innerHTML = `
+            <div class="level-up-notification-content">
+                <div class="level-up-badge">🎉</div>
+                <div class="level-up-info">
+                    <div class="level-up-message">Subiu de Nível!</div>
+                    <div class="level-up-value">Nível ${this.userStats.level}</div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(notification);
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
     }
 
     onTaskCompleted(taskData = {}) {
@@ -4851,7 +4916,7 @@ class GamificationSystem {
         }
 
         this.updateDailyStreak();
-        this.checkDailyChallenge();
+        this.checkDailyChallenge({ taskCompleted: true, priority: !!taskData.priority, hour });
         this.checkAchievements();
         this.updateTitle();
         this.saveUserStats();
@@ -4861,8 +4926,17 @@ class GamificationSystem {
     onGoalCreated() {
         this.userStats.goalsCreated++;
         this.addXP(15, 'Meta criada');
+        this.checkDailyChallenge({ goalCreated: true });
         this.checkAchievements();
         this.saveUserStats();
+    }
+
+    onPomodoroCompleted() {
+        this.userStats.pomodoroSessions++;
+        this.checkDailyChallenge({ pomodoroCompleted: true });
+        this.checkAchievements();
+        this.saveUserStats();
+        this.renderStats();
     }
 
     onGoalCompleted() {
@@ -4970,10 +5044,12 @@ class GamificationSystem {
         this.currentXP.textContent = this.userStats.xp;
 
         const nextLevelXP = this.getXPForLevel(this.userStats.level + 1);
-        const currentLevelXP = this.getXPForLevel(this.userStats.level);
+        // Nível 1 é o nível base (0 XP para alcançá-lo) — getXPForLevel(1) retorna 100,
+        // que na verdade é o custo para SAIR do nível 1, não para entrar nele.
+        const currentLevelXP = this.userStats.level <= 1 ? 0 : this.getXPForLevel(this.userStats.level);
         const xpProgress = this.userStats.xp - currentLevelXP;
         const xpNeeded = nextLevelXP - currentLevelXP;
-        const percentage = Math.min(100, (xpProgress / xpNeeded) * 100);
+        const percentage = Math.min(100, Math.max(0, (xpProgress / xpNeeded) * 100));
 
         this.nextLevelXP.textContent = nextLevelXP;
         this.levelFill.style.width = `${percentage}%`;
@@ -5020,7 +5096,7 @@ class GamificationSystem {
             ouro: '#ffd700',
             diamante: '#b9f2ff',
             lendario: '#ff1493',
-            especial: '#9370db'
+            especial: '#0891b2'
         };
 
         this.achievementsGrid.innerHTML = this.achievements.map(achievement => {
@@ -5069,7 +5145,7 @@ class GamificationSystem {
             challengeCard.style.borderColor = 'rgba(46, 213, 115, 0.6)';
         } else {
             challengeCard.style.opacity = '1';
-            challengeCard.style.borderColor = 'rgba(102, 126, 234, 0.4)';
+            challengeCard.style.borderColor = 'rgba(37, 99, 235, 0.4)';
         }
     }
 
@@ -5146,7 +5222,7 @@ class GamificationSystem {
         }
     }
 
-    checkDailyChallenge() {
+    checkDailyChallenge(context = {}) {
         if (!this.userStats.dailyChallenge || this.userStats.dailyChallengeCompleted) return;
 
         const challenge = this.userStats.dailyChallenge;
@@ -5158,13 +5234,34 @@ class GamificationSystem {
             return;
         }
 
-        // Atualizar progresso baseado no tipo
-        if (challenge.type === 'complete_tasks') {
-            challenge.progress = this.userStats.tasksToday;
-            console.log('📊 Desafio diário:', challenge.progress, '/', challenge.target, 'tarefas');
-        } else if (challenge.type === 'priority_tasks') {
-            // Contar tarefas prioritárias de hoje (precisaria implementar tracking)
-            challenge.progress = Math.min(challenge.progress + 1, challenge.target);
+        // Atualizar progresso baseado no tipo e no evento que disparou a checagem
+        switch (challenge.type) {
+            case 'complete_tasks':
+                if (context.taskCompleted) {
+                    challenge.progress = this.userStats.tasksToday;
+                    console.log('📊 Desafio diário:', challenge.progress, '/', challenge.target, 'tarefas');
+                }
+                break;
+            case 'priority_tasks':
+                if (context.taskCompleted && context.priority) {
+                    challenge.progress = Math.min(challenge.progress + 1, challenge.target);
+                }
+                break;
+            case 'early_tasks':
+                if (context.taskCompleted && context.hour !== undefined && context.hour < 10) {
+                    challenge.progress = Math.min(challenge.progress + 1, challenge.target);
+                }
+                break;
+            case 'pomodoro':
+                if (context.pomodoroCompleted) {
+                    challenge.progress = Math.min(challenge.progress + 1, challenge.target);
+                }
+                break;
+            case 'create_goal':
+                if (context.goalCreated) {
+                    challenge.progress = Math.min(challenge.progress + 1, challenge.target);
+                }
+                break;
         }
 
         // Verificar se completou
@@ -5386,13 +5483,17 @@ if (!window.appInitialized) {
                     // Atualizar progresso da meta vinculada
                     if (task.goalId && window.goalsManager) {
                         const goal = window.goalsManager.goals.find(g => g.id === parseInt(task.goalId));
-                        if (goal) {
-                            goal.progress = (goal.progress || 0) + 1;
+                        if (goal && !goal.completed) {
+                            goal.progress = goal.target
+                                ? Math.min((goal.progress || 0) + 1, goal.target)
+                                : (goal.progress || 0) + 1;
                             window.goalsManager.saveGoals();
                             window.goalsManager.renderGoals();
 
-                            // Verificar se completou a meta
+                            // Verificar se completou a meta (só concede XP uma vez)
                             if (goal.target && goal.progress >= goal.target) {
+                                goal.completed = true;
+                                window.goalsManager.saveGoals();
                                 window.gamificationSystem.onGoalCompleted();
                                 window.goalsManager.showGoalMessage(
                                     `🎉 Parabéns! Você completou a meta "${goal.title}"!`,
@@ -5691,10 +5792,10 @@ class CalendarManager {
                 });
 
                 return `
-                    <div class="day-appointment-item clickable" onclick="window.appointmentsManager.showAppointmentDetail(${appointment.id})" style="cursor: pointer;">
+                    <div class="day-appointment-item clickable" data-action="showAppointmentDetail" data-id="${appointment.id}" style="cursor: pointer;">
                         <div class="day-appointment-time">⏰ ${timeText}</div>
-                        <div class="day-appointment-title">${appointment.title}</div>
-                        ${appointment.location ? `<div class="day-appointment-location">📍 ${appointment.location}</div>` : ''}
+                        <div class="day-appointment-title">${escapeHTML(appointment.title)}</div>
+                        ${appointment.location ? `<div class="day-appointment-location">📍 ${escapeHTML(appointment.location)}</div>` : ''}
                         <div class="day-appointment-hint">👆 Clique para ver detalhes</div>
                     </div>
                 `;

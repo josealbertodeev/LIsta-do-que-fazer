@@ -997,23 +997,6 @@ header h1 {
     opacity: 0.9;
 }
 
-/* Frase Motivacional */
-.motivational-quote {
-    margin: 20px auto;
-    max-width: 700px;
-    padding: 20px 30px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08));
-    border-left: 4px solid #818cf8;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    text-align: center;
-    animation: fadeInQuote 1s ease-out;
-}
-
 @keyframes fadeInQuote {
     from {
         opacity: 0;
@@ -1024,82 +1007,6 @@ header h1 {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.quote-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.quote-icon {
-    font-size: 1.5rem;
-}
-
-.quote-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #818cf8;
-}
-
-.quote-text {
-    color: #c4c8e8;
-    font-size: 1.05rem;
-    font-style: italic;
-    line-height: 1.5;
-    margin: 0;
-}
-
-/* Versículo Bíblico */
-.bible-verse {
-    margin: 20px auto 30px;
-    max-width: 700px;
-    padding: 20px 30px;
-    background: linear-gradient(135deg, rgba(52, 211, 153, 0.08), rgba(16, 185, 129, 0.08));
-    border-left: 4px solid #34d399;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    text-align: center;
-    animation: fadeInQuote 1s ease-out 0.2s backwards;
-}
-
-.verse-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.verse-icon {
-    font-size: 1.5rem;
-}
-
-.verse-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #10b981;
-}
-
-.verse-text {
-    color: #c4c8e8;
-    font-size: 1.05rem;
-    font-style: italic;
-    line-height: 1.6;
-    margin: 0;
-}
-
-.verse-reference {
-    color: #10b981;
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin: 5px 0 0 0;
 }
 
 /* Vista de Hoje - Próximos Compromissos */
@@ -1281,11 +1188,7 @@ header h1 {
 
 /* Controles do Calendário Melhorados */
 .calendar-controls {
-    display: flex;
-    align-items: center;
-    gap: 20px;
     flex-wrap: wrap;
-    justify-content: space-between;
 }
 
 .calendar-view-toggle {
@@ -1606,21 +1509,6 @@ header h1 {
 }
 
 /* Melhorias nos Dias do Calendário */
-.calendar-day {
-    position: relative;
-    min-height: 80px;
-    padding: 8px;
-    border: 1px solid #404040;
-    background: #2a2a2a;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.calendar-day:hover {
-    background: rgba(102, 126, 234, 0.1);
-    border-color: #667eea;
-}
-
 .calendar-day.today {
     background: linear-gradient(135deg, #667eea, #764ba2);
     border: 3px solid #667eea;
@@ -3136,35 +3024,6 @@ header p {
     gap: 6px;
 }
 
-.task-btn-enhanced {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-    overflow: hidden;
-}
-
-.task-btn-enhanced::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.task-btn-enhanced:hover::before {
-    left: 100%;
-}
-
 .task-btn-enhanced.priority-toggle {
     background: linear-gradient(135deg, #ffc107, #ff8f00);
     color: white;
@@ -4588,42 +4447,7 @@ body.light-mode .weather-display {
     background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
     color: white;
     border: none;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
-}
-
-body.light-mode .motivational-quote {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.06) 0%, rgba(139, 92, 246, 0.06) 100%);
-    border-left: 4px solid #818cf8;
-    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.06);
-}
-
-body.light-mode .quote-title {
-    color: #6366f1;
-    font-weight: 700;
-}
-
-body.light-mode .quote-text {
-    color: #4c4a6e;
-    font-weight: 500;
-}
-
-body.light-mode .bible-verse {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.06), rgba(52, 211, 153, 0.06));
-    border-left-color: #34d399;
-}
-
-body.light-mode .verse-title {
-    color: #059669;
-}
-
-body.light-mode .verse-text {
-    color: #4c4a6e;
-    font-weight: 500;
-}
-
-body.light-mode .verse-reference {
-    color: #059669;
-    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.2);
 }
 
 /* Vista de Hoje - Light Mode */
@@ -5597,27 +5421,6 @@ body.light-mode .day-task-count {
         padding: 6px 15px;
     }
 
-    /* Quotes */
-    .motivational-quote,
-    .bible-verse {
-        padding: 15px 20px;
-        margin: 15px 10px;
-    }
-
-    .quote-text,
-    .verse-text {
-        font-size: 0.95rem;
-    }
-
-    .quote-icon,
-    .verse-icon {
-        font-size: 1.5rem;
-    }
-
-    .verse-reference {
-        font-size: 0.85rem;
-    }
-
     /* Inputs */
     #taskInput {
         padding: 12px 15px;
@@ -5632,8 +5435,6 @@ body.light-mode .day-task-count {
 
     #addBtn {
         width: 100%;
-        padding: 12px 20px;
-        font-size: 14px;
     }
 
     .priority-checkbox {
@@ -5755,11 +5556,6 @@ body.light-mode .day-task-count {
 
     .legend-item {
         font-size: 0.75rem;
-    }
-
-    .calendar-day {
-        min-height: 60px;
-        padding: 6px;
     }
 
     .day-appointment-indicator {
@@ -6084,17 +5880,6 @@ body.light-mode .day-task-count {
         padding: 5px 12px;
     }
 
-    /* Citações */
-    .motivational-quote,
-    .bible-verse {
-        padding: 12px 15px;
-        margin: 12px 8px;
-    }
-
-    .quote-text,
-    .verse-text {
-        font-size: 0.85rem;
-    }
 }
 
 /* ========================================
@@ -8243,6 +8028,55 @@ body.light-mode .day-task-count {
     color: white;
 }
 
+/* Notificação de Level Up */
+.level-up-notification {
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gradient-primary);
+    border: 3px solid #fff;
+    border-radius: 20px;
+    padding: 20px 28px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    z-index: 10001;
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.level-up-notification.show {
+    top: 100px;
+    animation: titlePulse 0.5s ease;
+}
+
+.level-up-notification-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.level-up-badge {
+    font-size: 48px;
+    animation: rotateBadge 1s ease;
+}
+
+.level-up-info {
+    color: white;
+}
+
+.level-up-message {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.9;
+    margin-bottom: 5px;
+}
+
+.level-up-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+}
+
 /* Notificação de Desafio */
 .challenge-notification {
     position: fixed;
@@ -8526,23 +8360,6 @@ body.light-mode .day-task-count {
         padding: 10px;
     }
 
-    .weekday {
-        font-size: 12px;
-        padding: 5px;
-    }
-
-    .calendar-grid {
-        gap: 5px;
-    }
-
-    .calendar-day {
-        padding: 5px;
-    }
-
-    .day-number {
-        font-size: 14px;
-    }
-
     .day-task-count {
         font-size: 9px;
         padding: 1px 5px;
@@ -8576,160 +8393,28 @@ body.light-mode .day-task-count {
 
 /* Modal de Notas melhorado */
 .notes-modal-content {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 16px;
-    overflow: hidden;
     backdrop-filter: var(--backdrop-filter);
     -webkit-backdrop-filter: var(--backdrop-filter);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
-.notes-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--glass-border);
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-}
-
-.notes-modal-header h3 {
-    margin: 0;
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-}
-
 .close-modal-btn {
-    width: 32px;
-    height: 32px;
     border: none;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
     font-weight: bold;
 }
 
-.close-modal-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1);
-}
-
-.task-preview {
-    padding: 16px 24px;
-    background: rgba(0, 0, 0, 0.02);
-    border-bottom: 1px solid var(--glass-border);
-    font-weight: 500;
-    color: var(--text-primary);
-    font-size: 14px;
-}
-
 .notes-content {
-    padding: 24px;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    max-height: 300px;
-    overflow-y: auto;
     white-space: pre-wrap;
     word-wrap: break-word;
 }
 
 /* Toast Notifications melhorados */
 .toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    min-width: 300px;
     max-width: 400px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    backdrop-filter: var(--backdrop-filter);
-    -webkit-backdrop-filter: var(--backdrop-filter);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    transform: translateX(calc(100% + 20px));
-    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-}
-
-.toast.show {
-    transform: translateX(0);
-}
-
-.toast-icon {
-    font-size: 18px;
-    flex-shrink: 0;
 }
 
 .toast-message {
-    color: var(--text-primary);
-    font-weight: 500;
-    font-size: 14px;
     line-height: 1.4;
-}
-
-.toast.toast-success {
-    border-left: 4px solid var(--success-color);
-}
-
-.toast.toast-error {
-    border-left: 4px solid var(--error-color);
-}
-
-.toast.toast-warning {
-    border-left: 4px solid var(--warning-color);
-}
-
-.toast.toast-info {
-    border-left: 4px solid var(--info-color);
-}
-
-/* Melhorias nos botões de ação das tarefas */
-.task-btn {
-    padding: 8px 14px;
-    border: 1px solid;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-    overflow: hidden;
-}
-
-.task-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s ease;
-}
-
-.task-btn:hover::before {
-    left: 100%;
-}
-
-.task-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Animações de celebração */
@@ -9262,7 +8947,11 @@ body.light-mode .day-task-count {
         min-width: 40px;
     }
 
-    .task-btn,
+    .task-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+
     .task-btn-enhanced,
     .goal-btn,
     .confirmation-btn,
@@ -9346,11 +9035,6 @@ body.light-mode .task-btn:hover {
     header h1 {
         font-size: 1.6rem;
         margin-bottom: 16px;
-    }
-
-    .motivational-quote {
-        padding: 16px;
-        margin-bottom: 20px;
     }
 
     .task-item,

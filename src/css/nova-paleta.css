@@ -1,0 +1,734 @@
+/* ========================================
+   NOVA PALETA - Oceano (azul/ciano)
+   Sobrepoe a paleta roxo/indigo original de style.css
+   sem apagar nada -- remova o <link> deste arquivo para reverter.
+======================================== */
+
+:root {
+    --gradient-primary: linear-gradient(145deg, #2563eb 0%, #0ea5e9 50%, #06b6d4 100%);
+    --gradient-primary-hover: linear-gradient(145deg, #1d4ed8 0%, #0284c7 50%, #0891b2 100%);
+    --gradient-triple-purple: linear-gradient(145deg, #2563eb 0%, #0ea5e9 40%, #06b6d4 100%);
+    --gradient-triple-bg: linear-gradient(145deg, #050b16 0%, #0a1930 30%, #0c2a45 60%, #071224 100%);
+    --text-accent: #38bdf8;
+    --goal-progress-gradient: linear-gradient(145deg, #2563eb 0%, #0ea5e9 50%, #06b6d4 100%);
+    --goal-glow-color: rgba(6, 182, 212, 0.25);
+    --category-gradient: rgba(6, 182, 212, 0.12);
+    --category-text: #22d3ee;
+    --category-border: rgba(6, 182, 212, 0.2);
+    --shadow-colored: 0 4px 20px rgba(37, 99, 235, 0.15);
+}
+
+body::before {
+    background: radial-gradient(ellipse at 20% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.06) 0%, transparent 50%);
+}
+
+.notification-toast.pomodoro-focus {
+    border: 3px solid #3b82f6;
+}
+
+.notification-toast.notes-modal {
+    border: 3px solid #06b6d4;
+}
+
+.notification-toast.notes-modal .notification-icon-bg {
+    background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+}
+
+.notes-content::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.5);
+}
+
+.notes-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.7);
+}
+
+.date-display {
+    background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 100%);
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+}
+
+.weather-display {
+    background: linear-gradient(135deg, #2563eb 0%, #818cf8 100%);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+.today-view {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(6, 182, 212, 0.15));
+    border-left: 4px solid #2563eb;
+}
+
+.today-title {
+    color: #2563eb;
+}
+
+.appointment-time {
+    color: #2563eb;
+}
+
+.next-appointment-countdown {
+    background: rgba(37, 99, 235, 0.1);
+    border: 1px dashed #2563eb;
+}
+
+.countdown-time {
+    color: #2563eb;
+}
+
+.view-btn.active {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.week-header .day-header.today {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+}
+
+.calendar-day.today {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+    border: 3px solid #3b82f6;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.calendar-day.today:hover {
+    box-shadow: 0 12px 35px rgba(59, 130, 246, 0.5), 0 0 0 6px rgba(59, 130, 246, 0.15);
+}
+
+.modal-header.gradient-header {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+}
+
+.form-section {
+    border-left: 3px solid #3b82f6;
+}
+
+.section-title {
+    color: #3b82f6;
+}
+
+.category-select.enhanced:focus,
+.date-input.enhanced:focus,
+.time-input.enhanced:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modal-textarea.enhanced:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.appointment-preview-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(118, 75, 162, 0.1));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.modal-btn.save.modern {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.modal-btn.save.modern:hover {
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+.timer-card h3 {
+    color: #38bdf8;
+}
+
+.timer-display {
+    color: #38bdf8;
+}
+
+.focus-stat {
+    border-left: 3px solid #38bdf8;
+}
+
+.focus-stat .stat-value {
+    color: #38bdf8;
+}
+
+.category-select:focus,
+.goal-select:focus,
+.date-input:focus,
+.time-input:focus {
+    border-color: #3b82f6;
+}
+
+.conflict-suggestions {
+    background: rgba(37, 99, 235, 0.1);
+    border-left: 3px solid #2563eb;
+}
+
+.conflict-suggestions h4 {
+    color: #2563eb;
+}
+
+.time-suggestion {
+    background: rgba(37, 99, 235, 0.2);
+    color: #2563eb;
+    border: 1px solid #2563eb;
+}
+
+.time-suggestion:hover {
+    background: #2563eb;
+}
+
+#addBtn {
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+#addBtn:hover {
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.task-item::before {
+    background: var(--task-accent-color, linear-gradient(180deg, #2563eb, #06b6d4));
+}
+
+.task-item:hover::before {
+    box-shadow: 0 0 15px var(--task-glow-color, rgba(37, 99, 235, 0.3));
+}
+
+.task-status-badge.normal {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(118, 75, 162, 0.8));
+}
+
+.task-btn-enhanced.duplicate {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+}
+
+.tasks-section.pending .task-number {
+    color: #38bdf8;
+    border: 2px solid #38bdf8;
+}
+
+.task-goal {
+    background: rgba(8, 145, 178, 0.2);
+    border-color: rgba(8, 145, 178, 0.6);
+    color: #38bdf8;
+}
+
+.view-notes-btn {
+    background: rgba(6, 182, 212, 0.2);
+    border-color: rgba(6, 182, 212, 0.5);
+}
+
+.view-notes-btn:hover {
+    background: rgba(6, 182, 212, 0.3);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.3);
+}
+
+.edit-btn:hover {
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.modal-header h3 {
+    color: #3b82f6;
+}
+
+.modal-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.modal-btn.save:hover {
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.weekly-bar {
+    background: linear-gradient(180deg, #818cf8 0%, #2563eb 100%);
+}
+
+.weekly-bar.today {
+    background: linear-gradient(180deg, #38bdf8 0%, #0ea5e9 100%);
+}
+
+.weekly-bar-day.today {
+    color: #38bdf8;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #2563eb 0%, #06b6d4 50%, #38bdf8 100%);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
+}
+
+body.light-mode::before {
+    background: radial-gradient(ellipse at 20% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(6, 182, 212, 0.03) 0%, transparent 50%);
+}
+
+body.light-mode .container {
+    border: 1px solid rgba(6, 182, 212, 0.1);
+    box-shadow: 0 25px 80px rgba(37, 99, 235, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.5);
+}
+
+body.light-mode header h1 {
+    background: linear-gradient(135deg, #0369a1 0%, #2563eb 30%, #06b6d4 70%, #38bdf8 100%);
+}
+
+body.light-mode header p {
+    color: #2563eb;
+}
+
+body.light-mode .greeting {
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+    box-shadow: 0 8px 32px rgba(37, 99, 235, 0.2);
+}
+
+body.light-mode .date-display {
+    background: linear-gradient(135deg, #06b6d4 0%, #38bdf8 100%);
+    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.2);
+}
+
+body.light-mode .weather-display {
+    background: linear-gradient(135deg, #2563eb 0%, #818cf8 100%);
+}
+
+body.light-mode .today-view {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(6, 182, 212, 0.1));
+    border-left-color: #2563eb;
+}
+
+body.light-mode .today-title {
+    color: #0369a1;
+}
+
+body.light-mode .appointment-time {
+    color: #0369a1;
+}
+
+body.light-mode .next-appointment-countdown {
+    background: rgba(37, 99, 235, 0.08);
+    border-color: #7dd3fc;
+}
+
+body.light-mode .countdown-time {
+    color: #0369a1;
+}
+
+body.light-mode .conflict-suggestions {
+    background: rgba(37, 99, 235, 0.08);
+    border-left-color: #7dd3fc;
+}
+
+body.light-mode .conflict-suggestions h4 {
+    color: #0369a1;
+}
+
+body.light-mode .time-suggestion {
+    background: rgba(37, 99, 235, 0.1);
+    color: #0369a1;
+    border-color: #7dd3fc;
+}
+
+body.light-mode .time-suggestion:hover {
+    background: #2563eb;
+}
+
+body.light-mode .view-btn.active {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+}
+
+body.light-mode .calendar-day:hover {
+    background: rgba(37, 99, 235, 0.05);
+    border-color: #7dd3fc;
+}
+
+body.light-mode .calendar-day.today {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    border: 3px solid #2563eb;
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4), 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+body.light-mode .calendar-day.today:hover {
+    box-shadow: 0 12px 35px rgba(37, 99, 235, 0.5), 0 0 0 6px rgba(37, 99, 235, 0.15);
+}
+
+body.light-mode .modal-header.gradient-header {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+}
+
+body.light-mode .form-section {
+    border-left-color: #7dd3fc;
+}
+
+body.light-mode .section-title {
+    color: #0369a1;
+}
+
+body.light-mode .modal-input.featured:focus,
+body.light-mode .category-select.enhanced:focus,
+body.light-mode .date-input.enhanced:focus,
+body.light-mode .time-input.enhanced:focus,
+body.light-mode .modal-textarea.enhanced:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+body.light-mode .appointment-preview-card {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.05), rgba(6, 182, 212, 0.05));
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+body.light-mode .input-section,
+body.light-mode .timer-card {
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.06), 0 1px 3px rgba(37, 99, 235, 0.08);
+    border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+body.light-mode .focus-stat .stat-value {
+    color: #0ea5e9;
+}
+
+body.light-mode #addBtn {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+body.light-mode #addBtn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #0891b2);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+}
+
+body.light-mode #taskInput {
+    border: 2px solid rgba(37, 99, 235, 0.15);
+}
+
+body.light-mode #taskInput:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+body.light-mode .category-select:focus,
+body.light-mode .date-input:focus,
+body.light-mode .time-input:focus,
+body.light-mode .notes-input:focus,
+body.light-mode .goal-select:focus {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.2);
+}
+
+body.light-mode .task-category {
+    background: rgba(29, 78, 216, 0.15);
+    color: #1d4ed8 !important;
+    border: 1px solid #1d4ed8;
+}
+
+body.light-mode .view-notes-btn {
+    background: rgba(6, 182, 212, 0.12);
+    border-color: #06b6d4;
+}
+
+body.light-mode .view-notes-btn:hover {
+    background: rgba(6, 182, 212, 0.2);
+    box-shadow: 0 2px 8px rgba(6, 182, 212, 0.25);
+}
+
+body.light-mode .tasks-section.pending {
+    border-left: 6px solid #1d4ed8;
+    border-top: 1px solid rgba(29, 78, 216, 0.3);
+}
+
+body.light-mode .task-item {
+    border: 1px solid rgba(37, 99, 235, 0.1);
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.06);
+}
+
+body.light-mode .task-item:hover {
+    border-color: rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+body.light-mode .task-number {
+    border: 2px solid #7dd3fc;
+}
+
+body.light-mode .tasks-section.pending .task-number {
+    background: linear-gradient(135deg, #2563eb, #06b6d4);
+    border-color: #2563eb;
+}
+
+body.light-mode .empty-state {
+    color: #2563eb;
+    background: rgba(37, 99, 235, 0.04);
+    border: 2px dashed rgba(37, 99, 235, 0.2);
+}
+
+body.light-mode .modal-input:focus,
+body.light-mode .modal-textarea:focus {
+    border-color: #1d4ed8;
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.2);
+}
+
+body.light-mode .edit-icon {
+    color: #1d4ed8;
+}
+
+body.light-mode .timer-display {
+    color: #1d4ed8;
+}
+
+body.light-mode .pomodoro-status {
+    background: rgba(29, 78, 216, 0.1);
+}
+
+body.light-mode .theme-toggle {
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+}
+
+body.light-mode .theme-toggle:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.7);
+}
+
+body.light-mode .user-title-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(118, 75, 162, 0.1));
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+body.light-mode .title-name {
+    color: #1d4ed8;
+}
+
+body.light-mode .stat-card.level {
+    background: linear-gradient(135deg, rgba(29, 78, 216, 0.08), rgba(2, 132, 199, 0.08));
+    border: 2px solid rgba(29, 78, 216, 0.4);
+}
+
+body.light-mode .daily-challenge {
+    background: linear-gradient(135deg, rgba(29, 78, 216, 0.08), rgba(2, 132, 199, 0.08));
+    border: 2px solid rgba(29, 78, 216, 0.4);
+}
+
+body.light-mode .challenge-title-text {
+    color: #1d4ed8;
+}
+
+body.light-mode .challenge-reward {
+    color: #1d4ed8;
+}
+
+body.light-mode .achievement-xp {
+    color: #1d4ed8;
+}
+
+body.light-mode .add-goal-btn:hover {
+    background: linear-gradient(135deg, #1d4ed8, #0284c7);
+    box-shadow: 0 4px 12px rgba(29, 78, 216, 0.4);
+}
+
+body.light-mode .calendar-day:hover {
+    border-color: #1d4ed8;
+}
+
+body.light-mode .calendar-day.today {
+    background: linear-gradient(135deg, rgba(29, 78, 216, 0.15), rgba(2, 132, 199, 0.15));
+    border-color: #1d4ed8;
+}
+
+body.light-mode .day-item-badge.appointments {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.5), rgba(8, 145, 178, 0.5));
+    color: #0891b2;
+    box-shadow: 0 2px 8px rgba(8, 145, 178, 0.3);
+}
+
+body.light-mode .day-task-count {
+    background: #1d4ed8;
+}
+
+.add-goal-btn:hover {
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.goal-card:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.goal-status-badge.in-progress {
+    background: linear-gradient(135deg, #3b82f6 0%, #0284c7 100%);
+}
+
+.modal-textarea:focus {
+    border-color: #3b82f6;
+}
+
+.appointment-edit-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+    border-color: #3b82f6;
+}
+
+.appointment-notification {
+    background: linear-gradient(135deg, #3b82f6 0%, #0284c7 100%);
+}
+
+.day-item-badge.tasks {
+    background: rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+.day-item-badge.appointments {
+    background: linear-gradient(135deg, rgba(240, 147, 251, 0.4), rgba(8, 145, 178, 0.4));
+}
+
+.appointment-detail-btn.edit {
+    background: linear-gradient(135deg, #3b82f6 0%, #0284c7 100%);
+}
+
+.appointment-detail-btn.edit:hover {
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+}
+
+.calendar-nav-btn {
+    background: rgba(59, 130, 246, 0.2);
+    border: 2px solid rgba(59, 130, 246, 0.4);
+}
+
+.calendar-nav-btn:hover {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.calendar-day:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.calendar-day.today {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+}
+
+.day-task-count {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.day-tasks-content {
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.day-task-item:hover {
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.day-task-badge {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.stat-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.stat-card:hover {
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.stat-card.level {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.daily-challenge {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border: 2px solid rgba(59, 130, 246, 0.4);
+}
+
+.daily-challenge:hover {
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.challenge-progress-fill {
+    background: linear-gradient(90deg, #3b82f6 0%, #0284c7 100%);
+}
+
+.level-fill {
+    background: linear-gradient(90deg, #3b82f6 0%, #0284c7 50%, #f093fb 100%);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+}
+
+.achievement-item[data-tier="especial"] {
+    border-color: #0891b2;
+}
+
+.challenge-notification {
+    border: 3px solid #38bdf8;
+}
+
+.confirmation-message strong {
+    color: #3b82f6;
+}
+
+.notes-modal-header {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(118, 75, 162, 0.9));
+}
+
+.task-btn.edit-btn {
+    border-color: rgba(59, 130, 246, 0.5);
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.task-btn.edit-btn:hover {
+    background: linear-gradient(135deg, #3b82f6, #0284c7);
+    border-color: #3b82f6;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+.modal-btn.save:hover {
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+body.light-mode .task-btn:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+body.light-mode .task-item:hover {
+    border-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+body.light-mode .goal-card:hover {
+    border-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+body.light-mode #addBtn {
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%) !important;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.25) !important;
+}
+
+body.light-mode #addBtn:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%) !important;
+    box-shadow: 0 8px 32px rgba(37, 99, 235, 0.35) !important;
+}
+
+body.light-mode input[type="text"]:focus,
+body.light-mode input[type="date"]:focus,
+body.light-mode select:focus,
+body.light-mode textarea:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1), 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+}
+
+body.light-mode .progress-fill {
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%) !important;
+}
+
+body.light-mode .task-category,
+body.light-mode .task-date,
+body.light-mode .task-time,
+body.light-mode .task-priority {
+    background: rgba(37, 99, 235, 0.08) !important;
+    color: #0369a1 !important;
+    border: 1px solid rgba(37, 99, 235, 0.2) !important;
+}
+
+body.light-mode .task-category:hover,
+body.light-mode .task-date:hover,
+body.light-mode .task-time:hover,
+body.light-mode .task-priority:hover {
+    background: rgba(37, 99, 235, 0.12) !important;
+    border-color: rgba(37, 99, 235, 0.3) !important;
+}
+

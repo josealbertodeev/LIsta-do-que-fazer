@@ -17,7 +17,7 @@
 
 <body>
     <!-- Botão de alternar tema -->
-    <button class="theme-toggle" id="themeToggle" title="Alternar tema">🌙</button>
+    <button class="theme-toggle" id="themeToggle" title="Alternar tema" aria-label="Alternar tema claro/escuro">🌙</button>
 
     <div class="container">
         <header>
@@ -37,25 +37,6 @@
                     <span class="weather-temp">--°C</span>
                     <span class="weather-location">Carregando...</span>
                 </div>
-            </div>
-
-            <!-- Frase Motivacional -->
-            <div class="motivational-quote" id="motivationalQuote">
-                <div class="quote-header">
-                    <span class="quote-icon">✨</span>
-                    <span class="quote-title">Frase do Dia</span>
-                </div>
-                <p class="quote-text">Carregando frase motivacional...</p>
-            </div>
-
-            <!-- Versículo Bíblico -->
-            <div class="bible-verse" id="bibleVerse">
-                <div class="verse-header">
-                    <span class="verse-icon">📖</span>
-                    <span class="verse-title">Versículo do Dia</span>
-                </div>
-                <p class="verse-text">Carregando versículo...</p>
-                <p class="verse-reference"></p>
             </div>
 
             <!-- Vista de Hoje - Próximos Compromissos -->
@@ -104,8 +85,8 @@
                     <p class="warning-text">Esta ação não pode ser desfeita!</p>
                 </div>
                 <div class="modal-buttons">
-                    <button class="modal-btn cancel" id="confirmDeleteCancel">✕</button>
-                    <button class="modal-btn delete" id="confirmDeleteConfirm">🗑️</button>
+                    <button class="modal-btn cancel" id="confirmDeleteCancel" aria-label="Cancelar exclusão">✕</button>
+                    <button class="modal-btn delete" id="confirmDeleteConfirm" aria-label="Confirmar exclusão">🗑️</button>
                 </div>
             </div>
         </div>
@@ -117,9 +98,9 @@
                 <div class="timer-display" id="pomodoroTimer">25:00</div>
                 <div class="pomodoro-status" id="pomodoroStatus">Foco (25 min)</div>
                 <div class="timer-controls">
-                    <button class="timer-btn start" id="pomodoroStart">▶️</button>
-                    <button class="timer-btn pause" id="pomodoroPause">⏸️</button>
-                    <button class="timer-btn reset" id="pomodoroReset">🔄</button>
+                    <button class="timer-btn start" id="pomodoroStart" aria-label="Iniciar Pomodoro">▶️</button>
+                    <button class="timer-btn pause" id="pomodoroPause" aria-label="Pausar Pomodoro">⏸️</button>
+                    <button class="timer-btn reset" id="pomodoroReset" aria-label="Reiniciar Pomodoro">🔄</button>
                 </div>
                 <!-- Contadores de tempo acumulado -->
                 <div class="pomodoro-stats">
@@ -179,7 +160,7 @@
                     <input type="checkbox" id="priorityCheckbox">
                     <span>⭐ Prioridade</span>
                 </label>
-                <button id="addBtn">➕</button>
+                <button id="addBtn" aria-label="Adicionar tarefa">➕</button>
             </div>
         </div>
 
@@ -363,7 +344,7 @@
             <div class="appointment-detail-content">
                 <div class="appointment-detail-header">
                     <h3>📅 Detalhes do Compromisso</h3>
-                    <button class="modal-close" id="appointmentDetailClose">&times;</button>
+                    <button class="modal-close" id="appointmentDetailClose" aria-label="Fechar detalhes do compromisso">&times;</button>
                 </div>
                 <div class="appointment-detail-body" id="appointmentDetailBody">
                     <!-- Detalhes serão inseridos aqui -->
@@ -485,7 +466,7 @@
                     <span class="appointment-icon">📅</span>
                     <h3 id="appointmentModalTitle">Novo Compromisso</h3>
                 </div>
-                <button class="modal-close modern" id="appointmentModalClose">×</button>
+                <button class="modal-close modern" id="appointmentModalClose" aria-label="Fechar modal de compromisso">×</button>
             </div>
 
             <div class="modal-body enhanced-body">
