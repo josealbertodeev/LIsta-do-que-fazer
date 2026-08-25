@@ -338,7 +338,6 @@ class PomodoroTimer {
 
             // Quando chegar a zero
             if (this.timeLeft === 0) {
-                this.playSound(); // Toca um som (simulado)
                 this.switchMode(); // Troca de modo
             }
         }, 1000);
@@ -441,7 +440,6 @@ class PomodoroTimer {
         }
     }
 
-    // Nova notificação no estilo das tarefas
     showPomodoroNotification(message, type) {
         // Tocar som do Pomodoro completado
         if (window.soundSystem) {
@@ -519,10 +517,6 @@ class PomodoroTimer {
         }
     }
 
-    // Simula um som de alerta
-    playSound() {
-        console.log('🔔 Tempo finalizado!');
-    }
 }
 
 // ============================================
@@ -1074,7 +1068,6 @@ class TodoApp {
         });
     }
 
-    // NOVIDADE: Animação de confete MELHORADA ao concluir
     createConfetti(element) {
         const colors = ['#0ea5e9', '#0284c7', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#06b6d4'];
         const shapes = ['circle', 'square', 'triangle'];
@@ -1203,7 +1196,6 @@ class TodoApp {
         oscillator2.stop(audioContext.currentTime + 0.25);
     }
 
-    // NOVIDADE: Som de deletar (som curto e satisfatório tipo "click")
     playDeleteSound() {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1224,7 +1216,6 @@ class TodoApp {
         oscillator.stop(audioContext.currentTime + 0.05);
     }
 
-    // NOVIDADE: Som de desfazer (som de "whoosh" reverso)
     playUndoSound() {
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -1259,7 +1250,6 @@ class TodoApp {
         oscillator2.stop(audioContext.currentTime + 0.15);
     }
 
-    // NOVIDADE: Abre o modal de edição
     openEditModal(id) {
         const task = this.tasks.find(task => task.id === id);
         if (task) {
@@ -1270,14 +1260,12 @@ class TodoApp {
         }
     }
 
-    // NOVIDADE: Fecha o modal
     closeModal() {
         this.editModal.classList.remove('active');
         this.editingTaskId = null;
         this.modalInput.value = '';
     }
 
-    // NOVIDADE: Salva a edição
     saveEdit() {
         const newText = this.modalInput.value.trim();
         if (newText === '') {
@@ -1499,7 +1487,6 @@ class TodoApp {
         return emojis[category] || '📌';
     }
 
-    // Novas funcionalidades dos quick actions
     togglePriority(taskId) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
@@ -3374,10 +3361,7 @@ class GoalsManager {
     }
 
     incrementProgress(goalId, amount) {
-        console.log('incrementProgress chamado:', { goalId, amount });
-
         const goal = this.goals.find(g => g.id === goalId);
-        console.log('Goal encontrada:', goal);
 
         if (!goal) {
             console.error('Goal não encontrada com ID:', goalId);
@@ -3391,8 +3375,6 @@ class GoalsManager {
 
         const oldProgress = goal.progress;
         goal.progress = Math.min(goal.progress + amount, goal.target);
-
-        console.log('Progresso atualizado:', { oldProgress, newProgress: goal.progress, target: goal.target });
 
         // Animação de incremento
         const goalCard = document.querySelector(`[data-goal-id="${goalId}"]`);
@@ -3413,8 +3395,6 @@ class GoalsManager {
     }
 
     completeGoal(goalId) {
-        console.log('completeGoal chamado:', goalId);
-
         const goal = this.goals.find(g => g.id === goalId);
         if (!goal) {
             console.error('Goal não encontrada:', goalId);
@@ -4863,8 +4843,6 @@ class GamificationSystem {
     }
 
     showLevelUpNotification() {
-        console.log(`🎉 Parabéns! Você subiu para o nível ${this.userStats.level}!`);
-
         const notification = document.createElement('div');
         notification.className = 'level-up-notification';
         notification.innerHTML = `
@@ -4894,7 +4872,6 @@ class GamificationSystem {
 
         this.userStats.totalCompleted++;
         this.userStats.tasksToday++;
-        console.log('✅ Tarefa concluída! Total:', this.userStats.totalCompleted);
         this.addXP(10, 'Tarefa concluída');
 
         // Verificar hora da conclusão
@@ -4998,11 +4975,9 @@ class GamificationSystem {
     }
 
     checkAchievements() {
-        console.log('🔍 Verificando conquistas... Total concluídas:', this.userStats.totalCompleted);
         this.achievements.forEach(achievement => {
             if (!this.userStats.unlockedAchievements.includes(achievement.id)) {
                 if (achievement.condition(this.userStats)) {
-                    console.log('🎉 Conquista desbloqueada!', achievement.name);
                     this.unlockAchievement(achievement);
                 }
             }
@@ -5239,7 +5214,6 @@ class GamificationSystem {
             case 'complete_tasks':
                 if (context.taskCompleted) {
                     challenge.progress = this.userStats.tasksToday;
-                    console.log('📊 Desafio diário:', challenge.progress, '/', challenge.target, 'tarefas');
                 }
                 break;
             case 'priority_tasks':
@@ -5269,7 +5243,6 @@ class GamificationSystem {
             challenge.completed = true;
             this.userStats.dailyChallengeCompleted = true;
             this.addXP(challenge.reward, 'Desafio Diário Completado!');
-            console.log('🎯 Desafio diário completado!');
             this.showChallengeComplete(challenge);
         }
 
