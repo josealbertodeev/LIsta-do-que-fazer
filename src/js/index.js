@@ -764,9 +764,17 @@ class TodoApp {
         }
     }
 
+    // Reutiliza um único AudioContext em vez de criar um novo a cada som tocado
+    getAudioContext() {
+        if (!this._audioContext) {
+            this._audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        return this._audioContext;
+    }
+
     // Som de alerta do timer
     playTimerEndSound() {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioContext = this.getAudioContext();
 
         // Toca 3 beeps
         for (let i = 0; i < 3; i++) {
@@ -797,13 +805,13 @@ class TodoApp {
         let emoji = '';
 
         if (hour >= 5 && hour < 12) {
-            greetingText = 'Bom dia! ☀️ Que seu dia seja produtivo!';
+            greetingText = 'Bom dia! Que seu dia seja produtivo!';
             emoji = '🌅';
         } else if (hour >= 12 && hour < 18) {
-            greetingText = 'Boa tarde! 🌞 Continue firme nas suas tarefas!';
+            greetingText = 'Boa tarde! Continue firme nas suas tarefas!';
             emoji = '☀️';
         } else {
-            greetingText = 'Boa noite! 🌙 Hora de organizar o amanhã!';
+            greetingText = 'Boa noite! Hora de organizar o amanhã!';
             emoji = '🌙';
         }
 
@@ -866,12 +874,6 @@ class TodoApp {
         if (closeBtn) {
             closeBtn.closest('.notification-toast')?.remove();
             document.querySelector('.notification-overlay')?.remove();
-            return;
-        }
-
-        const tipClose = e.target.closest('.tip-close');
-        if (tipClose) {
-            tipClose.parentElement.remove();
             return;
         }
 
@@ -951,9 +953,6 @@ class TodoApp {
 
         // Notificação interativa
         this.showToast('Tarefa adicionada com sucesso!', 'success');
-
-        // Validação suave: mostra dica se campos importantes estão vazios
-        this.showSoftValidationTips(task);
     }
 
     getNextOrderNumber() {
@@ -1170,8 +1169,7 @@ class TodoApp {
 
     // Som de sucesso (simulado com beep)
     playSuccessSound() {
-        // Cria um contexto de áudio
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioContext = this.getAudioContext();
 
         // Primeira nota (Mi)
         const oscillator1 = audioContext.createOscillator();
@@ -1197,7 +1195,7 @@ class TodoApp {
     }
 
     playDeleteSound() {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioContext = this.getAudioContext();
 
         // Som de click único e limpo
         const oscillator = audioContext.createOscillator();
@@ -1217,7 +1215,7 @@ class TodoApp {
     }
 
     playUndoSound() {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const audioContext = this.getAudioContext();
 
         // Primeira nota curta
         const oscillator1 = audioContext.createOscillator();
@@ -2684,70 +2682,6 @@ class TodoApp {
         }
     }
 
-    // Validação suave: mostra dicas amigáveis (não bloqueia)
-    showSoftValidationTips(task) {
-        const tips = [];
-
-        // Verifica se tem prioridade mas não tem data
-        if (task.priority && !task.dueDate) {
-            tips.push({
-                icon: '📅',
-                message: 'Tarefa prioritária! Que tal definir um prazo?',
-                type: 'date'
-            });
-        }
-
-        // Verifica se tem data mas não tem tempo estimado
-        if (task.dueDate && !task.timeEstimate) {
-            tips.push({
-                icon: '⏱️',
-                message: 'Adicione um tempo estimado para usar o cronômetro!',
-                type: 'time'
-            });
-        }
-
-        // Verifica se é uma tarefa simples sem detalhes
-        if (!task.priority && !task.dueDate && !task.timeEstimate && !task.notes && task.category === 'pessoal') {
-            // Apenas 30% de chance de mostrar dica (não ser chato)
-            if (Math.random() < 0.3) {
-                tips.push({
-                    icon: '💡',
-                    message: 'Dica: Use categorias, datas e notas para organizar melhor!',
-                    type: 'general'
-                });
-            }
-        }
-
-        // Mostra apenas a primeira dica (não sobrecarrega o usuário)
-        if (tips.length > 0) {
-            setTimeout(() => {
-                this.showTipBadge(tips[0]);
-            }, 3500); // Mostra depois da notificação de sucesso
-        }
-    }
-
-    // Mostra badge de dica sutil no canto
-    showTipBadge(tip) {
-        const badge = document.createElement('div');
-        badge.className = 'tip-badge';
-        badge.innerHTML = `
-            <span class="tip-icon">${tip.icon}</span>
-            <span class="tip-message">${tip.message}</span>
-            <button class="tip-close">✕</button>
-        `;
-
-        document.body.appendChild(badge);
-
-        // Animação de entrada
-        setTimeout(() => badge.classList.add('show'), 100);
-
-        // Remove automaticamente após 6 segundos
-        setTimeout(() => {
-            badge.classList.remove('show');
-            setTimeout(() => badge.remove(), 300);
-        }, 6000);
-    }
-
     // Obter previsão do tempo
     async getWeather() {
         try {
@@ -3874,8 +3808,18 @@ class AppointmentsManager {
         }
 
         if (view === 'month') {
-            this.renderMonthView();
+            // A vista mensal é renderizada pelo CalendarManager (grade com feriados
+            // e compromissos); apenas mantemos as datas sincronizadas entre os dois.
+            if (window.calendarManager) {
+                window.calendarManager.currentDate = this.currentDate;
+                window.calendarManager.render();
+            } else {
+                this.renderMonthView();
+            }
         } else {
+            if (window.calendarManager) {
+                this.currentDate = new Date(window.calendarManager.currentDate);
+            }
             this.renderWeekView();
         }
     }
@@ -3884,7 +3828,12 @@ class AppointmentsManager {
     goToToday() {
         this.currentDate = new Date();
         if (this.currentView === 'month') {
-            this.renderMonthView();
+            if (window.calendarManager) {
+                window.calendarManager.currentDate = new Date();
+                window.calendarManager.render();
+            } else {
+                this.renderMonthView();
+            }
         } else {
             this.renderWeekView();
         }
@@ -4726,10 +4675,10 @@ class GamificationSystem {
         this.initElements();
         this.generateDailyChallenge();
         this.resetDailyStats();
+        this.checkDailyStreak();
         this.renderStats();
         this.renderAchievements();
         this.renderDailyChallenge();
-        this.checkDailyStreak();
     }
 
     initElements() {
@@ -5327,7 +5276,7 @@ class KeyboardShortcuts {
                 e.preventDefault();
                 const priorityCheckbox = document.getElementById('priorityCheckbox');
                 if (priorityCheckbox) {
-                    priorityCheckbox.checked = !priorityCheckbox.checked();
+                    priorityCheckbox.checked = !priorityCheckbox.checked;
                 }
             }
         });
@@ -5596,11 +5545,13 @@ class CalendarManager {
     previousMonth() {
         this.currentDate.setMonth(this.currentDate.getMonth() - 1);
         this.render();
+        if (window.appointmentsManager) window.appointmentsManager.currentDate = new Date(this.currentDate);
     }
 
     nextMonth() {
         this.currentDate.setMonth(this.currentDate.getMonth() + 1);
         this.render();
+        if (window.appointmentsManager) window.appointmentsManager.currentDate = new Date(this.currentDate);
     }
 
     render() {

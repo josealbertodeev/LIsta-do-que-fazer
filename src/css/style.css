@@ -1527,20 +1527,22 @@ header h1 {
 }
 
 .calendar-day.today::before {
-    content: '🔥';
+    content: 'HOJE';
     position: absolute;
     top: 2px;
     right: 2px;
-    font-size: 0.9rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #fff;
     background: #ff6b6b;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
+    padding: 2px 6px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid #fff;
-    animation: bounce 1.5s infinite;
+    animation: todayBadgePulse 1.5s ease-in-out infinite;
     z-index: 1;
 }
 
@@ -1558,6 +1560,20 @@ header h1 {
 
     50% {
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6), 0 0 0 8px rgba(102, 126, 234, 0.2);
+    }
+}
+
+@keyframes todayBadgePulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.85;
     }
 }
 
@@ -7516,7 +7532,7 @@ body.light-mode .day-task-count {
     box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
-.title-icon {
+.user-title-card .title-icon {
     font-size: 48px;
     animation: titleFloat 3s ease-in-out infinite;
 }

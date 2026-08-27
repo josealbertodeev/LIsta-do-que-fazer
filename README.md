@@ -46,11 +46,11 @@
 </td>
 <td width="50%">
 
-### 🧠 **Validação Inteligente**
-- Sistema duplo de validação
-- Dicas contextuais não invasivas
-- Modal de aviso animado
-- Sugestões inteligentes
+### 📅 **Agenda Integrada**
+- Compromissos com recorrência e lembretes
+- Calendário com feriados brasileiros
+- Destaque animado no dia atual
+- Contagem regressiva para o próximo evento
 
 </td>
 </tr>
@@ -85,14 +85,13 @@
 <summary><b>📋 Recursos de Tarefas</b></summary>
 
 - ✅ **Adicionar/Editar/Deletar** tarefas com interface intuitiva
-- 🎨 **Validação Inteligente** com avisos obrigatórios e dicas suaves
+- 🎨 **Validação Inteligente** com aviso obrigatório ao deixar o campo vazio
 - 📂 **6 Categorias** personalizáveis (Trabalho, Pessoal, Estudos, Saúde, Compras, Outros)
 - ⭐ **Sistema de Prioridades** com destaque visual
 - 📅 **Datas de Vencimento** com alertas (Hoje, Amanhã, Atrasado)
 - ⏱️ **Timer Regressivo Individual** para cada tarefa
 - 📝 **Notas Detalhadas** com modal dedicado
 - ✅ **Subtarefas** com barra de progresso visual
-- 🔄 **Drag & Drop** para reordenação intuitiva
 - 💾 **Auto-save** com LocalStorage
 
 </details>
@@ -109,21 +108,23 @@
 </details>
 
 <details>
-<summary><b>🛡️ Sistema de Validação Dual</b></summary>
+<summary><b>🛡️ Validação ao Adicionar Tarefas</b></summary>
 
-**Validação Obrigatória:**
 - ⚠️ Modal de aviso ao tentar adicionar tarefa vazia
 - 💥 8 partículas flutuantes animadas (⚠️❗⚡🚫❌)
 - 🎯 Auto-focus no campo de entrada
 - ⏱️ Auto-fechamento em 3 segundos
 
-**Validação Suave (Dicas Inteligentes):**
-- 📅 Tarefa prioritária sem prazo → Sugere definir data
-- ⏱️ Tarefa com data mas sem tempo → Sugere cronômetro
-- 💡 Tarefa simples → Dica de organização (30% de chance)
-- 🎀 Badge rosa vibrante no canto inferior direito
-- ✕ Botão de fechar manual ou auto-fechamento em 6s
-- 📱 Totalmente responsivo
+</details>
+
+<details>
+<summary><b>📅 Compromissos e Agenda</b></summary>
+
+- 📝 **Criar Compromissos** com título, categoria, prioridade e local
+- 🔁 **Recorrência** diária, semanal ou mensal, com data final opcional
+- 🔔 **Lembretes** configuráveis por compromisso
+- ⏳ **Contagem Regressiva** para o próximo compromisso do dia
+- 🎨 **Cores por Categoria** (Trabalho, Pessoal, Saúde, Estudo)
 
 </details>
 
@@ -143,8 +144,10 @@
 
 - 🏆 **30+ Conquistas** desbloqueáveis
 - ⭐ **Sistema de XP e Níveis** progressivo
+- 🏅 **Títulos do Usuário** (Novato → Lenda) conforme o XP acumulado
+- 🔥 **Sequência (Streak)** de dias produtivos seguidos
 - 🎲 **Desafios Diários** para motivação
-- 📊 **Estatísticas Completas** (sequências, total de tarefas)
+- 📊 **Estatísticas Semanais** de produtividade em gráfico de barras
 - 🎨 **Notificações Animadas** de conquistas
 - 🔊 **Sons Especiais** para cada tipo de conquista
 
@@ -153,11 +156,12 @@
 <details>
 <summary><b>📅 Calendário Visual</b></summary>
 
-- 📆 **Visualização Mensal** das tarefas
+- 📆 **Visualização Mensal** de compromissos
+- 🎉 **Feriados Brasileiros** calculados automaticamente (fixos e móveis, incluindo Páscoa e Carnaval)
+- ✨ **Badge "HOJE"** animado no dia atual
 - 🎨 **Códigos de Cores** por categoria
 - 🔄 **Navegação Mês a Mês** intuitiva
-- 📊 **Indicadores Visuais** de tarefas por dia
-- ✅ **Clique no Dia** para filtrar tarefas
+- ✅ **Clique no Dia** para ver os compromissos
 
 </details>
 
@@ -170,9 +174,9 @@
 ```javascript
 {
   "linguagens": {
-    "HTML5": "Estrutura semântica e acessível",
-    "CSS3": "4640 linhas | 53KB | Otimizado -23%",
-    "JavaScript": "3017 linhas | ES6+ | Vanilla JS"
+    "HTML5": "Estrutura semântica e acessível | 684 linhas",
+    "CSS3": "~10.000 linhas (style.css + responsivo + paleta)",
+    "JavaScript": "5744 linhas | ES6+ | Vanilla JS"
   },
   "features": [
     "CSS Variables para temas",
@@ -182,8 +186,7 @@
     "LocalStorage API",
     "Geolocation API",
     "Notification API",
-    "Web Audio API",
-    "Drag and Drop API"
+    "Web Audio API"
   ]
 }
 ```
@@ -258,7 +261,9 @@ xdg-open index.html
 
 ### **Atalhos de Teclado**
 - `Ctrl/Cmd + Enter`: Adicionar tarefa rapidamente
-- `Ctrl/Cmd + D`: Alternar tema claro/escuro
+- `Ctrl/Cmd + K`: Focar no campo de nova tarefa
+- `Ctrl/Cmd + M`: Abrir modal de nova meta
+- `Ctrl/Cmd + P`: Alternar prioridade da tarefa atual
 - `Esc`: Fechar modais
 
 ---
@@ -268,21 +273,17 @@ xdg-open index.html
 ```
 LIsta-do-que-fazer/
 │
-├── 📄 index.html                          # Página principal (700 linhas)
+├── 📄 index.html                          # Página principal (684 linhas)
 ├── 📘 README.md                           # Este arquivo
-├── 📋 VERIFICATION-CHECKLIST.md          # Checklist de verificação
 │
 ├── 📂 src/
 │   ├── 🎨 css/
-│   │   ├── style.css                     # Estilos principais (9488 linhas)
-│   │   └── responsivo-adicional.css      # Regras responsivas extras (702 linhas)
+│   │   ├── style.css                     # Estilos principais (9188 linhas)
+│   │   ├── responsivo-adicional.css      # Regras responsivas extras (702 linhas)
+│   │   └── nova-paleta.css               # Ajustes de paleta de cores (133 linhas)
 │   │
-│   ├── 💻 js/
-│   │   └── index.js                      # Lógica principal (5766 linhas)
-│   │
-│   └── 📚 docs/
-│       ├── OPTIMIZATION-REPORT.md        # Relatório de otimização
-│       └── OPTIMIZATION-RESULTS.md       # Resultados da otimização
+│   └── 💻 js/
+│       └── index.js                      # Lógica principal (5744 linhas)
 │
 └── 🔧 .vscode/                           # Configurações VS Code
 ```
@@ -295,10 +296,10 @@ LIsta-do-que-fazer/
 
 | Métrica | Valor | Status |
 |---------|-------|--------|
-| **Linhas de Código Total** | ~16.650 linhas | 📈 |
-| **JavaScript** | 5.766 linhas | ✅ |
-| **CSS** | 9.488 + 702 linhas (responsivo) | ✅ |
-| **HTML** | 700 linhas | ✅ |
+| **Linhas de Código Total** | ~16.450 linhas | 📈 |
+| **JavaScript** | 5.744 linhas | ✅ |
+| **CSS** | 9.188 + 702 (responsivo) + 133 (paleta) | ✅ |
+| **HTML** | 684 linhas | ✅ |
 | **Classes JavaScript** | 9 classes | 🎯 |
 
 </div>
@@ -369,8 +370,6 @@ LIsta-do-que-fazer/
 - 🎯 **Código limpo** sem duplicações
 - 💾 **Backups de segurança** disponíveis
 
-📖 **Documentação Completa:** [`src/docs/OPTIMIZATION-RESULTS.md`](./src/docs/OPTIMIZATION-RESULTS.md)
-
 ---
 
 ## 🎨 Temas Disponíveis
@@ -427,11 +426,17 @@ Design clean e minimalista com cores suaves
 ### ✅ **Fase 4 - Sistema de Validação** (Concluída)
 - ✅ Validação obrigatória com modal
 - ✅ Partículas animadas de aviso
-- ✅ Dicas inteligentes contextuais
-- ✅ Badge rosa não invasivo
-- ✅ Sistema dual de validação
 
-### 🚀 **Fase 5 - Próximas Melhorias** (Planejada)
+### ✅ **Fase 5 - Ajustes Visuais e Correções** (Concluída)
+- ✅ Ícone do cabeçalho corrigido (colisão de estilos que o deixava gigante e flutuando)
+- ✅ Badge "HOJE" animado no calendário, no lugar do ícone de fogo fixo
+- ✅ Calendário unificado em um único componente (eram dois disputando a mesma grade)
+- ✅ Correção do atalho `Ctrl/Cmd + P`
+- ✅ Remoção do balão de dica intrusivo ao adicionar tarefas
+- ✅ Correção do ícone duplicado na saudação (Bom dia/Boa tarde/Boa noite)
+
+### 🚀 **Fase 6 - Próximas Melhorias** (Planejada)
+- 🔄 Drag & Drop para reordenar tarefas
 - 🔄 PWA (Progressive Web App)
 - 🔄 Sincronização em nuvem
 - 🔄 Compartilhamento de tarefas
@@ -533,6 +538,6 @@ git push origin feature/MinhaNovaFeature
 
 ---
 
-<sub>Última atualização: Novembro 2025</sub>
+<sub>Última atualização: Agosto 2026</sub>
 
 </div>
